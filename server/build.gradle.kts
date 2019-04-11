@@ -1,10 +1,4 @@
-plugins {
-    java
-    jacoco
-}
-
 version = "1.0-SNAPSHOT"
-
 
 dependencies {
     compile(project(":core"))
@@ -16,20 +10,4 @@ dependencies {
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_12
-}
-
-jacoco.toolVersion = "0.8.2"
-
-fun jacocoCodeCoverage() {
-    val jacocoReport = tasks.withType<JacocoReport> {
-        reports {
-            xml.isEnabled = true
-            html.isEnabled = true
-        }
-    }
-
-    tasks.withType<Test> {
-        useJUnitPlatform()
-        finalizedBy(jacocoReport)
-    }
 }

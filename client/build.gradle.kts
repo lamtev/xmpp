@@ -1,7 +1,3 @@
-plugins {
-    java
-}
-
 dependencies {
     compile("org.jetbrains:annotations:17.0.0")
 
