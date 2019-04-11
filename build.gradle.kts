@@ -1,7 +1,3 @@
-plugins {
-    java
-}
-
 allprojects {
 
     group = "com.lamtev.xmpp"
@@ -9,5 +5,5 @@ allprojects {
     repositories {
         jcenter()
     }
-    
+
 }
