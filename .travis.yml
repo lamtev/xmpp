@@ -11,7 +11,7 @@ before_install:
   - sudo pip install --user codecov
 
 script:
-  - docker run -v $TRAVIS_BUILD_DIR:/xmpp lamtev/java /bin/bash -c " cd xmpp && cloc * && gradle build "
+  - docker run -v $TRAVIS_BUILD_DIR:/xmpp lamtev/java /bin/bash -c " cd xmpp && cloc * && gradle build && gradle jacocoReport "
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
