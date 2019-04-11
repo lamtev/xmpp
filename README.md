@@ -1,1 +1,1 @@
-# xmpp
+# xmpp [![Build Status](https://travis-ci.org/lamtev/xmpp.svg?branch=master)](https://travis-ci.org/lamtev/xmpp) [![codecov](https://codecov.io/gh/lamtev/xmpp/branch/master/graph/badge.svg)](https://codecov.io/gh/lamtev/xmpp)
