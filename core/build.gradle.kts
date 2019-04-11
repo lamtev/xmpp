@@ -1,8 +1,3 @@
-plugins {
-    java
-    jacoco
-}
-
 dependencies {
     compile("org.jetbrains:annotations:17.0.0")
 
@@ -12,20 +7,4 @@ dependencies {
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_12
-}
-
-jacoco.toolVersion = "0.8.2"
-
-fun jacocoCodeCoverage() {
-    val jacocoReport = tasks.withType<JacocoReport> {
-        reports {
-            xml.isEnabled = true
-            html.isEnabled = true
-        }
-    }
-
-    tasks.withType<Test> {
-        useJUnitPlatform()
-        finalizedBy(jacocoReport)
-    }
 }
