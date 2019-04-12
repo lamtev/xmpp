@@ -19,12 +19,13 @@ class XMPPInputStreamTest {
         ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_16));
 
         XMPPInputStream initialStream = new XMPPInputStream(stream, "UTF-16");
-        initialStream.open(() -> {
+        initialStream.setHandler(() -> {
             if (initialStream.hasError()) {
                 System.out.println(initialStream.error());
             } else {
                 System.out.println(initialStream.unit());
             }
         });
+        initialStream.open();
     }
 }

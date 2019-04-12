@@ -2,6 +2,7 @@ package com.lamtev.xmpp.core.io;
 
 import com.lamtev.xmpp.core.XMPPUnit;
 import com.lamtev.xmpp.core.parsing.XMPPStreamParser;
+import com.lamtev.xmpp.core.parsing.XMPPStreamParserException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,20 +22,27 @@ public class XMPPInputStream implements AutoCloseable, XMPPStreamParser.Delegate
     @Nullable
     private XMPPStreamParser.Error error;
 
-    public XMPPInputStream(@NotNull final InputStream in, @NotNull final String encoding) {
-        this.in = in;
-        this.parser = new XMPPStreamParser(in, encoding);
+    public XMPPInputStream(@NotNull final InputStream in, @NotNull final String encoding) throws XMPPIOException {
+        try {
+            this.in = in;
+            this.parser = new XMPPStreamParser(in, encoding);
+            this.parser.setDelegate(this);
+        } catch (final XMPPStreamParserException e) {
+            final var message = "" + e.getMessage();
+            throw new XMPPIOException(message, e);
+        }
     }
 
-    public void open(@NotNull final Handler handler) throws Throwable {
+    public void setHandler(@NotNull final Handler handler) {
         this.handler = handler;
+    }
 
-        this.parser.setDelegate(this);
-        this.parser.startParsing();
+    public void open() {
+        parser.startParsing();
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         parser.stopParsing();
         in.close();
     }
