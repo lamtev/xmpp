@@ -1,5 +1,6 @@
 package com.lamtev.xmpp.server.api;
 
+import com.lamtev.xmpp.core.io.XMPPIOException;
 import com.lamtev.xmpp.core.io.XMPPInputStream;
 import com.lamtev.xmpp.core.io.XMPPOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -36,17 +37,20 @@ final class BlockingXMPPServer implements XMPPServer {
                 threadPool.submit(() -> {
                     try (final var initialStream = new XMPPInputStream(socket.getInputStream(), "");
                          final var responseStream = new XMPPOutputStream(socket.getOutputStream())) {
-                        initialStream.open(() -> {
+                        initialStream.setHandler(() -> {
                             if (handler != null) {
                                 handler.handle(initialStream, responseStream);
                             }
                         });
-                    } catch (Throwable e) {
+                        initialStream.open();
+                    } catch (final XMPPIOException e) {
+                        e.printStackTrace();
+                    } catch (final IOException e) {
                         e.printStackTrace();
                     }
                 });
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }

@@ -20,19 +20,19 @@ public final class XMPPStreamParser {
     @Nullable
     private Delegate delegate;
 
-    public XMPPStreamParser(@NotNull final InputStream inputStream, @NotNull final String encoding) {
+    public XMPPStreamParser(@NotNull final InputStream inputStream, @NotNull final String encoding) throws XMPPStreamParserException {
         try {
-            @NotNull XMLInputFactory readerFactory = XMLInputFactory.newInstance();
-            reader = readerFactory.createXMLStreamReader(inputStream, encoding);
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
+            final var factory = XMLInputFactory.newInstance();
+            reader = factory.createXMLStreamReader(inputStream, encoding);
+        } catch (final XMLStreamException e) {
+            final var message = "" + e.getMessage();
+            throw new XMPPStreamParserException(message, e);
         }
     }
 
     public void startParsing() {
         boolean detectingMessageType = true;
-        XMPPStreamParserStrategyCache cache = new XMPPStreamParserStrategyCache(reader, (error) -> {
+        final var cache = new XMPPStreamParserStrategyCache(reader, (error) -> {
             if (delegate != null) {
                 delegate.parserDidFailWithError(error);
             }
@@ -95,8 +95,12 @@ public final class XMPPStreamParser {
         }
     }
 
-    public void stopParsing() throws XMLStreamException {
-        reader.close();
+    public void stopParsing() {
+        try {
+            reader.close();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setDelegate(@NotNull final Delegate delegate) {

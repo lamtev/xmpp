@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class XMPPStreamParserTest {
     @Test
-    void testValidStreamHeaderParsing() {
-        String xml = "<?xml version='1.0' encoding='UTF-16'?>" +
+    void testValidStreamHeaderParsing() throws XMPPStreamParserException {
+        final var xml = "<?xml version='1.0' encoding='UTF-16'?>" +
                 "<stream:stream\n" +
                 "       from='juliet@im.example.com'\n" +
                 "       to='im.example.com'\n" +
