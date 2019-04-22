@@ -10,6 +10,8 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import static com.lamtev.xmpp.core.parsing.XMPPStreamParserStrategy.Name.*;
 import static com.lamtev.xmpp.core.parsing.XMPPStreamParserStrategy.*;
@@ -20,6 +22,8 @@ public final class XMPPStreamParser {
     private final XMLStreamReader reader;
     @Nullable
     private Delegate delegate;
+    @NotNull
+    private Deque<XMPPStreamParserStrategy> strategyStack = new ArrayDeque<>(5);
 
     public XMPPStreamParser(@NotNull final InputStream inputStream, @NotNull final String encoding) throws XMPPStreamParserException {
         try {
@@ -32,14 +36,12 @@ public final class XMPPStreamParser {
     }
 
     public void startParsing() {
-        boolean detectingMessageType = true;
         final var cache = new XMPPStreamParserStrategyCache(reader, (error) -> {
             if (delegate != null) {
                 delegate.parserDidFailWithError(error);
             }
         });
 
-        XMPPStreamParserStrategy strategy = null;
         try {
             int event = reader.getEventType();
             if (event == 7) {
@@ -48,33 +50,35 @@ public final class XMPPStreamParser {
             while (reader.hasNext()) {
                 event = reader.next();
                 switch (event) {
-                    case START_ELEMENT:
+                    case START_ELEMENT: {
                         System.out.println("START_ELEMENT");
                         final var elementName = reader.getLocalName();
-                        if (detectingMessageType) {
-                            if (isPotentialStreamHeader(elementName)) {
-                                strategy = cache.get(STREAM_HEADER);
-                            } else if (isPotentialStanza(elementName)) {
-                                strategy = cache.get(STANZA);
-                            } else if (isPotentialError(elementName)) {
-                                strategy = cache.get(ERROR);
-                            } else {
-                                if (delegate != null) {
-                                    delegate.parserDidFailWithError(Error.UNRECOGNIZED_ELEMENT);
-                                    return;
-                                }
+                        XMPPStreamParserStrategy strategy = null;
+                        if (isPotentialStreamHeader(elementName)) {
+                            strategy = cache.get(STREAM_HEADER);
+                        } else if (isPotentialSASLNegotiation(elementName)) {
+                            strategy = cache.get(SASL_NEGOTIATION);
+                        } else if (isPotentialStanza(elementName)) {
+                            strategy = cache.get(STANZA);
+                        } else if (isPotentialError(elementName)) {
+                            strategy = cache.get(ERROR);
+                        } else {
+                            if (delegate != null) {
+                                delegate.parserDidFailWithError(Error.UNRECOGNIZED_ELEMENT);
+                                return;
                             }
-                            detectingMessageType = false;
                         }
+                        strategyStack.push(strategy);
                         strategy.startElementReached();
 
                         if (strategy.unitIsReady() && delegate != null) {
                             System.out.println("didParseUnit");
                             delegate.parserDidParseUnit(strategy.readyUnit());
-
                         }
                         break;
-                    case END_ELEMENT:
+                    }
+                    case END_ELEMENT: {
+                        final var strategy = strategyStack.pop();
                         System.out.println("END_ELEMENT");
                         strategy.endElementReached();
 
@@ -83,7 +87,9 @@ public final class XMPPStreamParser {
                             delegate.parserDidParseUnit(strategy.readyUnit());
                         }
                         break;
+                    }
                     case CHARACTERS:
+                        final var strategy = strategyStack.peekFirst();
                         System.out.println("CHARACTERS");
                         strategy.charactersReached();
                         break;
@@ -119,6 +125,8 @@ public final class XMPPStreamParser {
         NOT_WELL_FORMED_XML,
         XML_INCORRECT_SYNTAX,
         UNRECOGNIZED_ELEMENT,
+        SASL_INVALID_MECHANISM,
+        SASL_MALFORMED_REQUEST,
         //TODO
     }
 

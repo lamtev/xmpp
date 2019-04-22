@@ -22,7 +22,7 @@ final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStra
     @Nullable
     private XMPPStreamHeader.ContentNamespace contentNamespace;
     private boolean hasStreamNamespace = false;
-    @Nullable
+    @NotNull
     private ErrorObserver errorObserver;
 
     XMPPStreamParserStrategyStreamHeader(@NotNull final XMLStreamReader reader) {
@@ -49,11 +49,9 @@ final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStra
         //https://xmpp.org/rfcs/rfc6120.html#streams-error-conditions-invalid-namespace
 
         if (!hasStreamNamespace || contentNamespace == null) {
-            if (errorObserver != null) {
-                //TODO:
-                errorObserver.onError(XMPPStreamParser.Error.INVALID_NAMESPACE);
-                return;
-            }
+            //TODO:
+            errorObserver.onError(XMPPStreamParser.Error.INVALID_NAMESPACE);
+            return;
         }
 
         System.out.println("Tag=<" + reader.getName().getPrefix() + ":" + reader.getName().getLocalPart() + ">");
@@ -97,8 +95,8 @@ final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStra
         return streamHeader != null;
     }
 
-    @NotNull
     @Override
+    @NotNull
     public XMPPStreamHeader readyUnit() {
         if (streamHeader == null) {
             throw new IllegalStateException("");
@@ -111,7 +109,7 @@ final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStra
     }
 
     @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
+    public void setErrorObserver(@NotNull final ErrorObserver observer) {
         errorObserver = observer;
     }
 }

@@ -8,7 +8,7 @@ public final class XMPPStreamFeatures implements XMPPUnit {
     @NotNull
     private final Type type;
     @Nullable
-    private SASLMechanism[] mechanisms;
+    private Type.SASLMechanism[] mechanisms;
 
     private XMPPStreamFeatures(@NotNull final Type type) {
         this.type = type;
@@ -18,7 +18,7 @@ public final class XMPPStreamFeatures implements XMPPUnit {
         return new XMPPStreamFeatures(type);
     }
 
-    public static XMPPStreamFeatures of(@NotNull final SASLMechanism... mechanisms) {
+    public static XMPPStreamFeatures of(@NotNull final Type.SASLMechanism... mechanisms) {
         final var features = new XMPPStreamFeatures(Type.SASL);
         features.setMechanisms(mechanisms);
 
@@ -36,7 +36,7 @@ public final class XMPPStreamFeatures implements XMPPUnit {
     }
 
     @NotNull
-    public SASLMechanism[] mechanisms() {
+    public Type.SASLMechanism[] mechanisms() {
         if (mechanisms == null) {
             throw new IllegalStateException();
         }
@@ -44,7 +44,7 @@ public final class XMPPStreamFeatures implements XMPPUnit {
         return mechanisms;
     }
 
-    private void setMechanisms(@NotNull final SASLMechanism... mechanisms) {
+    private void setMechanisms(@NotNull final Type.SASLMechanism... mechanisms) {
         this.mechanisms = mechanisms;
     }
 
@@ -65,21 +65,31 @@ public final class XMPPStreamFeatures implements XMPPUnit {
         public String toString() {
             return namespace;
         }
-    }
 
-    public enum SASLMechanism {
-        PLAIN("PLAIN");
+        public enum SASLMechanism {
+            PLAIN("PLAIN");
 
-        @NotNull
-        private final String value;
+            @NotNull
+            private final String value;
 
-        SASLMechanism(@NotNull final String value) {
-            this.value = value;
-        }
+            SASLMechanism(@NotNull final String value) {
+                this.value = value;
+            }
 
-        @Override
-        public String toString() {
-            return value;
+            public static boolean isSupported(@NotNull final String mechanism) {
+                for (final var m : values()) {
+                    if (m.value.equals(mechanism)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public String toString() {
+                return value;
+            }
         }
     }
 }

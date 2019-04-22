@@ -16,7 +16,8 @@ class XMPPUnitSerializerTest {
 
     @Test
     void testStreamHeaderSerialization() {
-        final var expectedStreamHeader = "<stream:stream " +
+        final var expectedStreamHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<stream:stream " +
                 "from=\"juliet@im.example.com\" " +
                 "to=\"im.example.com\" " +
                 "version=\"1.0\" " +
@@ -40,7 +41,7 @@ class XMPPUnitSerializerTest {
                 "</mechanisms>" +
                 "</stream:features>";
 
-        final var streamFeatures = XMPPStreamFeatures.of(XMPPStreamFeatures.SASLMechanism.PLAIN);
+        final var streamFeatures = XMPPStreamFeatures.of(XMPPStreamFeatures.Type.SASLMechanism.PLAIN);
 
         final var baos = new ByteArrayOutputStream();
         baos.writeBytes(serializer.serialize(streamFeatures));

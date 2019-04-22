@@ -13,7 +13,17 @@ public final class XMPPUnitSerializer {
     @NotNull
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     @NotNull
+    private final String encoding;
+    @NotNull
     private final XMLStreamWriter writer;
+    @SuppressWarnings("unchecked")
+    @NotNull
+    private final Consumer<XMPPStreamFeatures>[] streamFeatureSerializers = new Consumer[]{
+            (tls) -> {
+            },
+            (Consumer<XMPPStreamFeatures>) this::serializeStreamFeaturesSASL,
+            (Consumer<XMPPStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
+    };
     @SuppressWarnings("unchecked")
     @NotNull
     private final Consumer<? super XMPPUnit>[] serializers = new Consumer[]{
@@ -22,15 +32,9 @@ public final class XMPPUnitSerializer {
             (Consumer<XMPPStanza>) this::serializeStanza,
             (Consumer<XMPPError>) this::serializeError,
     };
-    @SuppressWarnings("unchecked")
-    @NotNull
-    private final Consumer<XMPPStreamFeatures>[] streamFeatureSerializers = new Consumer[]{
-            (tls) -> {},
-            (Consumer<XMPPStreamFeatures>) this::serializeStreamFeaturesSASL,
-            (Consumer<XMPPStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
-    };
 
     public XMPPUnitSerializer(@NotNull final String encoding) {
+        this.encoding = encoding;
         final var factory = XMLOutputFactory.newFactory();
         //TODO
         try {
@@ -52,10 +56,15 @@ public final class XMPPUnitSerializer {
 
     private void serializeStreamHeader(@NotNull final XMPPStreamHeader streamHeader) {
         try {
+            writer.writeStartDocument(encoding, "1.0");
             writer.writeStartElement("stream", "stream", XMPPStreamHeader.STREAM_NAMESPACE);
             final var from = streamHeader.from();
             if (from != null) {
                 writer.writeAttribute("from", from);
+            }
+            final var id = streamHeader.id();
+            if (id != null) {
+                writer.writeAttribute("id", id);
             }
             final var to = streamHeader.to();
             if (to != null) {
@@ -66,6 +75,7 @@ public final class XMPPUnitSerializer {
             writer.writeDefaultNamespace(streamHeader.contentNamespace().toString());
             writer.writeNamespace("stream", XMPPStreamHeader.STREAM_NAMESPACE);
             writer.writeCharacters(null);
+            writer.flush();
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }

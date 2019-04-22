@@ -44,7 +44,7 @@ final class BlockingXMPPServer implements XMPPServer {
                 final var socket = serverSocket.accept();
                 threadPool.submit(() -> {
                     try (final var initialStream = new XMPPInputStream(socket.getInputStream(), "UTF-8");
-                         final var responseStream = new XMPPOutputStream(socket.getOutputStream())) {
+                         final var responseStream = new XMPPOutputStream(socket.getOutputStream(), "UTF-8")) {
                         final var exchange = new XMPPExchange(initialStream, responseStream);
                         exchanges.add(exchange);
 
@@ -58,8 +58,6 @@ final class BlockingXMPPServer implements XMPPServer {
                     } catch (final XMPPIOException e) {
                         e.printStackTrace();
                     } catch (final IOException e) {
-                        e.printStackTrace();
-                    } catch (XMLStreamException e) {
                         e.printStackTrace();
                     }
                 });
