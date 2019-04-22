@@ -8,8 +8,7 @@ import com.lamtev.xmpp.messenger.utils.StringGenerator;
 import com.lamtev.xmpp.server.api.XMPPServer;
 import org.jetbrains.annotations.NotNull;
 
-import static com.lamtev.xmpp.core.XMPPStreamFeatures.SASLMechanism.PLAIN;
-import static com.lamtev.xmpp.core.XMPPStreamFeatures.Type.SASL;
+import static com.lamtev.xmpp.core.XMPPStreamFeatures.Type.SASLMechanism.PLAIN;
 
 public class Messenger {
 

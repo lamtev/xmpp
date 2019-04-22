@@ -7,7 +7,6 @@ import com.lamtev.xmpp.core.serialization.XMPPUnitSerializer;
 import gnu.trove.list.TByteList;
 import gnu.trove.list.array.TByteArrayList;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
@@ -21,9 +20,9 @@ public class XMPPOutputStream implements AutoCloseable {
     @NotNull
     private final TByteList buf = new TByteArrayList(1024);
 
-    public XMPPOutputStream(@NotNull final OutputStream out) throws XMLStreamException {
+    public XMPPOutputStream(@NotNull final OutputStream out, @NotNull final String encoding) {
         this.out = out;
-        this.serializer = new XMPPUnitSerializer("UTF-16");
+        this.serializer = new XMPPUnitSerializer(encoding);
     }
 
     public void open(@NotNull final XMPPStreamHeader header, @NotNull final XMPPStreamFeatures features) {

@@ -13,6 +13,10 @@ interface XMPPStreamParserStrategy {
         return "features".equals(element);
     }
 
+    static boolean isPotentialSASLNegotiation(@NotNull final String element) {
+        return "auth".equals(element);
+    }
+
     static boolean isPotentialStanza(@NotNull final String element) {
         return "message".equals(element) || "presence".equals(element) || "iq".equals(element);
     }
@@ -43,6 +47,8 @@ interface XMPPStreamParserStrategy {
 
     enum Name {
         STREAM_HEADER,
+        STREAM_FEATURES,
+        SASL_NEGOTIATION,
         STANZA,
         ERROR,
     }

@@ -12,6 +12,8 @@ final class XMPPStreamParserStrategyCache {
     @NotNull
     private final Function<XMLStreamReader, ? extends XMPPStreamParserStrategy>[] constructors = new Function[]{
             (Function<XMLStreamReader, XMPPStreamParserStrategyStreamHeader>) XMPPStreamParserStrategyStreamHeader::new,
+            (Function<XMLStreamReader, XMPPStreamParserStrategyStreamFeatures>) XMPPStreamParserStrategyStreamFeatures::new,
+            (Function<XMLStreamReader, XMPPStreamParserStrategySASLNegotiation>) XMPPStreamParserStrategySASLNegotiation::new,
             (Function<XMLStreamReader, XMPPStreamParserStrategyStanza>) XMPPStreamParserStrategyStanza::new,
             (Function<XMLStreamReader, XMPPStreamParserStrategyError>) XMPPStreamParserStrategyError::new,
     };
