@@ -26,7 +26,7 @@ public final class XMPPUnitSerializer {
     @NotNull
     private final Consumer<XMPPStreamFeatures>[] streamFeatureSerializers = new Consumer[]{
             (tls) -> {},
-            (Consumer<XMPPStreamFeatures>) this::serializeStreamFeaturesTLS,
+            (Consumer<XMPPStreamFeatures>) this::serializeStreamFeaturesSASL,
             (Consumer<XMPPStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
     };
 
@@ -75,12 +75,12 @@ public final class XMPPUnitSerializer {
         streamFeatureSerializers[streamFeatures.type().ordinal()].accept(streamFeatures);
     }
 
-    private void serializeStreamFeaturesTLS(@NotNull final XMPPStreamFeatures tls) {
+    private void serializeStreamFeaturesSASL(@NotNull final XMPPStreamFeatures sasl) {
         try {
             writer.writeStartElement("stream", "features", XMPPStreamHeader.STREAM_NAMESPACE);
             writer.writeStartElement("mechanisms");
-            writer.writeDefaultNamespace(XMPPStreamFeatures.Type.TLS.toString());
-            for (final var mechanism : tls.mechanisms()) {
+            writer.writeDefaultNamespace(XMPPStreamFeatures.Type.SASL.toString());
+            for (final var mechanism : sasl.mechanisms()) {
                 writer.writeStartElement("mechanism");
                 writer.writeCharacters(mechanism.toString());
                 writer.writeEndElement();
