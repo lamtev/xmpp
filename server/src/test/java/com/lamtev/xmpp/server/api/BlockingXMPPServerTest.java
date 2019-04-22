@@ -14,14 +14,14 @@ class BlockingXMPPServerTest {
         assertTimeoutPreemptively(ofSeconds(5), () -> {
             final var server = XMPPServer.of(XMPPServer.Mode.BLOCKING, 12345, Runtime.getRuntime().availableProcessors());
             final var t = new Thread(() -> {
-                server.setHandler((initialStream, responseStream) -> {
-                    if (initialStream.hasError()) {
-                        final var error = initialStream.error();
+                server.setHandler((exchange) -> {
+                    if (exchange.initialStream().hasError()) {
+                        final var error = exchange.initialStream().error();
                         //process error
                         return;
                     }
 
-                    final var unit = initialStream.unit();
+                    final var unit = exchange.initialStream().unit();
                     if (unit instanceof XMPPStreamHeader) {
                         final var streamHeader = (XMPPStreamHeader) unit;
                     } else if (unit instanceof XMPPStanza) {

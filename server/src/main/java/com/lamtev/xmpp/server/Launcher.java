@@ -1,5 +1,6 @@
 package com.lamtev.xmpp.server;
 
+import com.lamtev.xmpp.core.io.XMPPExchange;
 import com.lamtev.xmpp.core.io.XMPPInputStream;
 import com.lamtev.xmpp.core.io.XMPPOutputStream;
 import com.lamtev.xmpp.server.api.XMPPServer;
@@ -10,10 +11,7 @@ public class Launcher {
         final var server = XMPPServer.of(XMPPServer.Mode.BLOCKING, 12345, Runtime.getRuntime().availableProcessors());
         server.setHandler(new XMPPServer.Handler() {
             @Override
-            public void handle(@NotNull XMPPInputStream initialStream, @NotNull XMPPOutputStream responseStream) {
-
-            }
-
+            public void handle(@NotNull XMPPExchange exchange) {}
             { System.out.println("Yahoo!"); }
         });
         server.start();

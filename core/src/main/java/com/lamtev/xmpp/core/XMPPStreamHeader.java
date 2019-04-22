@@ -4,6 +4,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class XMPPStreamHeader implements XMPPUnit {
+    //Each stream header MUST be qualified by the namespace, so we don't declare it explicitly
+    public static final String STREAM_NAMESPACE = "http://etherx.jabber.org/streams";
     @Nullable
     private final String from;
     @Nullable
@@ -22,14 +24,17 @@ public final class XMPPStreamHeader implements XMPPUnit {
         this.contentNamespace = contentNamespace;
     }
 
+    @Nullable
     public String from() {
         return from;
     }
 
+    @Nullable
     public String to() {
         return to;
     }
 
+    @Nullable
     public String id() {
         return id;
     }
@@ -37,11 +42,15 @@ public final class XMPPStreamHeader implements XMPPUnit {
     public float version() {
         return version;
     }
-    //Each stream header MUST be qualified by the namespace, so we don't need to explicitly declare it
-    //private final String streamNamespace = "http://etherx.jabber.org/streams";
 
+    @NotNull
     public ContentNamespace contentNamespace() {
         return contentNamespace;
+    }
+
+    @Override
+    public int code() {
+        return CODE_STREAM_HEADER;
     }
 
     public enum ContentNamespace {
@@ -81,5 +90,4 @@ public final class XMPPStreamHeader implements XMPPUnit {
             return value;
         }
     }
-
 }

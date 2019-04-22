@@ -7,4 +7,9 @@ public final class XMPPStreamCloseTag implements XMPPUnit {
     public static final XMPPStreamCloseTag INSTANCE = new XMPPStreamCloseTag();
 
     private XMPPStreamCloseTag() {}
+
+    @Override
+    public int code() {
+        return 3;
+    }
 }

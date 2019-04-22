@@ -3,10 +3,18 @@ package com.lamtev.xmpp.core.parsing;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;
+import java.util.function.Function;
 
 final class XMPPStreamParserStrategyCache {
     @NotNull
     private final XMPPStreamParserStrategy[] cache = new XMPPStreamParserStrategy[XMPPStreamParserStrategy.Name.values().length];
+    @SuppressWarnings("unchecked")
+    @NotNull
+    private final Function<XMLStreamReader, ? extends XMPPStreamParserStrategy>[] constructors = new Function[]{
+            (Function<XMLStreamReader, XMPPStreamParserStrategyStreamHeader>) XMPPStreamParserStrategyStreamHeader::new,
+            (Function<XMLStreamReader, XMPPStreamParserStrategyStanza>) XMPPStreamParserStrategyStanza::new,
+            (Function<XMLStreamReader, XMPPStreamParserStrategyError>) XMPPStreamParserStrategyError::new,
+    };
     @NotNull
     private final XMLStreamReader reader;
     @NotNull
@@ -21,19 +29,7 @@ final class XMPPStreamParserStrategyCache {
     XMPPStreamParserStrategy get(@NotNull final XMPPStreamParserStrategy.Name name) {
         final var idx = name.ordinal();
         if (cache[idx] == null) {
-            switch (name) {
-                case STREAM_HEADER:
-                    cache[idx] = new XMPPStreamParserStrategyStreamHeader(reader);
-                    break;
-                case STANZA:
-                    cache[idx] = new XMPPStreamParserStrategyStanza(reader);
-                    break;
-                case ERROR:
-                    cache[idx] = new XMPPStreamParserStrategyError(reader);
-                    break;
-                default:
-                    throw new IllegalStateException("Enum " + name.getDeclaringClass().getName() + " value \"" + name.toString() + "\" is not yet supported :(");
-            }
+            cache[idx] = constructors[idx].apply(reader);
             cache[idx].setErrorObserver(errorObserver);
         }
 

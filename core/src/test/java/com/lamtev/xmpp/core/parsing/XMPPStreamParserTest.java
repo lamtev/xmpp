@@ -21,7 +21,7 @@ class XMPPStreamParserTest {
                 "       version='1.0'\n" +
                 "       xml:lang='en'\n" +
                 "       xmlns='jabber:client'\n" +
-                "       xmlns:stream='http://etherx.jabber.org/streams'/>";
+                "       xmlns:stream='http://etherx.jabber.org/streams'>";
         final var parser = new XMPPStreamParser(new ByteArrayInputStream(xml.getBytes(UTF_16)), "UTF-16");
         parser.setDelegate(new XMPPStreamParser.Delegate() {
             private int parserDidParseUnitCallCount = 0;

@@ -11,6 +11,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 
+import static com.lamtev.xmpp.core.parsing.XMPPStreamParserStrategy.Name.*;
 import static com.lamtev.xmpp.core.parsing.XMPPStreamParserStrategy.*;
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -52,11 +53,11 @@ public final class XMPPStreamParser {
                         final var elementName = reader.getLocalName();
                         if (detectingMessageType) {
                             if (isPotentialStreamHeader(elementName)) {
-                                strategy = cache.get(Name.STREAM_HEADER);
+                                strategy = cache.get(STREAM_HEADER);
                             } else if (isPotentialStanza(elementName)) {
-                                strategy = cache.get(XMPPStreamParserStrategy.Name.STANZA);
+                                strategy = cache.get(STANZA);
                             } else if (isPotentialError(elementName)) {
-                                strategy = cache.get(XMPPStreamParserStrategy.Name.ERROR);
+                                strategy = cache.get(ERROR);
                             } else {
                                 if (delegate != null) {
                                     delegate.parserDidFailWithError(Error.UNRECOGNIZED_ELEMENT);
@@ -66,6 +67,12 @@ public final class XMPPStreamParser {
                             detectingMessageType = false;
                         }
                         strategy.startElementReached();
+
+                        if (strategy.unitIsReady() && delegate != null) {
+                            System.out.println("didParseUnit");
+                            delegate.parserDidParseUnit(strategy.readyUnit());
+
+                        }
                         break;
                     case END_ELEMENT:
                         System.out.println("END_ELEMENT");

@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.xml.stream.XMLStreamReader;
 
 final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStrategy {
-
     @NotNull
     private final XMLStreamReader reader;
     @Nullable
@@ -39,7 +38,7 @@ final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStra
             final var namespaceURI = reader.getNamespaceURI(i);
             if (namespacePrefix == null && XMPPStreamHeader.ContentNamespace.isContentNamespace(namespaceURI)) {
                 contentNamespace = XMPPStreamHeader.ContentNamespace.of(namespaceURI);
-            } else if ("stream".equals(namespacePrefix) && "http://etherx.jabber.org/streams".equals(namespaceURI)) {
+            } else if ("stream".equals(namespacePrefix) && XMPPStreamHeader.STREAM_NAMESPACE.equals(namespaceURI)) {
                 hasStreamNamespace = true;
             }
             System.out.println("Namespace " + i + ": " + reader.getNamespacePrefix(i) + ":" + reader.getNamespaceURI(i));
@@ -52,7 +51,7 @@ final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStra
         if (!hasStreamNamespace || contentNamespace == null) {
             if (errorObserver != null) {
                 //TODO:
-                errorObserver.onError(XMPPStreamParser.Error.values()[0]);
+                errorObserver.onError(XMPPStreamParser.Error.INVALID_NAMESPACE);
                 return;
             }
         }
@@ -105,12 +104,14 @@ final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStra
             throw new IllegalStateException("");
         }
 
-        return streamHeader;
+        final var res = streamHeader;
+        streamHeader = null;
+
+        return res;
     }
 
     @Override
     public void setErrorObserver(@NotNull ErrorObserver observer) {
         errorObserver = observer;
     }
-
 }
