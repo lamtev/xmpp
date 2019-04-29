@@ -12,7 +12,6 @@ import java.util.concurrent.Executors;
  *
  */
 public interface XMPPServer {
-
     /**
      * @param mode
      * @param port
@@ -20,7 +19,7 @@ public interface XMPPServer {
      * @return
      */
     @NotNull
-    static XMPPServer of(@NotNull final Mode mode, int port, @NotNull final ExecutorService threadPool) {
+    static XMPPServer of(@NotNull final Mode mode, final int port, @NotNull final ExecutorService threadPool) {
         switch (mode) {
             case BLOCKING:
                 return new BlockingXMPPServer(port, threadPool);
@@ -37,7 +36,7 @@ public interface XMPPServer {
      * @return
      */
     @NotNull
-    static XMPPServer of(@NotNull final Mode mode, int port, int nThreads) {
+    static XMPPServer of(@NotNull final Mode mode, final int port, int nThreads) {
         return XMPPServer.of(mode, port, Executors.newFixedThreadPool(nThreads));
     }
 
@@ -73,5 +72,4 @@ public interface XMPPServer {
          */
         void handle(@NotNull final XMPPExchange exchange);
     }
-
 }

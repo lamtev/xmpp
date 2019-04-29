@@ -1,13 +1,14 @@
 package com.lamtev.xmpp.core;
 
-public interface XMPPUnit {
+public interface XmppUnit {
     int CODE_STREAM_HEADER = 0;
     int CODE_STREAM_FEATURES = 1;
     int CODE_STANZA = 2;
     int CODE_ERROR = 3;
+    int CODE_SASL_AUTH_SUCCESS = 4;
 
     /**
-     * Unique sequential code associated with concrete XMPPUnit implementation.
+     * Unique sequential code associated with concrete XmppUnit implementation.
      * <p>
      * May be used for high-performance "switch" (or if-else-if) like in example below:
      *
@@ -15,7 +16,7 @@ public interface XMPPUnit {
      * {@code
      *
      * interface XMPPUnitAssociatedAction {
-     *     void perform(XMPPUnit unit);
+     *     void perform(XmppUnit unit);
      * }
      *
      * class Example {
@@ -26,7 +27,7 @@ public interface XMPPUnit {
      *       (unit) -> {}  // code == n
      *     };
      *
-     *     void example(XMPPUnit unit) {
+     *     void example(XmppUnit unit) {
      *         actions[unit.code()].perform(unit);
      *
      *         // instead of

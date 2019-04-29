@@ -1,8 +1,8 @@
 package com.lamtev.xmpp.core.parsing;
 
-import com.lamtev.xmpp.core.XMPPStreamCloseTag;
-import com.lamtev.xmpp.core.XMPPStreamHeader;
-import com.lamtev.xmpp.core.XMPPUnit;
+import com.lamtev.xmpp.core.XmppStreamCloseTag;
+import com.lamtev.xmpp.core.XmppStreamHeader;
+import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -27,20 +27,20 @@ class XMPPStreamParserTest {
             private int parserDidParseUnitCallCount = 0;
 
             @Override
-            public void parserDidParseUnit(@NotNull final XMPPUnit unit) {
+            public void parserDidParseUnit(@NotNull final XmppUnit unit) {
                 if (parserDidParseUnitCallCount == 0) {
-                    assertTrue(unit instanceof XMPPStreamHeader);
+                    assertTrue(unit instanceof XmppStreamHeader);
 
-                    final var header = (XMPPStreamHeader) unit;
+                    final var header = (XmppStreamHeader) unit;
 
                     assertEquals("juliet@im.example.com", header.from());
                     assertEquals("im.example.com", header.to());
                     assertNull(header.id());
                     assertEquals(1.0, header.version());
-                    assertSame(XMPPStreamHeader.ContentNamespace.CLIENT, header.contentNamespace());
+                    assertSame(XmppStreamHeader.ContentNamespace.CLIENT, header.contentNamespace());
                     assertEquals("jabber:client", header.contentNamespace().toString());
                 } else if (parserDidParseUnitCallCount == 1) {
-                    assertTrue(unit instanceof XMPPStreamCloseTag);
+                    assertTrue(unit instanceof XmppStreamCloseTag);
                 } else {
                     fail("In that case there must be exactly 2 calls of parserDidParseUnit()");
                 }
@@ -49,7 +49,8 @@ class XMPPStreamParserTest {
             }
 
             @Override
-            public void parserDidFailWithError(@NotNull final XMPPStreamParser.Error error) {}
+            public void parserDidFailWithError(@NotNull final XMPPStreamParser.Error error) {
+            }
         });
         parser.startParsing();
     }

@@ -1,7 +1,7 @@
 package com.lamtev.xmpp.core.serialization;
 
-import com.lamtev.xmpp.core.XMPPStreamFeatures;
-import com.lamtev.xmpp.core.XMPPStreamHeader;
+import com.lamtev.xmpp.core.XmppStreamFeatures;
+import com.lamtev.xmpp.core.XmppStreamHeader;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +10,7 @@ import java.io.ByteArrayOutputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class XMPPUnitSerializerTest {
+class XmppUnitSerializerTest {
     @NotNull
     private static final XMPPUnitSerializer serializer = new XMPPUnitSerializer("UTF-8");
 
@@ -25,7 +25,7 @@ class XMPPUnitSerializerTest {
                 "xmlns=\"jabber:client\" " +
                 "xmlns:stream=\"http://etherx.jabber.org/streams\">";
 
-        final var streamHeader = new XMPPStreamHeader("juliet@im.example.com", "im.example.com", null, 1.0f, XMPPStreamHeader.ContentNamespace.CLIENT);
+        final var streamHeader = new XmppStreamHeader("juliet@im.example.com", "im.example.com", null, 1.0f, XmppStreamHeader.ContentNamespace.CLIENT);
 
         final var baos = new ByteArrayOutputStream();
         baos.writeBytes(serializer.serialize(streamHeader));
@@ -41,7 +41,7 @@ class XMPPUnitSerializerTest {
                 "</mechanisms>" +
                 "</stream:features>";
 
-        final var streamFeatures = XMPPStreamFeatures.of(XMPPStreamFeatures.Type.SASLMechanism.PLAIN);
+        final var streamFeatures = XmppStreamFeatures.of(XmppStreamFeatures.Type.SASLMechanism.PLAIN);
 
         final var baos = new ByteArrayOutputStream();
         baos.writeBytes(serializer.serialize(streamFeatures));
@@ -55,7 +55,7 @@ class XMPPUnitSerializerTest {
                 "<bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\"/>" +
                 "</stream:features>";
 
-        final var streamFeatures = XMPPStreamFeatures.of(XMPPStreamFeatures.Type.RESOURCE_BINDING);
+        final var streamFeatures = XmppStreamFeatures.of(XmppStreamFeatures.Type.RESOURCE_BINDING);
 
         final var baos = new ByteArrayOutputStream();
         baos.writeBytes(serializer.serialize(streamFeatures));

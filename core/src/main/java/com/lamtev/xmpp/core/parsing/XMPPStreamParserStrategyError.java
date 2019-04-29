@@ -1,6 +1,6 @@
 package com.lamtev.xmpp.core.parsing;
 
-import com.lamtev.xmpp.core.XMPPUnit;
+import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;
@@ -33,7 +33,7 @@ final class XMPPStreamParserStrategyError implements XMPPStreamParserStrategy {
 
     @Override
     @NotNull
-    public XMPPUnit readyUnit() {
+    public XmppUnit readyUnit() {
         return null;
     }
 

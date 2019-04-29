@@ -1,5 +1,6 @@
 package com.lamtev.xmpp.core.parsing;
 
+import com.lamtev.xmpp.core.util.ActionCache;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;

@@ -1,9 +1,9 @@
 package com.lamtev.xmpp.core.parsing;
 
-import com.lamtev.xmpp.core.XMPPStreamCloseTag;
+import com.lamtev.xmpp.core.XmppStreamCloseTag;
 import org.jetbrains.annotations.NotNull;
 
-public class XMPPStreamParserStrategyStreamCloseTag implements XMPPStreamParserStrategy {
+final class XMPPStreamParserStrategyStreamCloseTag implements XMPPStreamParserStrategy {
     @Override
     public void startElementReached() {
 
@@ -25,8 +25,8 @@ public class XMPPStreamParserStrategyStreamCloseTag implements XMPPStreamParserS
     }
 
     @Override
-    public @NotNull XMPPStreamCloseTag readyUnit() {
-        return XMPPStreamCloseTag.INSTANCE;
+    public @NotNull XmppStreamCloseTag readyUnit() {
+        return XmppStreamCloseTag.INSTANCE;
     }
 
     @Override

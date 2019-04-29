@@ -4,22 +4,22 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public final class XMPPStreamFeatures implements XMPPUnit {
+public final class XmppStreamFeatures implements XmppUnit {
     @NotNull
     private final Type type;
     @Nullable
     private Type.SASLMechanism[] mechanisms;
 
-    private XMPPStreamFeatures(@NotNull final Type type) {
+    private XmppStreamFeatures(@NotNull final Type type) {
         this.type = type;
     }
 
-    public static XMPPStreamFeatures of(@NotNull final Type type) {
-        return new XMPPStreamFeatures(type);
+    public static XmppStreamFeatures of(@NotNull final Type type) {
+        return new XmppStreamFeatures(type);
     }
 
-    public static XMPPStreamFeatures of(@NotNull final Type.SASLMechanism... mechanisms) {
-        final var features = new XMPPStreamFeatures(Type.SASL);
+    public static XmppStreamFeatures of(@NotNull final Type.SASLMechanism... mechanisms) {
+        final var features = new XmppStreamFeatures(Type.SASL);
         features.setMechanisms(mechanisms);
 
         return features;

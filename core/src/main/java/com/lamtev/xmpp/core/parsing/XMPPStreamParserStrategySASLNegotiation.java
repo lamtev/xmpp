@@ -1,7 +1,7 @@
 package com.lamtev.xmpp.core.parsing;
 
-import com.lamtev.xmpp.core.XMPPSASLAuth;
-import com.lamtev.xmpp.core.XMPPStreamFeatures;
+import com.lamtev.xmpp.core.XmppSaslAuth;
+import com.lamtev.xmpp.core.XmppStreamFeatures;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,17 +10,17 @@ import java.util.Base64;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserStrategy {
+final class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserStrategy {
     @NotNull
     private final XMLStreamReader reader;
     @NotNull
     private ErrorObserver errorObserver;
     @Nullable
-    private XMPPStreamFeatures.Type.SASLMechanism authMechanism;
+    private XmppStreamFeatures.Type.SASLMechanism authMechanism;
     @Nullable
     private String authBody;
     @Nullable
-    private XMPPSASLAuth auth;
+    private XmppSaslAuth auth;
 
     XMPPStreamParserStrategySASLNegotiation(@NotNull final XMLStreamReader reader) {
         this.reader = reader;
@@ -30,7 +30,7 @@ class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserStrateg
     public void startElementReached() {
         final var elementName = reader.getLocalName();
         final var namespaceURI = reader.getNamespaceURI(0);
-        if (!XMPPStreamFeatures.Type.SASL.toString().equals(namespaceURI)) {
+        if (!XmppStreamFeatures.Type.SASL.toString().equals(namespaceURI)) {
             //TODO failure
 
             return;
@@ -42,8 +42,8 @@ class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserStrateg
                     switch (reader.getAttributeLocalName(idx)) {
                         case "mechanism":
                             final var mechanism = reader.getAttributeValue(idx);
-                            if (XMPPStreamFeatures.Type.SASLMechanism.isSupported(mechanism)) {
-                                authMechanism = XMPPStreamFeatures.Type.SASLMechanism.valueOf(mechanism);
+                            if (XmppStreamFeatures.Type.SASLMechanism.isSupported(mechanism)) {
+                                authMechanism = XmppStreamFeatures.Type.SASLMechanism.valueOf(mechanism);
                             } else {
                                 errorObserver.onError(XMPPStreamParser.Error.SASL_INVALID_MECHANISM);
                                 return;
@@ -63,16 +63,8 @@ class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserStrateg
         if (authMechanism == null || authBody == null) {
             throw new IllegalStateException();
         }
-
-        auth = new XMPPSASLAuth(authMechanism, authBody);
-        final var x = new String(Base64.getDecoder().decode(authBody.getBytes(UTF_8)));
-        final var logPass = x.split("\0");
-        System.out.println(logPass[1]);
-        System.out.println(logPass[2]);
-        System.out.println(x);
-        for (final var xe : x.toCharArray()) {
-            System.out.println((int) xe);
-        }
+        System.out.println("auth received");
+        auth = new XmppSaslAuth(authMechanism, authBody);
     }
 
     @Override
@@ -87,7 +79,7 @@ class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserStrateg
 
     @Override
     @NotNull
-    public XMPPSASLAuth readyUnit() {
+    public XmppSaslAuth readyUnit() {
         if (auth == null) {
             throw new IllegalStateException();
         }
