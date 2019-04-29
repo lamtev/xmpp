@@ -1,0 +1,75 @@
+\include{settings}
+
+\begin{document}
+
+\include{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Введение}
+
+В качестве объекта тестирования была выбрана реализация протокола \code{XMPP} на языке Java. Реализация протокола \code{XMPP} разрабатывалась частично согласно методологии \code{Test Driven Development} (TDD). Некоторые автоматические модульные тесты были написаны еще до реализации самих модулей. А некоторые тесты были написаны уже пост фактум, что противоречит методологии TDD. Метрикой оценивания качества тестирования был выбран процент покрытия. Для выполнения автоматических тестов была автоматизирована непрерывная интеграция: при пуше изменений в гит репозиторий на сервере непрерывной интеграции выполняется все тесты и результат их выполнения отправляется на почту.
+
+\section{Автоматические модульные тесты}
+
+Для модульного автоматического тестирования использовалась библиотека \code{JUnit Jupiter} 5.4.1.
+
+Для классов, содержащих какую-либо бизнес-логику, были написаны тестовые классы. Рассмотрим тестируемые классы и тестовые сценарии:
+
+\begin{itemize}
+	\item \textbf{Тестируемый класс:} \code{XmppStreamParser}. Реализует функциональность парсинга XMPP модулей (различных XML элементов) среди непрерывного потока текстовых данных.
+	
+	\textbf{Тестирующий класс:} \code{XmppStreamParserTest}
+	
+	\textbf{Тестовые сценарии:} на вход подаются данные, содержащие различные XMPP модули, такие, как \textbf{stream header}, \textbf{stream features}, \textbf{SASL auth}, \textbf{stanza}, \textbf{error} и другие. Выходные объекты, соответствующие поданным на вход XMPP модулям, сравниваются с ожидаемыми.
+	
+	
+	\item \textbf{Тестируемый класс:} \code{XmppStreamParserStrategyCache}. Реализует функциональность кэширования и дедупликации объектов стратегий.
+	
+	\textbf{Тестирующий класс:} \code{XmppStreamParserStrategyCacheTest}
+	
+	\textbf{Тестовые сценарии:} проверка того, что кэш отдает не нули. И проверка того, что кэш для одинаковых ключей отдает одни и те же объекты (сравнение не по значению, а по ссылке).
+	
+	
+	\item \textbf{Тестируемый класс:} \code{XmppUnitSerializer}. Реализует функциональность сериализатора XMPP модулей в массив байтов.
+	
+	\textbf{Тестирующий класс:} \code{XmppUnitSerializerTest}
+	
+	\textbf{Тестовые сценарии:} на вход подаются все виды XMPP модулей. Выходные массивы байтов сравниваются с ожидаемыми.
+	
+	
+	\item \textbf{Тестируемый класс:} \code{XmppInputStream}. Реализует поток, который позволяет читать из сокета сразу XMPP модули. В терминологии протокола данный класс может выполнять роль Initial Stream для сервера и Response stream для клиента.
+	
+	\textbf{Тестирующий класс:} \code{XmppInputStreamTest}
+	
+	\textbf{Тестовые сценарии:} на вход подается поток текстовых данных, содержащих, XMPP модули. Выходные данные сравниваются с ожидаемыми.
+	
+	
+	\item  \textbf{Тестируемый класс:} \code{XmppOutputStream}. Реализует поток, который позволяет писать в сокет XMPP модули. В терминологии протокола данный класс может выполнять роль Initial Stream для клиента и Response stream для сервера.
+	
+	\textbf{Тестирующий класс:} \code{XmppOutputStreamTest}
+	
+	\textbf{Тестовые сценарии:} на вход подаются XMPP модули. Выходные данные сравниваются с ожидаемыми.
+\end{itemize}
+
+\section{Процент покрытия}
+
+Процент покрытия считается с помощью утилиты \code{JaCoCo}. Ее работа организована с помощью \code{Gradle} плагина утилиты. Для детализации покрытия используется сервис \href{https://codecov.io/gh/lamtev/xmpp}{\code{codecov.io}}\footnote{\href{https://codecov.io/gh/lamtev/xmpp}{https://codecov.io/gh/lamtev/xmpp}}.
+
+\textbf{Процент покрытия:} 61.
+
+\section{Непрерывная интеграция}
+
+Сервер непрерывной интеграции развернут с помощью сервиса \href{https://travis-ci.org/lamtev/xmpp}{\code{travis-ci.org}}\footnote{\href{https://travis-ci.org/lamtev/xmpp}{https://travis-ci.org/lamtev/xmpp}}.
+
+Конфиг \code{travis-ci} представлен в листинге \ref{lst:travis.yml} \lstinputlisting[caption={\code{.travis.yml}},label={lst:travis.yml},basicstyle=\scriptsize]{../.travis.yml}
+
+Сборка проекта и прогон тестов осуществляется внутри \href{https://cloud.docker.com/u/lamtev/repository/docker/lamtev/java}{\code{docker контейнера}}\footnote{\href{https://cloud.docker.com/u/lamtev/repository/docker/lamtev/java}{https://cloud.docker.com/u/lamtev/repository/docker/lamtev/java}}. При успешной сборке результаты расчета процента покрытия отправляются в сервис \code{codecov.io}, о котором упомянуто в предыдущем разделе.
+
+
+\section{Заключение}
+
+Разработанные тесты позволяли своевременно на этапе разработке обнаруживать проблемы. Ипользуемые инструменты тестирования позволили повысить качество реализации протокола XMPP. Проект с тестами расположен на \href{https://github.com/lamtev/xmpp}{\code{https://github.com/lamtev/xmpp}}.
+
+\end{document}
