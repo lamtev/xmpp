@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static java.nio.charset.StandardCharsets.UTF_16;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -49,7 +50,8 @@ class XmppStreamParserTest {
             }
 
             @Override
-            public void parserDidFailWithError(@NotNull final XmppStreamParser.Error error) {}
+            public void parserDidFailWithError(@NotNull final XmppStreamParser.Error error) {
+            }
         });
         parser.startParsing();
         inputStream.close();
@@ -96,11 +98,12 @@ class XmppStreamParserTest {
         parser.setDelegate(new XmppStreamParser.Delegate() {
             @Override
             public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                final var auth = (XmppStanza) unit;
+                final var resBindingStanza = (XmppStanza) unit;
 
-                assertEquals("yhc13a95", auth.id());
-                assertSame(XmppStanza.IqTypeAttribute.SET, auth.type());
-                assertEquals("balcony", auth.resource());
+                assertEquals(IQ, resBindingStanza.kind());
+                assertEquals("yhc13a95", resBindingStanza.id());
+                assertSame(XmppStanza.IqTypeAttribute.SET, resBindingStanza.type());
+                assertEquals("balcony", resBindingStanza.resource());
             }
 
             @Override
