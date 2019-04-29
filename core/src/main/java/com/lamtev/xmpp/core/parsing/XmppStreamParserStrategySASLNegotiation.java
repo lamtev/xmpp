@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
 
-final class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserStrategy {
+final class XmppStreamParserStrategySASLNegotiation implements XmppStreamParserStrategy {
     @NotNull
     private final XMLStreamReader reader;
     @NotNull
@@ -19,7 +19,7 @@ final class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserS
     @Nullable
     private XmppSaslAuth auth;
 
-    XMPPStreamParserStrategySASLNegotiation(@NotNull final XMLStreamReader reader) {
+    XmppStreamParserStrategySASLNegotiation(@NotNull final XMLStreamReader reader) {
         this.reader = reader;
     }
 

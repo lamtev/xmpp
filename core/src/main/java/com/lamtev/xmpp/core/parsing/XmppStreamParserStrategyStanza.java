@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
 
-final class XMPPStreamParserStrategyStanza implements XMPPStreamParserStrategy {
+final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
     @NotNull
     private final XMLStreamReader reader;
 
@@ -25,7 +25,7 @@ final class XMPPStreamParserStrategyStanza implements XMPPStreamParserStrategy {
     @Nullable
     private XmppStanza stanza;
 
-    XMPPStreamParserStrategyStanza(@NotNull final XMLStreamReader reader) {
+    XmppStreamParserStrategyStanza(@NotNull final XMLStreamReader reader) {
         this.reader = reader;
     }
 

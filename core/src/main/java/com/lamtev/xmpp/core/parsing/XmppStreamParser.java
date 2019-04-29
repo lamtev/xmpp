@@ -12,8 +12,8 @@ import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import static com.lamtev.xmpp.core.parsing.XMPPStreamParserStrategy.Name.*;
-import static com.lamtev.xmpp.core.parsing.XMPPStreamParserStrategy.*;
+import static com.lamtev.xmpp.core.parsing.XmppStreamParserStrategy.Name.*;
+import static com.lamtev.xmpp.core.parsing.XmppStreamParserStrategy.*;
 import static javax.xml.stream.XMLStreamConstants.*;
 
 public final class XmppStreamParser {
@@ -26,21 +26,21 @@ public final class XmppStreamParser {
     @Nullable
     private Delegate delegate;
     @NotNull
-    private Deque<XMPPStreamParserStrategy> strategyStack = new ArrayDeque<>(5);
+    private Deque<XmppStreamParserStrategy> strategyStack = new ArrayDeque<>(5);
 
-    public XmppStreamParser(@NotNull final InputStream inputStream, @NotNull final String encoding) throws XMPPStreamParserException {
+    public XmppStreamParser(@NotNull final InputStream inputStream, @NotNull final String encoding) throws XmppStreamParserException {
         try {
             in = inputStream;
             factory = XMLInputFactory.newInstance();
             reader = factory.createXMLStreamReader(inputStream, encoding);
         } catch (final XMLStreamException e) {
             final var message = "" + e.getMessage();
-            throw new XMPPStreamParserException(message, e);
+            throw new XmppStreamParserException(message, e);
         }
     }
 
     public void startParsing() {
-        final var cache = new XMPPStreamParserStrategyCache(reader, (error) -> {
+        final var cache = new XmppStreamParserStrategyCache(reader, (error) -> {
             if (delegate != null) {
                 delegate.parserDidFailWithError(error);
             }
@@ -53,7 +53,7 @@ public final class XmppStreamParser {
                 switch (event) {
                     case START_ELEMENT: {
                         final var elementName = reader.getLocalName();
-                        XMPPStreamParserStrategy strategy = null;
+                        XmppStreamParserStrategy strategy = null;
                         if (isPotentialStreamHeader(elementName)) {
                             strategy = cache.get(STREAM_HEADER);
                         } else if (isPotentialSASLNegotiation(elementName)) {

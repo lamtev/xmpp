@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public final class XMPPUnitSerializer {
+public final class XmppUnitSerializer {
     @NotNull
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     @NotNull
@@ -35,7 +35,7 @@ public final class XMPPUnitSerializer {
             (Consumer<XmppSaslAuthSuccess>) this::serializeSaslAuthSuccess,
 };
 
-    public XMPPUnitSerializer(@NotNull final String encoding) {
+    public XmppUnitSerializer(@NotNull final String encoding) {
         this.encoding = encoding;
         final var factory = XMLOutputFactory.newFactory();
         //TODO

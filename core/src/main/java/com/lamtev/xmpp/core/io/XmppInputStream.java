@@ -3,7 +3,7 @@ package com.lamtev.xmpp.core.io;
 import com.lamtev.xmpp.core.XmppStreamFeatures;
 import com.lamtev.xmpp.core.XmppUnit;
 import com.lamtev.xmpp.core.parsing.XmppStreamParser;
-import com.lamtev.xmpp.core.parsing.XMPPStreamParserException;
+import com.lamtev.xmpp.core.parsing.XmppStreamParserException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 //TODO: change exchange state
-public final class XMPPInputStream implements AutoCloseable, XmppStreamParser.Delegate {
+public final class XmppInputStream implements AutoCloseable, XmppStreamParser.Delegate {
     @NotNull
     private final InputStream in;
     @NotNull
@@ -32,17 +32,17 @@ public final class XMPPInputStream implements AutoCloseable, XmppStreamParser.De
     @Nullable
     private XmppStreamParser.Error error;
     @Nullable
-    private XMPPExchange exchange;
+    private XmppExchange exchange;
 
-    public XMPPInputStream(@NotNull final InputStream in, @NotNull final String encoding) throws XMPPIOException {
+    public XmppInputStream(@NotNull final InputStream in, @NotNull final String encoding) throws XmppIOException {
         try {
             this.in = in;
             this.encoding = encoding;
             this.parser = new XmppStreamParser(in, encoding);
             this.parser.setDelegate(this);
-        } catch (final XMPPStreamParserException e) {
+        } catch (final XmppStreamParserException e) {
             final var message = "" + e.getMessage();
-            throw new XMPPIOException(message, e);
+            throw new XmppIOException(message, e);
         }
     }
 
@@ -87,7 +87,7 @@ public final class XMPPInputStream implements AutoCloseable, XmppStreamParser.De
         return unit;
     }
 
-    void setExchange(@NotNull final XMPPExchange exchange) {
+    void setExchange(@NotNull final XmppExchange exchange) {
         this.exchange = exchange;
     }
 
@@ -109,19 +109,19 @@ public final class XMPPInputStream implements AutoCloseable, XmppStreamParser.De
 
     private void tlsFeaturesReceived() {
         if (exchange != null) {
-            exchange.setState(XMPPExchange.State.TLS_NEGOTIATION);
+            exchange.setState(XmppExchange.State.TLS_NEGOTIATION);
         }
     }
 
     private void saslFeaturesReceived() {
         if (exchange != null) {
-            exchange.setState(XMPPExchange.State.SASL_NEGOTIATION);
+            exchange.setState(XmppExchange.State.SASL_NEGOTIATION);
         }
     }
 
     private void bindingFeaturesReceived() {
         if (exchange != null) {
-            exchange.setState(XMPPExchange.State.RESOURCE_BINDING);
+            exchange.setState(XmppExchange.State.RESOURCE_BINDING);
         }
     }
 

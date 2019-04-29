@@ -4,7 +4,7 @@ import com.lamtev.xmpp.core.XmppSaslAuthSuccess;
 import com.lamtev.xmpp.core.XmppStreamFeatures;
 import com.lamtev.xmpp.core.XmppStreamHeader;
 import com.lamtev.xmpp.core.XmppUnit;
-import com.lamtev.xmpp.core.serialization.XMPPUnitSerializer;
+import com.lamtev.xmpp.core.serialization.XmppUnitSerializer;
 import gnu.trove.list.TByteList;
 import gnu.trove.list.array.TByteArrayList;
 import org.jetbrains.annotations.NotNull;
@@ -13,17 +13,17 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public final class XMPPOutputStream implements AutoCloseable {
+public final class XmppOutputStream implements AutoCloseable {
     @NotNull
     private final OutputStream out;
     @NotNull
     private final String encoding;
     @NotNull
-    private final XMPPUnitSerializer serializer;
+    private final XmppUnitSerializer serializer;
     @NotNull
     private final TByteList buf = new TByteArrayList(1024);
     @Nullable
-    private XMPPExchange exchange;
+    private XmppExchange exchange;
     //TODO: clearer name
     @NotNull
     private final Runnable[] featureProcessors = new Runnable[]{
@@ -35,10 +35,10 @@ public final class XMPPOutputStream implements AutoCloseable {
     @Nullable
     private Runnable batchFeatureProcessor;
 
-    public XMPPOutputStream(@NotNull final OutputStream out, @NotNull final String encoding) {
+    public XmppOutputStream(@NotNull final OutputStream out, @NotNull final String encoding) {
         this.out = out;
         this.encoding = encoding;
-        this.serializer = new XMPPUnitSerializer(encoding);
+        this.serializer = new XmppUnitSerializer(encoding);
     }
 
     public void open(@NotNull final XmppStreamHeader header, @NotNull final XmppStreamFeatures features) {
@@ -69,7 +69,7 @@ public final class XMPPOutputStream implements AutoCloseable {
 
         if (unit instanceof XmppSaslAuthSuccess) {
             if (exchange != null) {
-                exchange.setState(XMPPExchange.State.RESOURCE_BINDING);
+                exchange.setState(XmppExchange.State.RESOURCE_BINDING);
             }
         }
     }
@@ -102,25 +102,25 @@ public final class XMPPOutputStream implements AutoCloseable {
 
     }
 
-    void setExchange(@NotNull final XMPPExchange exchange) {
+    void setExchange(@NotNull final XmppExchange exchange) {
         this.exchange = exchange;
     }
 
     private void tlsFeaturesSent() {
         if (exchange != null) {
-            exchange.setState(XMPPExchange.State.TLS_NEGOTIATION);
+            exchange.setState(XmppExchange.State.TLS_NEGOTIATION);
         }
     }
 
     private void saslFeaturesSent() {
         if (exchange != null) {
-            exchange.setState(XMPPExchange.State.SASL_NEGOTIATION);
+            exchange.setState(XmppExchange.State.SASL_NEGOTIATION);
         }
     }
 
     private void bindingFeaturesSent() {
         if (exchange != null) {
-            exchange.setState(XMPPExchange.State.RESOURCE_BINDING);
+            exchange.setState(XmppExchange.State.RESOURCE_BINDING);
         }
     }
 }

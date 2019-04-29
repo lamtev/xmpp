@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-class XMPPInputStreamTest {
+class XmppInputStreamTest {
     @Test
     void test() throws Throwable {
         String xml = "<?xml version='1.0' encoding='UTF-16'?>" +
@@ -18,7 +18,7 @@ class XMPPInputStreamTest {
                 "       xmlns:stream='http://etherx.jabber.org/streams'/>";
         ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_16));
 
-        XMPPInputStream initialStream = new XMPPInputStream(stream, "UTF-16");
+        XmppInputStream initialStream = new XmppInputStream(stream, "UTF-16");
         initialStream.setHandler(() -> {
             if (initialStream.hasError()) {
                 System.out.println(initialStream.error());

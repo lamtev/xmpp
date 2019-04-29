@@ -1,9 +1,9 @@
 package com.lamtev.xmpp.server.api;
 
-import com.lamtev.xmpp.core.io.XMPPExchange;
-import com.lamtev.xmpp.core.io.XMPPIOException;
-import com.lamtev.xmpp.core.io.XMPPInputStream;
-import com.lamtev.xmpp.core.io.XMPPOutputStream;
+import com.lamtev.xmpp.core.io.XmppExchange;
+import com.lamtev.xmpp.core.io.XmppIOException;
+import com.lamtev.xmpp.core.io.XmppInputStream;
+import com.lamtev.xmpp.core.io.XmppOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +20,7 @@ final class BlockingXMPPServer implements XMPPServer {
     @NotNull
     private final ExecutorService threadPool;
     @NotNull
-    private final Set<XMPPExchange> exchanges = ConcurrentHashMap.newKeySet();
+    private final Set<XmppExchange> exchanges = ConcurrentHashMap.newKeySet();
     @NotNull
     private final AtomicBoolean isRunning = new AtomicBoolean(true);
     @Nullable
@@ -42,9 +42,9 @@ final class BlockingXMPPServer implements XMPPServer {
             while (isRunning.get()) {
                 final var socket = serverSocket.accept();
                 threadPool.submit(() -> {
-                    try (final var initialStream = new XMPPInputStream(socket.getInputStream(), "UTF-8");
-                         final var responseStream = new XMPPOutputStream(socket.getOutputStream(), "UTF-8")) {
-                        final var exchange = new XMPPExchange(initialStream, responseStream);
+                    try (final var initialStream = new XmppInputStream(socket.getInputStream(), "UTF-8");
+                         final var responseStream = new XmppOutputStream(socket.getOutputStream(), "UTF-8")) {
+                        final var exchange = new XmppExchange(initialStream, responseStream);
                         exchanges.add(exchange);
 
                         initialStream.setHandler(() -> {
@@ -54,7 +54,7 @@ final class BlockingXMPPServer implements XMPPServer {
                         });
 
                         initialStream.open();
-                    } catch (final XMPPIOException e) {
+                    } catch (final XmppIOException e) {
                         e.printStackTrace();
                     } catch (final IOException e) {
                         e.printStackTrace();

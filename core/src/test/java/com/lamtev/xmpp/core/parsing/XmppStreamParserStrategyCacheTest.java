@@ -11,21 +11,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class XmppStreamParserStrategyCacheTest {
     @NotNull
-    private static final XMPPStreamParserStrategy.Name[] names = XMPPStreamParserStrategy.Name.values();
+    private static final XmppStreamParserStrategy.Name[] names = XmppStreamParserStrategy.Name.values();
     @NotNull
-    private XMPPStreamParserStrategyCache cache;
+    private XmppStreamParserStrategyCache cache;
 
     @BeforeEach
     void setup() throws Exception {
         final var factory = XMLInputFactory.newFactory();
         final var reader = factory.createXMLStreamReader(new ByteArrayInputStream(new byte[0]));
 
-        cache = new XMPPStreamParserStrategyCache(reader, (error) -> fail("Unexpected error: " + error));
+        cache = new XmppStreamParserStrategyCache(reader, (error) -> fail("Unexpected error: " + error));
     }
 
     @Test
     void testCacheGetReturnsNotNull() {
-        for (final var name : XMPPStreamParserStrategy.Name.values()) {
+        for (final var name : XmppStreamParserStrategy.Name.values()) {
             assertNotNull(cache.get(name));
         }
     }

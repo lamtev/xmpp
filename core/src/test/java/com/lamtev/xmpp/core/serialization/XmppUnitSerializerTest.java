@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class XmppUnitSerializerTest {
     @NotNull
-    private static final XMPPUnitSerializer serializer = new XMPPUnitSerializer("UTF-8");
+    private static final XmppUnitSerializer serializer = new XmppUnitSerializer("UTF-8");
 
     @Test
     void testStreamHeaderSerialization() throws IOException {

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class XmppStreamParserTest {
     @Test
-    void testValidStreamHeaderParsing() throws XMPPStreamParserException, IOException {
+    void testValidStreamHeaderParsing() throws XmppStreamParserException, IOException {
         final var xml = "<?xml version='1.0' encoding='UTF-16'?>" +
                 "<stream:stream\n" +
                 "       from='juliet@im.example.com'\n" +
@@ -58,7 +58,7 @@ class XmppStreamParserTest {
     }
 
     @Test
-    void testSaslAuthParsing() throws IOException, XMPPStreamParserException {
+    void testSaslAuthParsing() throws IOException, XmppStreamParserException {
         final var xml = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"\n" +
                 "mechanism=\"PLAIN\">AGFudG9uADEyMzQ1</auth>";
 
@@ -85,7 +85,7 @@ class XmppStreamParserTest {
     }
 
     @Test
-    void testResourceBindingIqParsing() throws XMPPStreamParserException, IOException {
+    void testResourceBindingIqParsing() throws XmppStreamParserException, IOException {
         final var xml = "<iq id='yhc13a95' type='set'>\n" +
                 "     <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>\n" +
                 "       <resource>balcony</resource>\n" +

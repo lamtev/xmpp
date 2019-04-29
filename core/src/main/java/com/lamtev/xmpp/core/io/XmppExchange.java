@@ -2,15 +2,15 @@ package com.lamtev.xmpp.core.io;
 
 import org.jetbrains.annotations.NotNull;
 
-public final class XMPPExchange {
+public final class XmppExchange {
     @NotNull
-    private final XMPPInputStream initialStream;
+    private final XmppInputStream initialStream;
     @NotNull
-    private final XMPPOutputStream responseStream;
+    private final XmppOutputStream responseStream;
     @NotNull
     private State state;
 
-    public XMPPExchange(@NotNull final XMPPInputStream initialStream, @NotNull final XMPPOutputStream responseStream) {
+    public XmppExchange(@NotNull final XmppInputStream initialStream, @NotNull final XmppOutputStream responseStream) {
         this.initialStream = initialStream;
         this.responseStream = responseStream;
         this.state = State.INITIAL;
@@ -20,12 +20,12 @@ public final class XMPPExchange {
     }
 
     @NotNull
-    public XMPPInputStream initialStream() {
+    public XmppInputStream initialStream() {
         return initialStream;
     }
 
     @NotNull
-    public XMPPOutputStream responseStream() {
+    public XmppOutputStream responseStream() {
         return responseStream;
     }
 
