@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 final class XMPPStreamParserStrategyStreamCloseTag implements XMPPStreamParserStrategy {
     @Override
-    public void startElementReached() {
+    public void startElementReached(String name) {
 
     }
 

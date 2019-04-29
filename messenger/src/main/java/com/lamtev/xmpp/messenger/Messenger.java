@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class Messenger implements XMPPServer.Handler{
+public class Messenger implements XMPPServer.Handler {
     @NotNull
     private final ConcurrentHashMap<XMPPExchange, User> users = new ConcurrentHashMap<>(10);
     @NotNull
@@ -98,6 +98,18 @@ public class Messenger implements XMPPServer.Handler{
                     );
 
                     responseStream.open(streamHeader, XmppStreamFeatures.of(XmppStreamFeatures.Type.RESOURCE_BINDING));
+                } else if (unit instanceof XmppStanza) {
+                    final var st = (XmppStanza) unit;
+
+                    System.out.println(st.resource());
+
+                    responseStream.sendUnit("<iq id='" + st.id() + "' type='result'>\n" +
+                            "     <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>\n" +
+                            "       <jid>\n" +
+                            "         anton@lamtev.com\n" +
+                            "       </jid>\n" +
+                            "     </bind>\n" +
+                            "   </iq>");
                 }
         }
 

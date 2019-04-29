@@ -30,7 +30,7 @@ final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStra
     }
 
     @Override
-    public void startElementReached() {
+    public void startElementReached(@NotNull final String name) {
         final int namespaceCount = reader.getNamespaceCount();
         for (int i = 0; i < namespaceCount; ++i) {
             final var namespacePrefix = reader.getNamespacePrefix(i);

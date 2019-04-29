@@ -12,7 +12,7 @@ final class XMPPStreamParserStrategyError implements XMPPStreamParserStrategy {
     }
 
     @Override
-    public void startElementReached() {
+    public void startElementReached(String name) {
 
     }
 
