@@ -1,6 +1,6 @@
 package com.lamtev.xmpp.core.parsing;
 
-import com.lamtev.xmpp.core.XMPPUnit;
+import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 
 interface XMPPStreamParserStrategy {
@@ -34,13 +34,13 @@ interface XMPPStreamParserStrategy {
     boolean unitIsReady();
 
     @NotNull
-    XMPPUnit readyUnit();
+    XmppUnit readyUnit();
 
     void setErrorObserver(@NotNull final ErrorObserver observer);
 
 //    /**
 //     * Unique sequential code associated with concrete XMPPStreamParserStrategy instance
-//     * @see XMPPUnit#code()
+//     * @see XmppUnit#code()
 //     * @return
 //     */
 //    int code();

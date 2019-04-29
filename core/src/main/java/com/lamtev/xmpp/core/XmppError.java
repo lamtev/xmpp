@@ -1,6 +1,6 @@
 package com.lamtev.xmpp.core;
 
-public enum XMPPError implements XMPPUnit {
+public enum XmppError implements XmppUnit {
     INVALID_NAMESPACE,
     ;
 

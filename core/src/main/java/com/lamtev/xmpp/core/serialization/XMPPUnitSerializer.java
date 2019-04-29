@@ -9,6 +9,8 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.ByteArrayOutputStream;
 import java.util.function.Consumer;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public final class XMPPUnitSerializer {
     @NotNull
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -18,20 +20,20 @@ public final class XMPPUnitSerializer {
     private final XMLStreamWriter writer;
     @SuppressWarnings("unchecked")
     @NotNull
-    private final Consumer<XMPPStreamFeatures>[] streamFeatureSerializers = new Consumer[]{
-            (tls) -> {
-            },
-            (Consumer<XMPPStreamFeatures>) this::serializeStreamFeaturesSASL,
-            (Consumer<XMPPStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
+    private final Consumer<XmppStreamFeatures>[] streamFeatureSerializers = new Consumer[]{
+            (tls) -> {},
+            (Consumer<XmppStreamFeatures>) this::serializeStreamFeaturesSASL,
+            (Consumer<XmppStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
     };
     @SuppressWarnings("unchecked")
     @NotNull
-    private final Consumer<? super XMPPUnit>[] serializers = new Consumer[]{
-            (Consumer<XMPPStreamHeader>) this::serializeStreamHeader,
-            (Consumer<XMPPStreamFeatures>) this::serializeStreamFeatures,
-            (Consumer<XMPPStanza>) this::serializeStanza,
-            (Consumer<XMPPError>) this::serializeError,
-    };
+    private final Consumer<? super XmppUnit>[] serializers = new Consumer[]{
+            (Consumer<XmppStreamHeader>) this::serializeStreamHeader,
+            (Consumer<XmppStreamFeatures>) this::serializeStreamFeatures,
+            (Consumer<XmppStanza>) this::serializeStanza,
+            (Consumer<XmppError>) this::serializeError,
+            (Consumer<XmppSaslAuthSuccess>) this::serializeSaslAuthSuccess,
+};
 
     public XMPPUnitSerializer(@NotNull final String encoding) {
         this.encoding = encoding;
@@ -45,7 +47,7 @@ public final class XMPPUnitSerializer {
     }
 
     @NotNull
-    public byte[] serialize(@NotNull final XMPPUnit unit) {
+    public byte[] serialize(@NotNull final XmppUnit unit) {
         serializers[unit.code()].accept(unit);
 
         final var bytes = out.toByteArray();
@@ -54,10 +56,10 @@ public final class XMPPUnitSerializer {
         return bytes;
     }
 
-    private void serializeStreamHeader(@NotNull final XMPPStreamHeader streamHeader) {
+    private void serializeStreamHeader(@NotNull final XmppStreamHeader streamHeader) {
         try {
             writer.writeStartDocument(encoding, "1.0");
-            writer.writeStartElement("stream", "stream", XMPPStreamHeader.STREAM_NAMESPACE);
+            writer.writeStartElement("stream", "stream", XmppStreamHeader.STREAM_NAMESPACE);
             final var from = streamHeader.from();
             if (from != null) {
                 writer.writeAttribute("from", from);
@@ -73,23 +75,24 @@ public final class XMPPUnitSerializer {
             writer.writeAttribute("version", Float.toString(streamHeader.version()));
             writer.writeAttribute("xml:lang", "en");
             writer.writeDefaultNamespace(streamHeader.contentNamespace().toString());
-            writer.writeNamespace("stream", XMPPStreamHeader.STREAM_NAMESPACE);
+            writer.writeNamespace("stream", XmppStreamHeader.STREAM_NAMESPACE);
             writer.writeCharacters(null);
             writer.flush();
+            System.out.println(out.toString(UTF_8));
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
     }
 
-    private void serializeStreamFeatures(@NotNull final XMPPStreamFeatures streamFeatures) {
+    private void serializeStreamFeatures(@NotNull final XmppStreamFeatures streamFeatures) {
         streamFeatureSerializers[streamFeatures.type().ordinal()].accept(streamFeatures);
     }
 
-    private void serializeStreamFeaturesSASL(@NotNull final XMPPStreamFeatures sasl) {
+    private void serializeStreamFeaturesSASL(@NotNull final XmppStreamFeatures sasl) {
         try {
-            writer.writeStartElement("stream", "features", XMPPStreamHeader.STREAM_NAMESPACE);
+            writer.writeStartElement("stream", "features", XmppStreamHeader.STREAM_NAMESPACE);
             writer.writeStartElement("mechanisms");
-            writer.writeDefaultNamespace(XMPPStreamFeatures.Type.SASL.toString());
+            writer.writeDefaultNamespace(XmppStreamFeatures.Type.SASL.toString());
             for (final var mechanism : sasl.mechanisms()) {
                 writer.writeStartElement("mechanism");
                 writer.writeCharacters(mechanism.toString());
@@ -97,27 +100,44 @@ public final class XMPPUnitSerializer {
             }
             writer.writeEndElement();
             writer.writeEndElement();
+            writer.flush();
+            System.out.println(out.toString(UTF_8));
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
     }
 
-    private void serializeStreamFeaturesResourceBinding(@NotNull final XMPPStreamFeatures ignored) {
+    private void serializeStreamFeaturesResourceBinding(@NotNull final XmppStreamFeatures ignored) {
         try {
-            writer.writeStartElement("stream", "features", XMPPStreamHeader.STREAM_NAMESPACE);
+            writer.writeStartElement("stream", "features", XmppStreamHeader.STREAM_NAMESPACE);
             writer.writeEmptyElement("bind");
-            writer.writeDefaultNamespace(XMPPStreamFeatures.Type.RESOURCE_BINDING.toString());
+            writer.writeDefaultNamespace(XmppStreamFeatures.Type.RESOURCE_BINDING.toString());
             writer.writeEndElement();
+            writer.flush();
+            System.out.println(out.toString(UTF_8));
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
     }
 
-    private void serializeStanza(@NotNull final XMPPStanza stanza) {
+    private void serializeStanza(@NotNull final XmppStanza stanza) {
         //TODO
     }
 
-    private void serializeError(@NotNull final XMPPError error) {
+    private void serializeError(@NotNull final XmppError error) {
         //TODO
+    }
+
+    private void serializeSaslAuthSuccess(@NotNull final XmppSaslAuthSuccess saslAuthSuccess) {
+        try {
+            writer.writeStartElement("success");
+            writer.writeDefaultNamespace(XmppSaslAuthSuccess.NAMESPACE);
+            writer.writeEndElement();
+            writer.flush();
+//            out.writeBytes("/>".getBytes(UTF_8));
+            System.out.println(out.toString(UTF_8));
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
     }
 }

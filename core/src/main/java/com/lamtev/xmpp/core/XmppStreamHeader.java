@@ -3,7 +3,7 @@ package com.lamtev.xmpp.core;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class XMPPStreamHeader implements XMPPUnit {
+public final class XmppStreamHeader implements XmppUnit {
     //Each stream header MUST be qualified by the namespace, so we don't declare it explicitly
     public static final String STREAM_NAMESPACE = "http://etherx.jabber.org/streams";
     @Nullable
@@ -16,7 +16,7 @@ public final class XMPPStreamHeader implements XMPPUnit {
     @NotNull
     private final ContentNamespace contentNamespace;
 
-    public XMPPStreamHeader(@Nullable String from, @Nullable String to, @Nullable String id, float version, @NotNull ContentNamespace contentNamespace) {
+    public XmppStreamHeader(@Nullable String from, @Nullable String to, @Nullable String id, float version, @NotNull ContentNamespace contentNamespace) {
         this.from = from;
         this.to = to;
         this.id = id;

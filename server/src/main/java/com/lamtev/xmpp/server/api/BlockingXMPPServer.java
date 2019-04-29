@@ -7,7 +7,6 @@ import com.lamtev.xmpp.core.io.XMPPOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Set;

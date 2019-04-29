@@ -1,6 +1,6 @@
 package com.lamtev.xmpp.core;
 
-public final class XMPPStanza implements XMPPUnit {
+public final class XmppStanza implements XmppUnit {
 
     @Override
     public int code() {
