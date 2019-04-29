@@ -11,7 +11,7 @@ import java.io.ByteArrayOutputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class XMPPOutputStreamTest {
+class XmppOutputStreamTest {
     @NotNull
     private static final XmppStreamHeader STREAM_HEADER = new XmppStreamHeader(
             "lamtev.com",
@@ -38,7 +38,7 @@ class XMPPOutputStreamTest {
     @NotNull
     private final ByteArrayOutputStream os = new ByteArrayOutputStream();
     @NotNull
-    private final XMPPOutputStream stream = new XMPPOutputStream(os, "UTF-8");
+    private final XmppOutputStream stream = new XmppOutputStream(os, "UTF-8");
 
     @Test
     void testOpenWithHeaderAndFeaturesSASL() {

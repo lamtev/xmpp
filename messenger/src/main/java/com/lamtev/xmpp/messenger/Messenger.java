@@ -1,7 +1,7 @@
 package com.lamtev.xmpp.messenger;
 
 import com.lamtev.xmpp.core.*;
-import com.lamtev.xmpp.core.io.XMPPExchange;
+import com.lamtev.xmpp.core.io.XmppExchange;
 import com.lamtev.xmpp.messenger.utils.AuthBase64DataExtractor;
 import com.lamtev.xmpp.messenger.utils.StringGenerator;
 import com.lamtev.xmpp.server.api.XMPPServer;
@@ -14,7 +14,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Messenger implements XMPPServer.Handler {
     @NotNull
-    private final ConcurrentHashMap<XMPPExchange, User> users = new ConcurrentHashMap<>(10);
+    private final ConcurrentHashMap<XmppExchange, User> users = new ConcurrentHashMap<>(10);
     @NotNull
     private final StringGenerator idGenerator = new StringGenerator(64);
 
@@ -29,7 +29,7 @@ public class Messenger implements XMPPServer.Handler {
     }
 
     @Override
-    public void handle(@NotNull XMPPExchange exchange) {
+    public void handle(@NotNull XmppExchange exchange) {
         final var user = users.computeIfAbsent(exchange, (e) -> new User(idGenerator.nextString()));
 
         final var initialStream = exchange.initialStream();

@@ -3,7 +3,7 @@ package com.lamtev.xmpp.core.parsing;
 import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 
-interface XMPPStreamParserStrategy {
+interface XmppStreamParserStrategy {
 
     static boolean isPotentialStreamHeader(@NotNull final String element) {
         return "stream".equals(element);
@@ -40,7 +40,7 @@ interface XMPPStreamParserStrategy {
     void setErrorObserver(@NotNull final ErrorObserver observer);
 
 //    /**
-//     * Unique sequential code associated with concrete XMPPStreamParserStrategy instance
+//     * Unique sequential code associated with concrete XmppStreamParserStrategy instance
 //     * @see XmppUnit#code()
 //     * @return
 //     */

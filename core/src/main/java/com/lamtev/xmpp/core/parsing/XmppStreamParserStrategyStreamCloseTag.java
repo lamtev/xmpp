@@ -3,7 +3,7 @@ package com.lamtev.xmpp.core.parsing;
 import com.lamtev.xmpp.core.XmppStreamCloseTag;
 import org.jetbrains.annotations.NotNull;
 
-final class XMPPStreamParserStrategyStreamCloseTag implements XMPPStreamParserStrategy {
+final class XmppStreamParserStrategyStreamCloseTag implements XmppStreamParserStrategy {
     @Override
     public void startElementReached(String name) {
 

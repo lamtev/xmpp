@@ -1,8 +1,6 @@
 package com.lamtev.xmpp.server.api;
 
-import com.lamtev.xmpp.core.io.XMPPExchange;
-import com.lamtev.xmpp.core.io.XMPPInputStream;
-import com.lamtev.xmpp.core.io.XMPPOutputStream;
+import com.lamtev.xmpp.core.io.XmppExchange;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ExecutorService;
@@ -70,6 +68,6 @@ public interface XMPPServer {
         /**
          * @param exchange
          */
-        void handle(@NotNull final XMPPExchange exchange);
+        void handle(@NotNull final XmppExchange exchange);
     }
 }

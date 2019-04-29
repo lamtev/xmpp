@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;
 
-final class XMPPStreamParserStrategyStreamFeatures implements XMPPStreamParserStrategy {
-    XMPPStreamParserStrategyStreamFeatures(@NotNull final XMLStreamReader reader) {
+final class XmppStreamParserStrategyStreamFeatures implements XmppStreamParserStrategy {
+    XmppStreamParserStrategyStreamFeatures(@NotNull final XMLStreamReader reader) {
 
     }
 
