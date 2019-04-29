@@ -2,7 +2,7 @@ package com.lamtev.xmpp.core.io;
 
 import com.lamtev.xmpp.core.XmppStreamFeatures;
 import com.lamtev.xmpp.core.XmppUnit;
-import com.lamtev.xmpp.core.parsing.XMPPStreamParser;
+import com.lamtev.xmpp.core.parsing.XmppStreamParser;
 import com.lamtev.xmpp.core.parsing.XMPPStreamParserException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,13 +11,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 //TODO: change exchange state
-public final class XMPPInputStream implements AutoCloseable, XMPPStreamParser.Delegate {
+public final class XMPPInputStream implements AutoCloseable, XmppStreamParser.Delegate {
     @NotNull
     private final InputStream in;
     @NotNull
     private final String encoding;
     @NotNull
-    private XMPPStreamParser parser;
+    private XmppStreamParser parser;
 
     @NotNull
     private Handler handler;
@@ -30,7 +30,7 @@ public final class XMPPInputStream implements AutoCloseable, XMPPStreamParser.De
     @Nullable
     private XmppUnit unit;
     @Nullable
-    private XMPPStreamParser.Error error;
+    private XmppStreamParser.Error error;
     @Nullable
     private XMPPExchange exchange;
 
@@ -38,7 +38,7 @@ public final class XMPPInputStream implements AutoCloseable, XMPPStreamParser.De
         try {
             this.in = in;
             this.encoding = encoding;
-            this.parser = new XMPPStreamParser(in, encoding);
+            this.parser = new XmppStreamParser(in, encoding);
             this.parser.setDelegate(this);
         } catch (final XMPPStreamParserException e) {
             final var message = "" + e.getMessage();
@@ -69,7 +69,7 @@ public final class XMPPInputStream implements AutoCloseable, XMPPStreamParser.De
     }
 
     @NotNull
-    public XMPPStreamParser.Error error() {
+    public XmppStreamParser.Error error() {
         if (error == null) {
             throw new IllegalStateException("You should call hasError() before to ensure error is present");
         }
@@ -102,7 +102,7 @@ public final class XMPPInputStream implements AutoCloseable, XMPPStreamParser.De
     }
 
     @Override
-    public void parserDidFailWithError(@NotNull final XMPPStreamParser.Error error) {
+    public void parserDidFailWithError(@NotNull final XmppStreamParser.Error error) {
         this.error = error;
         handler.handle();
     }

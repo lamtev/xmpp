@@ -41,12 +41,12 @@ final class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserS
                             if (XmppStreamFeatures.Type.SASLMechanism.isSupported(mechanism)) {
                                 authMechanism = XmppStreamFeatures.Type.SASLMechanism.valueOf(mechanism);
                             } else {
-                                errorObserver.onError(XMPPStreamParser.Error.SASL_INVALID_MECHANISM);
+                                errorObserver.onError(XmppStreamParser.Error.SASL_INVALID_MECHANISM);
                                 return;
                             }
                             break;
                         default:
-                            errorObserver.onError(XMPPStreamParser.Error.SASL_MALFORMED_REQUEST);
+                            errorObserver.onError(XmppStreamParser.Error.SASL_MALFORMED_REQUEST);
                             return;
                     }
                 }
@@ -66,6 +66,7 @@ final class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserS
     @Override
     public void charactersReached() {
         authBody = reader.getText();
+        System.out.println(authBody);
     }
 
     @Override

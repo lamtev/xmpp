@@ -1,7 +1,6 @@
 package com.lamtev.xmpp.core.parsing;
 
 
-import com.lamtev.xmpp.core.XmppStreamCloseTag;
 import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +16,7 @@ import static com.lamtev.xmpp.core.parsing.XMPPStreamParserStrategy.Name.*;
 import static com.lamtev.xmpp.core.parsing.XMPPStreamParserStrategy.*;
 import static javax.xml.stream.XMLStreamConstants.*;
 
-public final class XMPPStreamParser {
+public final class XmppStreamParser {
     @NotNull
     private final InputStream in;
     @NotNull
@@ -29,7 +28,7 @@ public final class XMPPStreamParser {
     @NotNull
     private Deque<XMPPStreamParserStrategy> strategyStack = new ArrayDeque<>(5);
 
-    public XMPPStreamParser(@NotNull final InputStream inputStream, @NotNull final String encoding) throws XMPPStreamParserException {
+    public XmppStreamParser(@NotNull final InputStream inputStream, @NotNull final String encoding) throws XMPPStreamParserException {
         try {
             in = inputStream;
             factory = XMLInputFactory.newInstance();
@@ -92,7 +91,7 @@ public final class XMPPStreamParser {
                         break;
                     case END_DOCUMENT:
                         if (delegate != null) {
-                            delegate.parserDidParseUnit(XmppStreamCloseTag.INSTANCE);
+//                            delegate.parserDidParseUnit(XmppStreamCloseTag.INSTANCE);
                         }
                 }
             }
