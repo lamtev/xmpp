@@ -1,11 +1,13 @@
 package com.lamtev.xmpp.core.serialization;
 
+import com.lamtev.xmpp.core.XmppSaslAuthSuccess;
 import com.lamtev.xmpp.core.XmppStreamFeatures;
 import com.lamtev.xmpp.core.XmppStreamHeader;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,7 +17,7 @@ class XmppUnitSerializerTest {
     private static final XMPPUnitSerializer serializer = new XMPPUnitSerializer("UTF-8");
 
     @Test
-    void testStreamHeaderSerialization() {
+    void testStreamHeaderSerialization() throws IOException {
         final var expectedStreamHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<stream:stream " +
                 "from=\"juliet@im.example.com\" " +
@@ -31,10 +33,11 @@ class XmppUnitSerializerTest {
         baos.writeBytes(serializer.serialize(streamHeader));
 
         assertEquals(expectedStreamHeader, baos.toString(UTF_8));
+        baos.close();
     }
 
     @Test
-    void testStreamFeaturesSASLSerialization() {
+    void testStreamFeaturesSASLSerialization() throws IOException {
         final var expectedStreamFeatures = "<stream:features>" +
                 "<mechanisms xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\">" +
                 "<mechanism>PLAIN</mechanism>" +
@@ -47,10 +50,11 @@ class XmppUnitSerializerTest {
         baos.writeBytes(serializer.serialize(streamFeatures));
 
         assertEquals(expectedStreamFeatures, baos.toString(UTF_8));
+        baos.close();
     }
 
     @Test
-    void testStreamFeaturesResourceBindingSerialization() {
+    void testStreamFeaturesResourceBindingSerialization() throws IOException {
         final var expectedStreamFeatures = "<stream:features>" +
                 "<bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\"/>" +
                 "</stream:features>";
@@ -61,5 +65,17 @@ class XmppUnitSerializerTest {
         baos.writeBytes(serializer.serialize(streamFeatures));
 
         assertEquals(expectedStreamFeatures, baos.toString(UTF_8));
+        baos.close();
+    }
+
+    @Test
+    void testSaslAuthSuccessSerialization() throws IOException {
+        final var expectedSuccess = "<success xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"></success>";
+
+        final var baos = new ByteArrayOutputStream();
+        baos.writeBytes(serializer.serialize(new XmppSaslAuthSuccess()));
+
+        assertEquals(expectedSuccess, baos.toString(UTF_8));
+        baos.close();
     }
 }
