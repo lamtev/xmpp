@@ -18,12 +18,12 @@ final class XMPPStreamParserStrategyStanza implements XMPPStreamParserStrategy {
     private XmppStanza.TypeAttribute type;
     @Nullable
     private String resource;
+
     private boolean waitingForResource = false;
     private int endCount = 0;
 
     @Nullable
     private XmppStanza stanza;
-
 
     XMPPStreamParserStrategyStanza(@NotNull final XMLStreamReader reader) {
         this.reader = reader;
@@ -60,9 +60,8 @@ final class XMPPStreamParserStrategyStanza implements XMPPStreamParserStrategy {
 
     @Override
     public void endElementReached() {
-        endCount++;
-        if (endCount == 2) {
-            stanza = new XmppStanza(kind, id, "");
+        if (reader.getLocalName().equals("iq")) {
+            stanza = new XmppStanza(kind, id, type, resource != null ? resource : "");
         }
     }
 

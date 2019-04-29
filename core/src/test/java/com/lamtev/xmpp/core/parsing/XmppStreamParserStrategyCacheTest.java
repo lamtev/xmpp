@@ -7,10 +7,9 @@ import org.junit.jupiter.api.Test;
 import javax.xml.stream.XMLInputFactory;
 import java.io.ByteArrayInputStream;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 
-class XMPPStreamParserStrategyCacheTest {
+class XmppStreamParserStrategyCacheTest {
     @NotNull
     private static final XMPPStreamParserStrategy.Name[] names = XMPPStreamParserStrategy.Name.values();
     @NotNull
@@ -21,7 +20,7 @@ class XMPPStreamParserStrategyCacheTest {
         final var factory = XMLInputFactory.newFactory();
         final var reader = factory.createXMLStreamReader(new ByteArrayInputStream(new byte[0]));
 
-        cache = new XMPPStreamParserStrategyCache(reader, (error) -> {});
+        cache = new XMPPStreamParserStrategyCache(reader, (error) -> fail("Unexpected error: " + error));
     }
 
     @Test

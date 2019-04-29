@@ -48,7 +48,7 @@ final class XMPPStreamParserStrategyStreamHeader implements XMPPStreamParserStra
 
         if (!hasStreamNamespace || contentNamespace == null) {
             //TODO:
-            errorObserver.onError(XMPPStreamParser.Error.INVALID_NAMESPACE);
+            errorObserver.onError(XmppStreamParser.Error.INVALID_NAMESPACE);
             return;
         }
 

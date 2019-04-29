@@ -9,10 +9,13 @@ public final class XmppStanza implements XmppUnit {
     private final String id;
     @NotNull
     private final String resource;
+    @NotNull
+    private final TypeAttribute type;
 
-    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final String resource) {
+    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final String resource) {
         this.kind = kind;
         this.id = id;
+        this.type = type;
         this.resource = resource;
     }
 
@@ -24,6 +27,10 @@ public final class XmppStanza implements XmppUnit {
     @NotNull
     public String id() {
         return id;
+    }
+
+    public TypeAttribute type() {
+        return type;
     }
 
     @NotNull
@@ -75,11 +82,42 @@ public final class XmppStanza implements XmppUnit {
     }
 
     public enum IqTypeAttribute implements TypeAttribute {
+        SET("set"),
+        RESULT("result"),
+        ;
+
+        @NotNull
+        private final String string;
+
+        IqTypeAttribute(@NotNull final String string) {
+            this.string = string;
+        }
+
+        static IqTypeAttribute of(@NotNull final String string) {
+            if (SET.string.equals(string)) {
+                return SET;
+            } else if (RESULT.string.equals(string)) {
+                return RESULT;
+            }
+
+            throw new IllegalArgumentException();
+        }
+
+        @Override
+        public String toString() {
+            return string;
+        }
     }
 
     public interface TypeAttribute {
+        @NotNull
         static TypeAttribute of(@NotNull final Kind kind, @NotNull final String string) {
-            return MessageTypeAttribute.NORMAL;
+            switch (kind) {
+                case IQ:
+                    return IqTypeAttribute.of(string);
+                default:
+                    throw new IllegalArgumentException();
+            }
         }
     }
 

@@ -55,7 +55,7 @@ interface XMPPStreamParserStrategy {
     }
 
     interface ErrorObserver {
-        void onError(@NotNull final XMPPStreamParser.Error error);
+        void onError(@NotNull final XmppStreamParser.Error error);
     }
 
 }
