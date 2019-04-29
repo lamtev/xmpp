@@ -4,3 +4,15 @@ out
 build
 .gradle
 /project
+
+*.aux
+*.toc
+*.lof
+*.lot
+*.lol
+*.pdf
+*.out
+*.gz
+*.log
+*.dvi
+
