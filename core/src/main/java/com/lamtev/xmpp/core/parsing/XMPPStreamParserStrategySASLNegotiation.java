@@ -6,9 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
-import java.util.Base64;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 final class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserStrategy {
     @NotNull
@@ -27,8 +24,7 @@ final class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserS
     }
 
     @Override
-    public void startElementReached() {
-        final var elementName = reader.getLocalName();
+    public void startElementReached(@NotNull final String name) {
         final var namespaceURI = reader.getNamespaceURI(0);
         if (!XmppStreamFeatures.Type.SASL.toString().equals(namespaceURI)) {
             //TODO failure
@@ -36,7 +32,7 @@ final class XMPPStreamParserStrategySASLNegotiation implements XMPPStreamParserS
             return;
         }
 
-        switch (elementName) {
+        switch (name) {
             case "auth":
                 for (int idx = 0; idx < reader.getAttributeCount(); idx++) {
                     switch (reader.getAttributeLocalName(idx)) {

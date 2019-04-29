@@ -17,6 +17,8 @@ public final class XMPPOutputStream implements AutoCloseable {
     @NotNull
     private final OutputStream out;
     @NotNull
+    private final String encoding;
+    @NotNull
     private final XMPPUnitSerializer serializer;
     @NotNull
     private final TByteList buf = new TByteArrayList(1024);
@@ -35,6 +37,7 @@ public final class XMPPOutputStream implements AutoCloseable {
 
     public XMPPOutputStream(@NotNull final OutputStream out, @NotNull final String encoding) {
         this.out = out;
+        this.encoding = encoding;
         this.serializer = new XMPPUnitSerializer(encoding);
     }
 
@@ -42,6 +45,15 @@ public final class XMPPOutputStream implements AutoCloseable {
         addUnitToBatch(header);
         addUnitToBatch(features);
         sendWholeBatch();
+    }
+
+    //For development process
+    public void sendUnit(@NotNull final String s) {
+        try {
+            out.write(s.getBytes(encoding));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendUnit(@NotNull final XmppUnit unit) {

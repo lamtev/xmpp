@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -71,7 +70,7 @@ public final class XMPPStreamParser {
                             }
                         }
                         strategyStack.push(strategy);
-                        strategy.startElementReached();
+                        strategy.startElementReached(elementName);
 
                         if (strategy.unitIsReady() && delegate != null) {
                             delegate.parserDidParseUnit(strategy.readyUnit());

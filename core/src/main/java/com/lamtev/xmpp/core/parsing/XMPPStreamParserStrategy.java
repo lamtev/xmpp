@@ -17,15 +17,16 @@ interface XMPPStreamParserStrategy {
         return "auth".equals(element);
     }
 
+    //TODO: replace with set
     static boolean isPotentialStanza(@NotNull final String element) {
-        return "message".equals(element) || "presence".equals(element) || "iq".equals(element);
+        return "message".equals(element) || "presence".equals(element) || "iq".equals(element) || "bind".equals(element) || "resource".equals(element);
     }
 
     static boolean isPotentialError(@NotNull final String element) {
         return "error".equals(element);
     }
 
-    void startElementReached();
+    void startElementReached(@NotNull final String name);
 
     void endElementReached();
 

@@ -11,7 +11,7 @@ final class XMPPStreamParserStrategyStreamFeatures implements XMPPStreamParserSt
     }
 
     @Override
-    public void startElementReached() {
+    public void startElementReached(String name) {
 
     }
 
