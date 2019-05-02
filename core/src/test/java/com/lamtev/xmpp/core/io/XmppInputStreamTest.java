@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-class XmppInputStreamTest {
+final class XmppInputStreamTest {
     @Test
     void test() throws Throwable {
         String xml = "<?xml version='1.0' encoding='UTF-16'?>" +

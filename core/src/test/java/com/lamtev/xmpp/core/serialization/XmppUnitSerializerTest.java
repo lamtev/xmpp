@@ -12,7 +12,7 @@ import java.io.IOException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class XmppUnitSerializerTest {
+final class XmppUnitSerializerTest {
     @NotNull
     private static final XmppUnitSerializer serializer = new XmppUnitSerializer("UTF-8");
 

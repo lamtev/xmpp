@@ -9,7 +9,7 @@ import java.io.ByteArrayInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class XmppStreamParserStrategyCacheTest {
+final class XmppStreamParserStrategyCacheTest {
     @NotNull
     private static final XmppStreamParserStrategy.Name[] names = XmppStreamParserStrategy.Name.values();
     @NotNull

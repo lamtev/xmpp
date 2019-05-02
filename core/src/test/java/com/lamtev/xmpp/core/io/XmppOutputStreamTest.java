@@ -13,7 +13,7 @@ import java.io.IOException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class XmppOutputStreamTest {
+final class XmppOutputStreamTest {
     @NotNull
     private static final XmppStreamHeader STREAM_HEADER = new XmppStreamHeader(
             "lamtev.com",
