@@ -11,7 +11,7 @@ import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static java.nio.charset.StandardCharsets.UTF_16;
 import static org.junit.jupiter.api.Assertions.*;
 
-class XmppStreamParserTest {
+final class XmppStreamParserTest {
     @Test
     void testValidStreamHeaderParsing() throws XmppStreamParserException, IOException {
         final var xml = "<?xml version='1.0' encoding='UTF-16'?>" +
