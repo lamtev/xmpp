@@ -16,16 +16,16 @@ class XmppInputStreamTest {
                 "       xml:lang='en'\n" +
                 "       xmlns='jabber:client'\n" +
                 "       xmlns:stream='http://etherx.jabber.org/streams'/>";
-        ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_16));
-
-        XmppInputStream initialStream = new XmppInputStream(stream, "UTF-16");
-        initialStream.setHandler(() -> {
-            if (initialStream.hasError()) {
-                System.out.println(initialStream.error());
-            } else {
-                System.out.println(initialStream.unit());
-            }
-        });
-        initialStream.open();
+        try (final var stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_16))) {
+            XmppInputStream initialStream = new XmppInputStream(stream, "UTF-16");
+            initialStream.setHandler(() -> {
+                if (initialStream.hasError()) {
+                    System.out.println(initialStream.error());
+                } else {
+                    System.out.println(initialStream.unit());
+                }
+            });
+            initialStream.open();
+        }
     }
 }

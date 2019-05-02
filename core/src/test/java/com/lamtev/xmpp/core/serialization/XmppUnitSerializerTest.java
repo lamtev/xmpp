@@ -29,11 +29,11 @@ class XmppUnitSerializerTest {
 
         final var streamHeader = new XmppStreamHeader("juliet@im.example.com", "im.example.com", null, 1.0f, XmppStreamHeader.ContentNamespace.CLIENT);
 
-        final var baos = new ByteArrayOutputStream();
-        baos.writeBytes(serializer.serialize(streamHeader));
+        try (var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(streamHeader));
 
-        assertEquals(expectedStreamHeader, baos.toString(UTF_8));
-        baos.close();
+            assertEquals(expectedStreamHeader, baos.toString(UTF_8));
+        }
     }
 
     @Test
@@ -46,11 +46,11 @@ class XmppUnitSerializerTest {
 
         final var streamFeatures = XmppStreamFeatures.of(XmppStreamFeatures.Type.SASLMechanism.PLAIN);
 
-        final var baos = new ByteArrayOutputStream();
-        baos.writeBytes(serializer.serialize(streamFeatures));
+        try (var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(streamFeatures));
 
-        assertEquals(expectedStreamFeatures, baos.toString(UTF_8));
-        baos.close();
+            assertEquals(expectedStreamFeatures, baos.toString(UTF_8));
+        }
     }
 
     @Test
@@ -61,21 +61,21 @@ class XmppUnitSerializerTest {
 
         final var streamFeatures = XmppStreamFeatures.of(XmppStreamFeatures.Type.RESOURCE_BINDING);
 
-        final var baos = new ByteArrayOutputStream();
-        baos.writeBytes(serializer.serialize(streamFeatures));
+        try (var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(streamFeatures));
 
-        assertEquals(expectedStreamFeatures, baos.toString(UTF_8));
-        baos.close();
+            assertEquals(expectedStreamFeatures, baos.toString(UTF_8));
+        }
     }
 
     @Test
     void testSaslAuthSuccessSerialization() throws IOException {
         final var expectedSuccess = "<success xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"></success>";
 
-        final var baos = new ByteArrayOutputStream();
-        baos.writeBytes(serializer.serialize(new XmppSaslAuthSuccess()));
+        try (var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(new XmppSaslAuthSuccess()));
 
-        assertEquals(expectedSuccess, baos.toString(UTF_8));
-        baos.close();
+            assertEquals(expectedSuccess, baos.toString(UTF_8));
+        }
     }
 }
