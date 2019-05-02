@@ -22,39 +22,39 @@ class XmppStreamParserTest {
                 "       xml:lang='en'\n" +
                 "       xmlns='jabber:client'\n" +
                 "       xmlns:stream='http://etherx.jabber.org/streams'>";
-        final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16));
-        final var parser = new XmppStreamParser(inputStream, "UTF-16");
-        parser.setDelegate(new XmppStreamParser.Delegate() {
-            private int parserDidParseUnitCallCount = 0;
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                private int parserDidParseUnitCallCount = 0;
 
-            @Override
-            public void parserDidParseUnit(@NotNull final XmppUnit unit) {
-                if (parserDidParseUnitCallCount == 0) {
-                    assertTrue(unit instanceof XmppStreamHeader);
+                @Override
+                public void parserDidParseUnit(@NotNull final XmppUnit unit) {
+                    if (parserDidParseUnitCallCount == 0) {
+                        assertTrue(unit instanceof XmppStreamHeader);
 
-                    final var header = (XmppStreamHeader) unit;
+                        final var header = (XmppStreamHeader) unit;
 
-                    assertEquals("juliet@im.example.com", header.from());
-                    assertEquals("im.example.com", header.to());
-                    assertNull(header.id());
-                    assertEquals(1.0, header.version());
-                    assertSame(XmppStreamHeader.ContentNamespace.CLIENT, header.contentNamespace());
-                    assertEquals("jabber:client", header.contentNamespace().toString());
-                } else if (parserDidParseUnitCallCount == 1) {
-                    assertTrue(unit instanceof XmppStreamCloseTag);
-                } else {
-                    fail("In that case there must be exactly 2 calls of parserDidParseUnit()");
+                        assertEquals("juliet@im.example.com", header.from());
+                        assertEquals("im.example.com", header.to());
+                        assertNull(header.id());
+                        assertEquals(1.0, header.version());
+                        assertSame(XmppStreamHeader.ContentNamespace.CLIENT, header.contentNamespace());
+                        assertEquals("jabber:client", header.contentNamespace().toString());
+                    } else if (parserDidParseUnitCallCount == 1) {
+                        assertTrue(unit instanceof XmppStreamCloseTag);
+                    } else {
+                        fail("In that case there must be exactly 2 calls of parserDidParseUnit()");
+                    }
+
+                    parserDidParseUnitCallCount++;
                 }
 
-                parserDidParseUnitCallCount++;
-            }
-
-            @Override
-            public void parserDidFailWithError(@NotNull final XmppStreamParser.Error error) {
-            }
-        });
-        parser.startParsing();
-        inputStream.close();
+                @Override
+                public void parserDidFailWithError(@NotNull final XmppStreamParser.Error error) {
+                }
+            });
+            parser.startParsing();
+        }
     }
 
     @Test
@@ -62,26 +62,26 @@ class XmppStreamParserTest {
         final var xml = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"\n" +
                 "mechanism=\"PLAIN\">AGFudG9uADEyMzQ1</auth>";
 
-        final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16));
-        final var parser = new XmppStreamParser(inputStream, "UTF-16");
+        try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-        parser.setDelegate(new XmppStreamParser.Delegate() {
-            @Override
-            public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                final var auth = (XmppSaslAuth) unit;
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var auth = (XmppSaslAuth) unit;
 
-                assertEquals("AGFudG9uADEyMzQ1", auth.body());
-                assertEquals(XmppStreamFeatures.Type.SASLMechanism.PLAIN, auth.mechanism());
-            }
+                    assertEquals("AGFudG9uADEyMzQ1", auth.body());
+                    assertEquals(XmppStreamFeatures.Type.SASLMechanism.PLAIN, auth.mechanism());
+                }
 
-            @Override
-            public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) {
-                fail("Unexpected error: " + error);
-            }
-        });
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) {
+                    fail("Unexpected error: " + error);
+                }
+            });
 
-        parser.startParsing();
-        inputStream.close();
+            parser.startParsing();
+        }
     }
 
     @Test
@@ -92,28 +92,28 @@ class XmppStreamParserTest {
                 "     </bind>\n" +
                 "   </iq>";
 
-        final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16));
-        final var parser = new XmppStreamParser(inputStream, "UTF-16");
+        try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-        parser.setDelegate(new XmppStreamParser.Delegate() {
-            @Override
-            public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                final var resBindingStanza = (XmppStanza) unit;
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var resBindingStanza = (XmppStanza) unit;
 
-                assertEquals(IQ, resBindingStanza.kind());
-                assertEquals("yhc13a95", resBindingStanza.id());
-                assertSame(XmppStanza.IqTypeAttribute.SET, resBindingStanza.type());
-                assertEquals("balcony", resBindingStanza.resource());
-            }
+                    assertEquals(IQ, resBindingStanza.kind());
+                    assertEquals("yhc13a95", resBindingStanza.id());
+                    assertSame(XmppStanza.IqTypeAttribute.SET, resBindingStanza.type());
+                    assertEquals("balcony", resBindingStanza.resource());
+                }
 
-            @Override
-            public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) {
-                fail("Unexpected error: " + error);
-            }
-        });
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) {
+                    fail("Unexpected error: " + error);
+                }
+            });
 
-        parser.startParsing();
-        inputStream.close();
+            parser.startParsing();
+        }
     }
 
 }

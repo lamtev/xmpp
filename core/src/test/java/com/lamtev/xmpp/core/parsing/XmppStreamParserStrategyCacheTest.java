@@ -18,9 +18,10 @@ class XmppStreamParserStrategyCacheTest {
     @BeforeEach
     void setup() throws Exception {
         final var factory = XMLInputFactory.newFactory();
-        final var reader = factory.createXMLStreamReader(new ByteArrayInputStream(new byte[0]));
-
-        cache = new XmppStreamParserStrategyCache(reader, (error) -> fail("Unexpected error: " + error));
+        try (final var baos = new ByteArrayInputStream(new byte[0])) {
+            final var reader = factory.createXMLStreamReader(baos);
+            cache = new XmppStreamParserStrategyCache(reader, (error) -> fail("Unexpected error: " + error));
+        }
     }
 
     @Test

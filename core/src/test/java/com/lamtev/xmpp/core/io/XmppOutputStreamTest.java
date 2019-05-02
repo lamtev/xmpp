@@ -4,9 +4,11 @@ import com.lamtev.xmpp.core.XmppStreamFeatures;
 import com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism;
 import com.lamtev.xmpp.core.XmppStreamHeader;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,6 +41,16 @@ class XmppOutputStreamTest {
     private final ByteArrayOutputStream os = new ByteArrayOutputStream();
     @NotNull
     private final XmppOutputStream stream = new XmppOutputStream(os, "UTF-8");
+
+    @AfterEach
+    void teardown() {
+        try {
+            os.close();
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     void testOpenWithHeaderAndFeaturesSASL() {
