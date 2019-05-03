@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 /**
  *
  */
-public interface XMPPServer {
+public interface XmppServer {
     /**
      * @param mode
      * @param port
@@ -17,10 +17,10 @@ public interface XMPPServer {
      * @return
      */
     @NotNull
-    static XMPPServer of(@NotNull final Mode mode, final int port, @NotNull final ExecutorService threadPool) {
+    static XmppServer of(@NotNull final Mode mode, final int port, @NotNull final ExecutorService threadPool) {
         switch (mode) {
             case BLOCKING:
-                return new BlockingXMPPServer(port, threadPool);
+                return new BlockingXmppServer(port, threadPool);
             case NONBLOCKING:
             default:
                 throw new RuntimeException("Not implemented yet");
@@ -34,8 +34,8 @@ public interface XMPPServer {
      * @return
      */
     @NotNull
-    static XMPPServer of(@NotNull final Mode mode, final int port, int nThreads) {
-        return XMPPServer.of(mode, port, Executors.newFixedThreadPool(nThreads));
+    static XmppServer of(@NotNull final Mode mode, final int port, int nThreads) {
+        return XmppServer.of(mode, port, Executors.newFixedThreadPool(nThreads));
     }
 
     /**
