@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-final class BlockingXMPPServer implements XMPPServer {
+final class BlockingXmppServer implements XmppServer {
     private final int port;
     @NotNull
     private final ExecutorService threadPool;
@@ -26,7 +26,7 @@ final class BlockingXMPPServer implements XMPPServer {
     @Nullable
     private Handler handler;
 
-    BlockingXMPPServer(final int port, @NotNull final ExecutorService threadPool) {
+    BlockingXmppServer(final int port, @NotNull final ExecutorService threadPool) {
         this.port = port;
         this.threadPool = threadPool;
     }

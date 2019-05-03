@@ -4,7 +4,7 @@ import com.lamtev.xmpp.core.*;
 import com.lamtev.xmpp.core.io.XmppExchange;
 import com.lamtev.xmpp.messenger.utils.AuthBase64DataExtractor;
 import com.lamtev.xmpp.messenger.utils.StringGenerator;
-import com.lamtev.xmpp.server.api.XMPPServer;
+import com.lamtev.xmpp.server.api.XmppServer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class Messenger implements XMPPServer.Handler {
+public class Messenger implements XmppServer.Handler {
     @NotNull
     private final ConcurrentHashMap<XmppExchange, User> users = new ConcurrentHashMap<>(10);
     @NotNull
@@ -23,7 +23,7 @@ public class Messenger implements XMPPServer.Handler {
     }
 
     private void run() {
-        final var server = XMPPServer.of(XMPPServer.Mode.BLOCKING, 12345, Runtime.getRuntime().availableProcessors());
+        final var server = XmppServer.of(XmppServer.Mode.BLOCKING, 12345, Runtime.getRuntime().availableProcessors());
         server.setHandler(this);
         server.start();
     }
