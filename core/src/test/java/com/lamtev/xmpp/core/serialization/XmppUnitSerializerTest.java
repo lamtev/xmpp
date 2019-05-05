@@ -92,7 +92,7 @@ final class XmppUnitSerializerTest {
             baos.writeBytes(serializer.serialize(new XmppStanza(
                     XmppStanza.Kind.IQ,
                     "yhc13a95",
-                    XmppStanza.IqTypeAttribute.SET,
+                    XmppStanza.TypeAttribute.of(XmppStanza.Kind.IQ, "set"),
                     new XmppStanza.IqStanzaBind("balcony", null)
             )));
 
@@ -112,7 +112,7 @@ final class XmppUnitSerializerTest {
             baos.writeBytes(serializer.serialize(new XmppStanza(
                     XmppStanza.Kind.IQ,
                     "yhc13a95",
-                    XmppStanza.IqTypeAttribute.SET,
+                    XmppStanza.TypeAttribute.of(XmppStanza.Kind.IQ, "set"),
                     new XmppStanza.IqStanzaBind(null, "juliet@im.example.com/balcony")
             )));
 
