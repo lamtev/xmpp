@@ -44,6 +44,8 @@ final class XmppStreamParserStrategyCache {
 
     void updateReader(@NotNull final XMLStreamReader reader) {
         this.reader = reader;
-        Arrays.stream(cache).filter(Objects::nonNull).forEach(it -> it.updateReader(reader));
+        Arrays.stream(cache)
+                .filter(Objects::nonNull)
+                .forEach(it -> it.updateReader(reader));
     }
 }

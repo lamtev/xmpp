@@ -19,8 +19,6 @@ final class XmppStreamParserStrategyStreamHeader extends XmppStreamParserAbstrac
     @Nullable
     private XmppStreamHeader.ContentNamespace contentNamespace;
     private boolean hasStreamNamespace = false;
-    @NotNull
-    private ErrorObserver errorObserver;
 
     XmppStreamParserStrategyStreamHeader(@NotNull final XMLStreamReader reader) {
         super(reader);
@@ -99,10 +97,5 @@ final class XmppStreamParserStrategyStreamHeader extends XmppStreamParserAbstrac
         streamHeader = null;
 
         return res;
-    }
-
-    @Override
-    public void setErrorObserver(@NotNull final ErrorObserver observer) {
-        errorObserver = observer;
     }
 }

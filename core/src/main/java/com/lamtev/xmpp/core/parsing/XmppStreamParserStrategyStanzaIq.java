@@ -8,22 +8,13 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
 
-final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserAbstractStrategy {
-    @Nullable
-    private XmppStanza.Kind kind;
-    @Nullable
-    private String id;
-    @Nullable
-    private XmppStanza.TypeAttribute type;
+final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategyStanza {
     @Nullable
     private String resource;
     @Nullable
     private String jid;
     private boolean waitingForResource = false;
     private boolean waitingForJid = false;
-
-    private int openingTagCount = 0;
-    private int closingTagCount = 0;
 
     @Nullable
     private XmppStanza stanza;
@@ -34,40 +25,24 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserAbstractStr
 
     @Override
     public void startElementReached(@NotNull final String name) {
-        ++openingTagCount;
+        super.startElementReached(name);
 
-        System.out.println(name);
-        if (kind == null) {
-            System.out.println("Stanza!!!");
-            kind = XmppStanza.Kind.of(name);
-
-            for (int i = 0; i < reader.getAttributeCount(); ++i) {
-                switch (reader.getAttributeLocalName(i)) {
-                    case "id":
-                        id = reader.getAttributeValue(i);
-                        break;
-                    case "type":
-                        type = XmppStanza.TypeAttribute.of(kind, reader.getAttributeValue(i));
-                        break;
-                }
-            }
-        } else {
-            switch (kind) {
-                case IQ:
-                    if ("bind".equals(name) && XmppStreamFeatures.Type.RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
-                        System.out.println("OK!");
-                    } else if ("resource".equals(name)) {
-                        waitingForResource = true;
-                    } else if ("jid".equals(name)) {
-                        waitingForJid = true;
-                    }
+        if (tagCount > 0) {
+            if ("bind".equals(name) && XmppStreamFeatures.Type.RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
+                System.out.println("OK!");
+            } else if ("resource".equals(name)) {
+                waitingForResource = true;
+            } else if ("jid".equals(name)) {
+                waitingForJid = true;
             }
         }
     }
 
     @Override
     public void endElementReached() {
-        if (++closingTagCount == openingTagCount) {
+        super.endElementReached();
+
+        if (tagCount == 0) {
             if (kind == null) {
                 //TODO error
             } else if (reader.getLocalName().equals(kind.toString())) {
@@ -111,10 +86,5 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserAbstractStr
         this.stanza = null;
 
         return stanza;
-    }
-
-    @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
-
     }
 }

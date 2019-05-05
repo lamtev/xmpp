@@ -34,9 +34,4 @@ final class XmppStreamParserStrategyStreamCloseTag extends XmppStreamParserAbstr
     public @NotNull XmppStreamCloseTag readyUnit() {
         return XmppStreamCloseTag.INSTANCE;
     }
-
-    @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
-
-    }
 }

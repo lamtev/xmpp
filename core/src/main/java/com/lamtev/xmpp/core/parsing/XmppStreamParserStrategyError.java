@@ -35,9 +35,4 @@ final class XmppStreamParserStrategyError extends XmppStreamParserAbstractStrate
     public XmppUnit readyUnit() {
         return null;
     }
-
-    @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
-
-    }
 }
