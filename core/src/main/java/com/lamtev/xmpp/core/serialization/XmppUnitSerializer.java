@@ -21,8 +21,7 @@ public final class XmppUnitSerializer {
     @SuppressWarnings("unchecked")
     @NotNull
     private final Consumer<XmppStreamFeatures>[] streamFeatureSerializers = new Consumer[]{
-            (tls) -> {
-            },
+            (tls) -> {},
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeaturesSASL,
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
     };
@@ -146,8 +145,6 @@ public final class XmppUnitSerializer {
             writer.writeDefaultNamespace(XmppSaslAuthSuccess.NAMESPACE);
             writer.writeEndElement();
             writer.flush();
-//            out.writeBytes("/>".getBytes(UTF_8));
-            System.out.println(out.toString(UTF_8));
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
