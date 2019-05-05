@@ -119,4 +119,29 @@ final class XmppUnitSerializerTest {
             assertEquals(expectedIqStanza, baos.toString(UTF_8));
         }
     }
+
+    @Test
+    void testMessageStanzaBodySerialization() throws IOException {
+        final var expectedStanza = "<message from=\"romeo@example.net/orchard\" " +
+                "id=\"ju2ba41c\" " +
+                "to=\"juliet@im.example.com/balcony\" " +
+                "type=\"chat\" " +
+                "xml:lang=\"en\">" +
+                "<body>Neither, fair saint, if either thee dislike.</body>" +
+                "</message>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(new XmppStanza(
+                    XmppStanza.Kind.MESSAGE,
+                    "ju2ba41c",
+                    XmppStanza.TypeAttribute.of(XmppStanza.Kind.MESSAGE, "chat"),
+                    new XmppStanza.MessageBody("Neither, fair saint, if either thee dislike."),
+                    "romeo@example.net/orchard",
+                    "juliet@im.example.com/balcony",
+                    "en"
+            )));
+
+            assertEquals(expectedStanza, baos.toString(UTF_8));
+        }
+    }
 }

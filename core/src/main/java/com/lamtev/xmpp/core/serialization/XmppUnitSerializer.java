@@ -9,6 +9,7 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.ByteArrayOutputStream;
 import java.util.function.Consumer;
 
+import static com.lamtev.xmpp.core.XmppStanza.Entry.MESSAGE_BODY_CODE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class XmppUnitSerializer {
@@ -26,13 +27,12 @@ public final class XmppUnitSerializer {
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
     };
     @SuppressWarnings("unchecked")
-    @NotNull
-    private final Consumer<? super XmppUnit>[] unitSerializers = new Consumer[]{
-            (Consumer<XmppStreamHeader>) this::serializeStreamHeader,
-            (Consumer<XmppStreamFeatures>) this::serializeStreamFeatures,
-            (Consumer<XmppStanza>) this::serializeStanza,
-            (Consumer<XmppError>) this::serializeError,
-            (Consumer<XmppSaslAuthSuccess>) this::serializeSaslAuthSuccess,
+    private final Consumer<? super XmppStanza.Entry>[] iqStanzaSerializers = new Consumer[]{
+            (Consumer<XmppStanza.IqBind>) this::serializeIqStanzaBind,
+    };
+    @SuppressWarnings("unchecked")
+    private final Consumer<? super XmppStanza.Entry>[] messageStanzaSerializers = new Consumer[]{
+            (Consumer<XmppStanza.MessageBody>) this::serializeMessageStanzaBody,
     };
     @SuppressWarnings("unchecked")
     @NotNull
@@ -42,8 +42,13 @@ public final class XmppUnitSerializer {
             (Consumer<XmppStanza>) this::serializeIqStanza,
     };
     @SuppressWarnings("unchecked")
-    private final Consumer<? super XmppStanza.Entry>[] iqStanzaSerializers = new Consumer[]{
-            (Consumer<XmppStanza.IqBind>) this::serializeIqStanzaBind,
+    @NotNull
+    private final Consumer<? super XmppUnit>[] unitSerializers = new Consumer[]{
+            (Consumer<XmppStreamHeader>) this::serializeStreamHeader,
+            (Consumer<XmppStreamFeatures>) this::serializeStreamFeatures,
+            (Consumer<XmppStanza>) this::serializeStanza,
+            (Consumer<XmppError>) this::serializeError,
+            (Consumer<XmppSaslAuthSuccess>) this::serializeSaslAuthSuccess,
     };
 
     public XmppUnitSerializer(@NotNull final String encoding) {
@@ -151,7 +156,30 @@ public final class XmppUnitSerializer {
     }
 
     private void serializeMessageStanza(@NotNull final XmppStanza stanza) {
-        //TODO
+        try {
+            writer.writeStartElement("message");
+            final var from = stanza.from();
+            if (from != null) {
+                writer.writeAttribute("from", from);
+            }
+            writer.writeAttribute("id", stanza.id());
+            final var to = stanza.to();
+            if (to != null) {
+                writer.writeAttribute("to", to);
+            }
+            writer.writeAttribute("type", stanza.type().toString());
+            final var lang = stanza.lang();
+            if (lang != null) {
+                writer.writeAttribute("xml:lang", lang);
+            }
+
+            messageStanzaSerializers[stanza.entry().code() - MESSAGE_BODY_CODE].accept(stanza.entry());
+
+            writer.writeEndElement();
+            writer.flush();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
     }
 
     private void serializePresenceStanza(@NotNull final XmppStanza stanza) {
@@ -187,6 +215,16 @@ public final class XmppUnitSerializer {
                 writer.writeCharacters(bind.jid());
                 writer.writeEndElement();
             }
+            writer.writeEndElement();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeMessageStanzaBody(@NotNull final XmppStanza.MessageBody messageBody) {
+        try {
+            writer.writeStartElement("body");
+            writer.writeCharacters(messageBody.body());
             writer.writeEndElement();
         } catch (XMLStreamException e) {
             e.printStackTrace();
