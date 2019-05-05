@@ -5,19 +5,19 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;
 
-public class XmppStreamParserStrategyStanzaMessage extends XmppStreamParserAbstractStrategy {
+public class XmppStreamParserStrategyStanzaMessage extends XmppStreamParserStrategyStanza {
     XmppStreamParserStrategyStanzaMessage(@NotNull final XMLStreamReader reader) {
         super(reader);
     }
 
     @Override
     public void startElementReached(@NotNull final String name) {
-
+        super.startElementReached(name);
     }
 
     @Override
     public void endElementReached() {
-
+        super.endElementReached();
     }
 
     @Override
@@ -33,10 +33,5 @@ public class XmppStreamParserStrategyStanzaMessage extends XmppStreamParserAbstr
     @Override
     public @NotNull XmppUnit readyUnit() {
         return null;
-    }
-
-    @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
-
     }
 }

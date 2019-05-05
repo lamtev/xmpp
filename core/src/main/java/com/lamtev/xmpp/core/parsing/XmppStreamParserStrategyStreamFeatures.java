@@ -34,9 +34,4 @@ final class XmppStreamParserStrategyStreamFeatures extends XmppStreamParserAbstr
     public @NotNull XmppUnit readyUnit() {
         return null;
     }
-
-    @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
-
-    }
 }

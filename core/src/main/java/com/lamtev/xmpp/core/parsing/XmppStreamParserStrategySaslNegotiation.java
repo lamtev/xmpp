@@ -84,14 +84,4 @@ final class XmppStreamParserStrategySaslNegotiation extends XmppStreamParserAbst
 
         return res;
     }
-
-    @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
-        this.errorObserver = observer;
-    }
-
-    @Override
-    public void updateReader(@NotNull XMLStreamReader reader) {
-
-    }
 }
