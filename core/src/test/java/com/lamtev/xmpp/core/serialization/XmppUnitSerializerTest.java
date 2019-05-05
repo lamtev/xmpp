@@ -1,6 +1,7 @@
 package com.lamtev.xmpp.core.serialization;
 
 import com.lamtev.xmpp.core.XmppSaslAuthSuccess;
+import com.lamtev.xmpp.core.XmppStanza;
 import com.lamtev.xmpp.core.XmppStreamFeatures;
 import com.lamtev.xmpp.core.XmppStreamHeader;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +30,7 @@ final class XmppUnitSerializerTest {
 
         final var streamHeader = new XmppStreamHeader("juliet@im.example.com", "im.example.com", null, 1.0f, XmppStreamHeader.ContentNamespace.CLIENT);
 
-        try (var baos = new ByteArrayOutputStream()) {
+        try (final var baos = new ByteArrayOutputStream()) {
             baos.writeBytes(serializer.serialize(streamHeader));
 
             assertEquals(expectedStreamHeader, baos.toString(UTF_8));
@@ -46,7 +47,7 @@ final class XmppUnitSerializerTest {
 
         final var streamFeatures = XmppStreamFeatures.of(XmppStreamFeatures.Type.SASLMechanism.PLAIN);
 
-        try (var baos = new ByteArrayOutputStream()) {
+        try (final var baos = new ByteArrayOutputStream()) {
             baos.writeBytes(serializer.serialize(streamFeatures));
 
             assertEquals(expectedStreamFeatures, baos.toString(UTF_8));
@@ -61,7 +62,7 @@ final class XmppUnitSerializerTest {
 
         final var streamFeatures = XmppStreamFeatures.of(XmppStreamFeatures.Type.RESOURCE_BINDING);
 
-        try (var baos = new ByteArrayOutputStream()) {
+        try (final var baos = new ByteArrayOutputStream()) {
             baos.writeBytes(serializer.serialize(streamFeatures));
 
             assertEquals(expectedStreamFeatures, baos.toString(UTF_8));
@@ -72,10 +73,50 @@ final class XmppUnitSerializerTest {
     void testSaslAuthSuccessSerialization() throws IOException {
         final var expectedSuccess = "<success xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"></success>";
 
-        try (var baos = new ByteArrayOutputStream()) {
+        try (final var baos = new ByteArrayOutputStream()) {
             baos.writeBytes(serializer.serialize(new XmppSaslAuthSuccess()));
 
             assertEquals(expectedSuccess, baos.toString(UTF_8));
+        }
+    }
+
+    @Test
+    void testIqStanzaBindResourceSerialization() throws IOException {
+        final var expectedIqStanza = "<iq id=\"yhc13a95\" type=\"set\">" +
+                "<bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\">" +
+                "<resource>balcony</resource>" +
+                "</bind>" +
+                "</iq>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(new XmppStanza(
+                    XmppStanza.Kind.IQ,
+                    "yhc13a95",
+                    XmppStanza.IqTypeAttribute.SET,
+                    new XmppStanza.IqStanzaBind("balcony", null)
+            )));
+
+            assertEquals(expectedIqStanza, baos.toString(UTF_8));
+        }
+    }
+
+    @Test
+    void testIqStanzaBindJidSerialization() throws IOException {
+        final var expectedIqStanza = "<iq id=\"yhc13a95\" type=\"set\">" +
+                "<bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\">" +
+                "<jid>juliet@im.example.com/balcony</jid>" +
+                "</bind>" +
+                "</iq>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(new XmppStanza(
+                    XmppStanza.Kind.IQ,
+                    "yhc13a95",
+                    XmppStanza.IqTypeAttribute.SET,
+                    new XmppStanza.IqStanzaBind(null, "juliet@im.example.com/balcony")
+            )));
+
+            assertEquals(expectedIqStanza, baos.toString(UTF_8));
         }
     }
 }

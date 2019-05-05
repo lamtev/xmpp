@@ -103,7 +103,7 @@ final class XmppStreamParserTest {
                     assertEquals(IQ, resBindingStanza.kind());
                     assertEquals("yhc13a95", resBindingStanza.id());
                     assertSame(XmppStanza.IqTypeAttribute.SET, resBindingStanza.type());
-                    assertEquals("balcony", resBindingStanza.resource());
+                    assertEquals("balcony", ((XmppStanza.IqStanzaBind) resBindingStanza.entry()).resource());
                 }
 
                 @Override
