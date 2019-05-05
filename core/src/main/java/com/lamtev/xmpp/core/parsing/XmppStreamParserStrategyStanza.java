@@ -20,7 +20,9 @@ final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
     private String resource;
 
     private boolean waitingForResource = false;
-    private int endCount = 0;
+
+    private int openingTagCount = 0;
+    private int closingTagCount = 0;
 
     @Nullable
     private XmppStanza stanza;
@@ -31,6 +33,8 @@ final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
 
     @Override
     public void startElementReached(@NotNull final String name) {
+        ++openingTagCount;
+
         System.out.println(name);
         if (kind == null) {
             System.out.println("Stanza!!!");
@@ -60,8 +64,22 @@ final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
 
     @Override
     public void endElementReached() {
-        if (reader.getLocalName().equals("iq")) {
-            stanza = new XmppStanza(kind, id, type, resource != null ? resource : "");
+        if (++closingTagCount == openingTagCount) {
+            if (kind == null) {
+                //TODO error
+            } else if (reader.getLocalName().equals(kind.toString())) {
+                if (id == null) {
+                    //TODO error
+                    return;
+                }
+                if (type == null) {
+                    //TODO error
+                    return;
+                }
+                stanza = new XmppStanza(kind, id, type, new XmppStanza.IqStanzaBind(resource, null));
+            } else {
+                //TODO error
+            }
         }
     }
 

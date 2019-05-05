@@ -1,6 +1,8 @@
 package com.lamtev.xmpp.core;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class XmppStanza implements XmppUnit {
     @NotNull
@@ -8,15 +10,15 @@ public final class XmppStanza implements XmppUnit {
     @NotNull
     private final String id;
     @NotNull
-    private final String resource;
-    @NotNull
     private final TypeAttribute type;
+    @NotNull
+    private final Entry entry;
 
-    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final String resource) {
+    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final Entry entry) {
         this.kind = kind;
         this.id = id;
         this.type = type;
-        this.resource = resource;
+        this.entry = entry;
     }
 
     @NotNull
@@ -29,13 +31,13 @@ public final class XmppStanza implements XmppUnit {
         return id;
     }
 
+    @NotNull
     public TypeAttribute type() {
         return type;
     }
 
-    @NotNull
-    public String resource() {
-        return resource;
+    public Entry entry() {
+        return entry;
     }
 
     @Override
@@ -109,6 +111,12 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
+    public interface Entry {
+        int IQ_BIND_CODE = 0;
+
+        int code();
+    }
+
     public interface TypeAttribute {
         @NotNull
         static TypeAttribute of(@NotNull final Kind kind, @NotNull final String string) {
@@ -118,6 +126,34 @@ public final class XmppStanza implements XmppUnit {
                 default:
                     throw new IllegalArgumentException();
             }
+        }
+    }
+
+    public static final class IqStanzaBind implements Entry {
+        @Nullable
+        private final String resource;
+        @Nullable
+        private final String jid;
+
+        @Contract("!null, !null -> fail")
+        public IqStanzaBind(@Nullable final String resource, @Nullable final String jid) {
+            this.resource = resource;
+            this.jid = jid;
+        }
+
+        @Nullable
+        public String resource() {
+            return resource;
+        }
+
+        @Nullable
+        public String jid() {
+            return jid;
+        }
+
+        @Override
+        public int code() {
+            return IQ_BIND_CODE;
         }
     }
 

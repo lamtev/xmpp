@@ -21,19 +21,31 @@ public final class XmppUnitSerializer {
     @SuppressWarnings("unchecked")
     @NotNull
     private final Consumer<XmppStreamFeatures>[] streamFeatureSerializers = new Consumer[]{
-            (tls) -> {},
+            (tls) -> {
+            },
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeaturesSASL,
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
     };
     @SuppressWarnings("unchecked")
     @NotNull
-    private final Consumer<? super XmppUnit>[] serializers = new Consumer[]{
+    private final Consumer<? super XmppUnit>[] unitSerializers = new Consumer[]{
             (Consumer<XmppStreamHeader>) this::serializeStreamHeader,
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeatures,
             (Consumer<XmppStanza>) this::serializeStanza,
             (Consumer<XmppError>) this::serializeError,
             (Consumer<XmppSaslAuthSuccess>) this::serializeSaslAuthSuccess,
-};
+    };
+    @SuppressWarnings("unchecked")
+    @NotNull
+    private final Consumer<XmppStanza>[] stanzaSerializers = new Consumer[]{
+            (Consumer<XmppStanza>) this::serializeMessageStanza,
+            (Consumer<XmppStanza>) this::serializePresenceStanza,
+            (Consumer<XmppStanza>) this::serializeIqStanza,
+    };
+    @SuppressWarnings("unchecked")
+    private final Consumer<? super XmppStanza.Entry>[] iqStanzaSerializers = new Consumer[]{
+            (Consumer<XmppStanza.IqStanzaBind>) this::serializeIqStanzaBind,
+    };
 
     public XmppUnitSerializer(@NotNull final String encoding) {
         this.encoding = encoding;
@@ -48,7 +60,7 @@ public final class XmppUnitSerializer {
 
     @NotNull
     public byte[] serialize(@NotNull final XmppUnit unit) {
-        serializers[unit.code()].accept(unit);
+        unitSerializers[unit.code()].accept(unit);
 
         final var bytes = out.toByteArray();
         out.reset();
@@ -121,7 +133,7 @@ public final class XmppUnitSerializer {
     }
 
     private void serializeStanza(@NotNull final XmppStanza stanza) {
-        //TODO
+        stanzaSerializers[stanza.kind().ordinal()].accept(stanza);
     }
 
     private void serializeError(@NotNull final XmppError error) {
@@ -136,6 +148,49 @@ public final class XmppUnitSerializer {
             writer.flush();
 //            out.writeBytes("/>".getBytes(UTF_8));
             System.out.println(out.toString(UTF_8));
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeMessageStanza(@NotNull final XmppStanza stanza) {
+        //TODO
+    }
+
+    private void serializePresenceStanza(@NotNull final XmppStanza stanza) {
+        //TODO
+    }
+
+    private void serializeIqStanza(@NotNull final XmppStanza stanza) {
+        try {
+            writer.writeStartElement("iq");
+            writer.writeAttribute("id", stanza.id());
+            writer.writeAttribute("type", stanza.type().toString());
+
+            iqStanzaSerializers[stanza.entry().code()].accept(stanza.entry());
+
+            writer.writeEndElement();
+            writer.flush();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeIqStanzaBind(@NotNull final XmppStanza.IqStanzaBind bind) {
+        try {
+            writer.writeStartElement("bind");
+            //TODO: XmppStreamFeatures.Type ???
+            writer.writeDefaultNamespace(XmppStreamFeatures.Type.RESOURCE_BINDING.toString());
+            if (bind.resource() != null) {
+                writer.writeStartElement("resource");
+                writer.writeCharacters(bind.resource());
+                writer.writeEndElement();
+            } else if (bind.jid() != null) {
+                writer.writeStartElement("jid");
+                writer.writeCharacters(bind.jid());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
