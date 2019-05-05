@@ -101,7 +101,7 @@ public class Messenger implements XmppServer.Handler {
                 } else if (unit instanceof XmppStanza) {
                     final var st = (XmppStanza) unit;
 
-                    System.out.println(st.resource());
+                    System.out.println(((XmppStanza.IqStanzaBind) st.entry()).resource());
 
                     responseStream.sendUnit("<iq id='" + st.id() + "' type='result'>\n" +
                             "     <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>\n" +
