@@ -82,6 +82,7 @@ public class Messenger implements XmppServer.Handler {
 
                     responseStream.sendUnit(new XmppSaslAuthSuccess());
                     System.out.println("Auth success sent");
+                    System.out.println(exchange.state());
                 }
                 break;
             case RESOURCE_BINDING:
@@ -112,6 +113,5 @@ public class Messenger implements XmppServer.Handler {
                             "   </iq>");
                 }
         }
-
     }
 }

@@ -55,7 +55,7 @@ public final class XmppInputStream implements AutoCloseable, XmppStreamParser.De
     }
 
     public void reopen() {
-        parser.restart();
+        parser.reset();
     }
 
     @Override
@@ -93,6 +93,7 @@ public final class XmppInputStream implements AutoCloseable, XmppStreamParser.De
 
     @Override
     public void parserDidParseUnit(@NotNull final XmppUnit unit) {
+        System.out.println(unit + " parsed");
         if (unit instanceof XmppStreamFeatures) {
             featureProcessors[((XmppStreamFeatures) unit).type().ordinal()].run();
         }

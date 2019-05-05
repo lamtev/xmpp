@@ -5,13 +5,13 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;
 
-final class XmppStreamParserStrategyStreamFeatures implements XmppStreamParserStrategy {
+final class XmppStreamParserStrategyStreamFeatures extends XmppStreamParserAbstractStrategy {
     XmppStreamParserStrategyStreamFeatures(@NotNull final XMLStreamReader reader) {
-
+        super(reader);
     }
 
     @Override
-    public void startElementReached(String name) {
+    public void startElementReached(@NotNull final String name) {
 
     }
 
