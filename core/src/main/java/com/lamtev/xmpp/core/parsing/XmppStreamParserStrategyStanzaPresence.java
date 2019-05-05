@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;
 
-public class XmppStreamParserStrategyStanzaPresence extends XmppStreamParserStrategyStanza {
+final class XmppStreamParserStrategyStanzaPresence extends XmppStreamParserStrategyStanza {
     XmppStreamParserStrategyStanzaPresence(@NotNull final XMLStreamReader reader) {
         super(reader);
     }

@@ -15,7 +15,11 @@ abstract class XmppStreamParserStrategyStanza extends XmppStreamParserAbstractSt
     @Nullable
     XmppStanza.TypeAttribute type;
     @Nullable
-
+    String from;
+    @Nullable
+    String to;
+    @Nullable
+    String lang;
     XmppStreamParserStrategyStanza(@NotNull final XMLStreamReader reader) {
         super(reader);
     }
@@ -32,6 +36,16 @@ abstract class XmppStreamParserStrategyStanza extends XmppStreamParserAbstractSt
                         break;
                     case "type":
                         type = XmppStanza.TypeAttribute.of(kind, reader.getAttributeValue(i));
+                        break;
+                    case "from":
+                        from = reader.getAttributeValue(i);
+                        break;
+                    case "to":
+                        to = reader.getAttributeValue(i);
+                        break;
+                    case "lang":
+                        //TODO: check that that works
+                        lang = reader.getAttributeValue(i);
                         break;
                 }
             }
