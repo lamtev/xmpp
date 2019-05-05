@@ -3,6 +3,8 @@ package com.lamtev.xmpp.core.parsing;
 import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 
+import javax.xml.stream.XMLStreamReader;
+
 interface XmppStreamParserStrategy {
 
     static boolean isPotentialStreamHeader(@NotNull final String element) {
@@ -18,8 +20,16 @@ interface XmppStreamParserStrategy {
     }
 
     //TODO: replace with set
-    static boolean isPotentialStanza(@NotNull final String element) {
-        return "message".equals(element) || "presence".equals(element) || "iq".equals(element) || "bind".equals(element) || "resource".equals(element) || "jid".equals(element);
+    static boolean isPotentialStanzaIq(@NotNull final String element) {
+        return "iq".equals(element);
+    }
+
+    static boolean isPotentialStanzaMessage(@NotNull final String element) {
+        return "message".equals(element);
+    }
+
+    static boolean isPotentialStanzaPresence(@NotNull final String element) {
+        return "presence".equals(element);
     }
 
     static boolean isPotentialError(@NotNull final String element) {
@@ -39,6 +49,8 @@ interface XmppStreamParserStrategy {
 
     void setErrorObserver(@NotNull final ErrorObserver observer);
 
+    void updateReader(@NotNull final XMLStreamReader reader);
+
 //    /**
 //     * Unique sequential code associated with concrete XmppStreamParserStrategy instance
 //     * @see XmppUnit#code()
@@ -50,7 +62,9 @@ interface XmppStreamParserStrategy {
         STREAM_HEADER,
         STREAM_FEATURES,
         SASL_NEGOTIATION,
-        STANZA,
+        STANZA_IQ,
+        STANZA_MESSAGE,
+        STANZA_PRESENCE,
         ERROR,
     }
 

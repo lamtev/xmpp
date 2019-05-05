@@ -7,9 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
 
-final class XmppStreamParserStrategySaslNegotiation implements XmppStreamParserStrategy {
-    @NotNull
-    private final XMLStreamReader reader;
+final class XmppStreamParserStrategySaslNegotiation extends XmppStreamParserAbstractStrategy {
     @NotNull
     private ErrorObserver errorObserver;
     @Nullable
@@ -19,8 +17,8 @@ final class XmppStreamParserStrategySaslNegotiation implements XmppStreamParserS
     @Nullable
     private XmppSaslAuth auth;
 
-    XmppStreamParserStrategySaslNegotiation(@NotNull final XMLStreamReader reader) {
-        this.reader = reader;
+    XmppStreamParserStrategySaslNegotiation(@NotNull XMLStreamReader reader) {
+        super(reader);
     }
 
     @Override
@@ -71,7 +69,7 @@ final class XmppStreamParserStrategySaslNegotiation implements XmppStreamParserS
 
     @Override
     public boolean unitIsReady() {
-        return authBody != null;
+        return auth != null;
     }
 
     @Override
@@ -90,5 +88,10 @@ final class XmppStreamParserStrategySaslNegotiation implements XmppStreamParserS
     @Override
     public void setErrorObserver(@NotNull ErrorObserver observer) {
         this.errorObserver = observer;
+    }
+
+    @Override
+    public void updateReader(@NotNull XMLStreamReader reader) {
+
     }
 }

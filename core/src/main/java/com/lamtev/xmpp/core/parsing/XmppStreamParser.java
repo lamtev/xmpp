@@ -9,8 +9,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 import static com.lamtev.xmpp.core.parsing.XmppStreamParserStrategy.Name.*;
 import static com.lamtev.xmpp.core.parsing.XmppStreamParserStrategy.*;
@@ -26,13 +24,20 @@ public final class XmppStreamParser {
     @Nullable
     private Delegate delegate;
     @NotNull
-    private Deque<XmppStreamParserStrategy> strategyStack = new ArrayDeque<>(5);
+    private XmppStreamParserStrategyCache strategyCache;
+    @Nullable
+    private XmppStreamParserStrategy strategy;
 
     public XmppStreamParser(@NotNull final InputStream inputStream, @NotNull final String encoding) throws XmppStreamParserException {
         try {
             in = inputStream;
             factory = XMLInputFactory.newInstance();
             reader = factory.createXMLStreamReader(inputStream, encoding);
+            strategyCache = new XmppStreamParserStrategyCache(reader, (error) -> {
+                if (delegate != null) {
+                    delegate.parserDidFailWithError(error);
+                }
+            });
         } catch (final XMLStreamException e) {
             final var message = "" + e.getMessage();
             throw new XmppStreamParserException(message, e);
@@ -40,12 +45,6 @@ public final class XmppStreamParser {
     }
 
     public void startParsing() {
-        final var cache = new XmppStreamParserStrategyCache(reader, (error) -> {
-            if (delegate != null) {
-                delegate.parserDidFailWithError(error);
-            }
-        });
-
         try {
             int event = reader.getEventType();
             while (reader.hasNext()) {
@@ -53,41 +52,58 @@ public final class XmppStreamParser {
                 switch (event) {
                     case START_ELEMENT: {
                         final var elementName = reader.getLocalName();
-                        XmppStreamParserStrategy strategy = null;
-                        if (isPotentialStreamHeader(elementName)) {
-                            strategy = cache.get(STREAM_HEADER);
-                        } else if (isPotentialSaslNegotiation(elementName)) {
-                            strategy = cache.get(SASL_NEGOTIATION);
-                        } else if (isPotentialStanza(elementName)) {
-                            strategy = cache.get(STANZA);
-                        } else if (isPotentialError(elementName)) {
-                            strategy = cache.get(ERROR);
-                        } else {
-                            if (delegate != null) {
-                                delegate.parserDidFailWithError(Error.UNRECOGNIZED_ELEMENT);
+
+                        boolean needNewStrategy = strategy == null;
+
+                        if (needNewStrategy) {
+                            if (isPotentialStreamHeader(elementName)) {
+                                strategy = strategyCache.get(STREAM_HEADER);
+                            } else if (isPotentialSaslNegotiation(elementName)) {
+                                strategy = strategyCache.get(SASL_NEGOTIATION);
+                            } else if (isPotentialStanzaIq(elementName)) {
+                                strategy = strategyCache.get(STANZA_IQ);
+                            } else if (isPotentialStanzaMessage(elementName)) {
+                                strategy = strategyCache.get(STANZA_MESSAGE);
+                            } else if (isPotentialStanzaPresence(elementName)) {
+                                strategy = strategyCache.get(STANZA_PRESENCE);
+                            } else if (isPotentialError(elementName)) {
+                                strategy = strategyCache.get(ERROR);
+                            } else {
+                                if (delegate != null) {
+                                    delegate.parserDidFailWithError(Error.UNRECOGNIZED_ELEMENT);
+                                }
                                 return;
                             }
+                            System.out.println(strategy + " set");
                         }
-                        strategyStack.push(strategy);
+
                         strategy.startElementReached(elementName);
 
                         if (strategy.unitIsReady() && delegate != null) {
                             delegate.parserDidParseUnit(strategy.readyUnit());
+                            strategy = null;
                         }
                         break;
                     }
                     case END_ELEMENT: {
-                        final var strategy = strategyStack.pop();
-                        strategy.endElementReached();
+                        if (strategy == null) {
+                            //TODO handle error
+                        } else {
+                            strategy.endElementReached();
 
-                        if (strategy.unitIsReady() && delegate != null) {
-                            delegate.parserDidParseUnit(strategy.readyUnit());
+                            if (strategy.unitIsReady() && delegate != null) {
+                                delegate.parserDidParseUnit(strategy.readyUnit());
+                                strategy = null;
+                            }
                         }
                         break;
                     }
                     case CHARACTERS:
-                        final var strategy = strategyStack.peekFirst();
-                        strategy.charactersReached();
+                        if (strategy == null) {
+                            //TODO handle error
+                        } else {
+                            strategy.charactersReached();
+                        }
                         break;
                     case END_DOCUMENT:
                         if (delegate != null) {
@@ -111,15 +127,14 @@ public final class XmppStreamParser {
         }
     }
 
-    public void restart() {
+    public void reset() {
         try {
-//            reader.close();
+            reader.close();
             reader = factory.createXMLStreamReader(in);
+            strategyCache.updateReader(reader);
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
-
-        startParsing();
     }
 
     public void setDelegate(@NotNull final Delegate delegate) {

@@ -3,6 +3,8 @@ package com.lamtev.xmpp.core.parsing;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Function;
 
 final class XmppStreamParserStrategyCache {
@@ -14,11 +16,13 @@ final class XmppStreamParserStrategyCache {
             (Function<XMLStreamReader, XmppStreamParserStrategyStreamHeader>) XmppStreamParserStrategyStreamHeader::new,
             (Function<XMLStreamReader, XmppStreamParserStrategyStreamFeatures>) XmppStreamParserStrategyStreamFeatures::new,
             (Function<XMLStreamReader, XmppStreamParserStrategySaslNegotiation>) XmppStreamParserStrategySaslNegotiation::new,
-            (Function<XMLStreamReader, XmppStreamParserStrategyStanza>) XmppStreamParserStrategyStanza::new,
+            (Function<XMLStreamReader, XmppStreamParserStrategyStanzaIq>) XmppStreamParserStrategyStanzaIq::new,
+            (Function<XMLStreamReader, XmppStreamParserStrategyStanzaMessage>) XmppStreamParserStrategyStanzaMessage::new,
+            (Function<XMLStreamReader, XmppStreamParserStrategyStanzaPresence>) XmppStreamParserStrategyStanzaPresence::new,
             (Function<XMLStreamReader, XmppStreamParserStrategyError>) XmppStreamParserStrategyError::new,
     };
     @NotNull
-    private final XMLStreamReader reader;
+    private XMLStreamReader reader;
     @NotNull
     private final XmppStreamParserStrategy.ErrorObserver errorObserver;
 
@@ -36,5 +40,10 @@ final class XmppStreamParserStrategyCache {
         }
 
         return cache[idx];
+    }
+
+    void updateReader(@NotNull final XMLStreamReader reader) {
+        this.reader = reader;
+        Arrays.stream(cache).filter(Objects::nonNull).forEach(it -> it.updateReader(reader));
     }
 }
