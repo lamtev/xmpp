@@ -57,6 +57,7 @@ public final class XmppStanza implements XmppUnit {
             this.string = string;
         }
 
+        @NotNull
         public static Kind of(@NotNull final String string) {
             if (MESSAGE.string.equals(string)) {
                 return MESSAGE;
