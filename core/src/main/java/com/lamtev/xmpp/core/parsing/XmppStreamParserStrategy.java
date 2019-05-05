@@ -19,7 +19,7 @@ interface XmppStreamParserStrategy {
 
     //TODO: replace with set
     static boolean isPotentialStanza(@NotNull final String element) {
-        return "message".equals(element) || "presence".equals(element) || "iq".equals(element) || "bind".equals(element) || "resource".equals(element);
+        return "message".equals(element) || "presence".equals(element) || "iq".equals(element) || "bind".equals(element) || "resource".equals(element) || "jid".equals(element);
     }
 
     static boolean isPotentialError(@NotNull final String element) {

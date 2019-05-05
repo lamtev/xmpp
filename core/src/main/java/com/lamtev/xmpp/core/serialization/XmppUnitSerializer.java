@@ -43,7 +43,7 @@ public final class XmppUnitSerializer {
     };
     @SuppressWarnings("unchecked")
     private final Consumer<? super XmppStanza.Entry>[] iqStanzaSerializers = new Consumer[]{
-            (Consumer<XmppStanza.IqStanzaBind>) this::serializeIqStanzaBind,
+            (Consumer<XmppStanza.IqBind>) this::serializeIqStanzaBind,
     };
 
     public XmppUnitSerializer(@NotNull final String encoding) {
@@ -173,7 +173,7 @@ public final class XmppUnitSerializer {
         }
     }
 
-    private void serializeIqStanzaBind(@NotNull final XmppStanza.IqStanzaBind bind) {
+    private void serializeIqStanzaBind(@NotNull final XmppStanza.IqBind bind) {
         try {
             writer.writeStartElement("bind");
             //TODO: XmppStreamFeatures.Type ???
