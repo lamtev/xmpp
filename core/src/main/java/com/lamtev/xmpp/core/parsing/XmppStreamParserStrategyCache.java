@@ -13,7 +13,7 @@ final class XmppStreamParserStrategyCache {
     private final Function<XMLStreamReader, ? extends XmppStreamParserStrategy>[] constructors = new Function[]{
             (Function<XMLStreamReader, XmppStreamParserStrategyStreamHeader>) XmppStreamParserStrategyStreamHeader::new,
             (Function<XMLStreamReader, XmppStreamParserStrategyStreamFeatures>) XmppStreamParserStrategyStreamFeatures::new,
-            (Function<XMLStreamReader, XmppStreamParserStrategySASLNegotiation>) XmppStreamParserStrategySASLNegotiation::new,
+            (Function<XMLStreamReader, XmppStreamParserStrategySaslNegotiation>) XmppStreamParserStrategySaslNegotiation::new,
             (Function<XMLStreamReader, XmppStreamParserStrategyStanza>) XmppStreamParserStrategyStanza::new,
             (Function<XMLStreamReader, XmppStreamParserStrategyError>) XmppStreamParserStrategyError::new,
     };
