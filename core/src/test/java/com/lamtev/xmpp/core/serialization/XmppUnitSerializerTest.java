@@ -93,7 +93,7 @@ final class XmppUnitSerializerTest {
                     XmppStanza.Kind.IQ,
                     "yhc13a95",
                     XmppStanza.TypeAttribute.of(XmppStanza.Kind.IQ, "set"),
-                    new XmppStanza.IqStanzaBind("balcony", null)
+                    new XmppStanza.IqBind("balcony", null)
             )));
 
             assertEquals(expectedIqStanza, baos.toString(UTF_8));
@@ -113,7 +113,7 @@ final class XmppUnitSerializerTest {
                     XmppStanza.Kind.IQ,
                     "yhc13a95",
                     XmppStanza.TypeAttribute.of(XmppStanza.Kind.IQ, "set"),
-                    new XmppStanza.IqStanzaBind(null, "juliet@im.example.com/balcony")
+                    new XmppStanza.IqBind(null, "juliet@im.example.com/balcony")
             )));
 
             assertEquals(expectedIqStanza, baos.toString(UTF_8));

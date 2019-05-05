@@ -18,7 +18,10 @@ final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
     private XmppStanza.TypeAttribute type;
     @Nullable
     private String resource;
+    @Nullable
+    private String jid;
     private boolean waitingForResource = false;
+    private boolean waitingForJid = false;
 
     private int openingTagCount = 0;
     private int closingTagCount = 0;
@@ -56,6 +59,8 @@ final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
                         System.out.println("OK!");
                     } else if ("resource".equals(name)) {
                         waitingForResource = true;
+                    } else if ("jid".equals(name)) {
+                        waitingForJid = true;
                     }
             }
         }
@@ -75,7 +80,7 @@ final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
                     //TODO error
                     return;
                 }
-                stanza = new XmppStanza(kind, id, type, new XmppStanza.IqStanzaBind(resource, null));
+                stanza = new XmppStanza(kind, id, type, new XmppStanza.IqBind(resource, jid));
             } else {
                 //TODO error
             }
@@ -87,6 +92,9 @@ final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
         if (waitingForResource) {
             waitingForResource = false;
             resource = reader.getText();
+        } else if (waitingForJid) {
+            waitingForJid = false;
+            jid = reader.getText();
         }
     }
 

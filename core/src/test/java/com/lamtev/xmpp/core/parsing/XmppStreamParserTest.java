@@ -85,7 +85,7 @@ final class XmppStreamParserTest {
     }
 
     @Test
-    void testResourceBindingIqParsing() throws XmppStreamParserException, IOException {
+    void testResourceBindingIqBindResourceParsing() throws XmppStreamParserException, IOException {
         final var xml = "<iq id='yhc13a95' type='set'>\n" +
                 "     <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>\n" +
                 "       <resource>balcony</resource>\n" +
@@ -102,8 +102,8 @@ final class XmppStreamParserTest {
 
                     assertEquals(IQ, resBindingStanza.kind());
                     assertEquals("yhc13a95", resBindingStanza.id());
-                    assertSame(XmppStanza.IqTypeAttribute.SET, resBindingStanza.type());
-                    assertEquals("balcony", ((XmppStanza.IqStanzaBind) resBindingStanza.entry()).resource());
+                    assertSame(XmppStanza.TypeAttribute.of(IQ, "set"), resBindingStanza.type());
+                    assertEquals("balcony", ((XmppStanza.IqBind) resBindingStanza.entry()).resource());
                 }
 
                 @Override
@@ -116,4 +116,35 @@ final class XmppStreamParserTest {
         }
     }
 
+    @Test
+    void testResourceBindingIqBindJidParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<iq id=\"yhc13a95\" type=\"set\">" +
+                "<bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\">" +
+                "<jid>juliet@im.example.com/balcony</jid>" +
+                "</bind>" +
+                "</iq>";
+
+        try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var resBindingStanza = (XmppStanza) unit;
+
+                    assertEquals(IQ, resBindingStanza.kind());
+                    assertEquals("yhc13a95", resBindingStanza.id());
+                    assertSame(XmppStanza.TypeAttribute.of(IQ, "set"), resBindingStanza.type());
+                    assertEquals("juliet@im.example.com/balcony", ((XmppStanza.IqBind) resBindingStanza.entry()).jid());
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) {
+                    fail("Unexpected error: " + error);
+                }
+            });
+
+            parser.startParsing();
+        }
+    }
 }

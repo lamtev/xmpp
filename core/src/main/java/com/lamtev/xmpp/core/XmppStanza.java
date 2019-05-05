@@ -13,12 +13,27 @@ public final class XmppStanza implements XmppUnit {
     private final TypeAttribute type;
     @NotNull
     private final Entry entry;
+    @Nullable
+    private final String from;
+    @Nullable
+    private final String to;
 
     public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final Entry entry) {
         this.kind = kind;
         this.id = id;
         this.type = type;
         this.entry = entry;
+        this.from = null;
+        this.to = null;
+    }
+
+    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final Entry entry, @NotNull final String from, @NotNull final String to) {
+        this.kind = kind;
+        this.id = id;
+        this.type = type;
+        this.entry = entry;
+        this.from = from;
+        this.to = to;
     }
 
     @NotNull
@@ -36,8 +51,19 @@ public final class XmppStanza implements XmppUnit {
         return type;
     }
 
+    @NotNull
     public Entry entry() {
         return entry;
+    }
+
+    @Nullable
+    public String from() {
+        return from;
+    }
+
+    @Nullable
+    public String to() {
+        return to;
     }
 
     @Override
@@ -114,6 +140,7 @@ public final class XmppStanza implements XmppUnit {
 
     public interface Entry {
         int IQ_BIND_CODE = 0;
+        int MESSAGE_BODY_CODE = 1;
 
         int code();
     }
@@ -130,14 +157,14 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
-    public static final class IqStanzaBind implements Entry {
+    public static final class IqBind implements Entry {
         @Nullable
         private final String resource;
         @Nullable
         private final String jid;
 
         @Contract("!null, !null -> fail")
-        public IqStanzaBind(@Nullable final String resource, @Nullable final String jid) {
+        public IqBind(@Nullable final String resource, @Nullable final String jid) {
             this.resource = resource;
             this.jid = jid;
         }
@@ -155,6 +182,25 @@ public final class XmppStanza implements XmppUnit {
         @Override
         public int code() {
             return IQ_BIND_CODE;
+        }
+    }
+
+    public static final class MessageBody implements Entry {
+        @NotNull
+        private final String body;
+
+        public MessageBody(@NotNull final String body) {
+            this.body = body;
+        }
+
+        @NotNull
+        public String body() {
+            return body;
+        }
+
+        @Override
+        public int code() {
+            return MESSAGE_BODY_CODE;
         }
     }
 }
