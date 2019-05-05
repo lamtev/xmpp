@@ -157,5 +157,4 @@ public final class XmppStanza implements XmppUnit {
             return IQ_BIND_CODE;
         }
     }
-
 }
