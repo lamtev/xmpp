@@ -18,7 +18,6 @@ final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
     private XmppStanza.TypeAttribute type;
     @Nullable
     private String resource;
-
     private boolean waitingForResource = false;
 
     private int openingTagCount = 0;
