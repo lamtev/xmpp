@@ -13,7 +13,7 @@ interface XmppStreamParserStrategy {
         return "features".equals(element);
     }
 
-    static boolean isPotentialSASLNegotiation(@NotNull final String element) {
+    static boolean isPotentialSaslNegotiation(@NotNull final String element) {
         return "auth".equals(element);
     }
 

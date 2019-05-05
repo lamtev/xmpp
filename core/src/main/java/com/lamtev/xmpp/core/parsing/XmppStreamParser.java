@@ -56,7 +56,7 @@ public final class XmppStreamParser {
                         XmppStreamParserStrategy strategy = null;
                         if (isPotentialStreamHeader(elementName)) {
                             strategy = cache.get(STREAM_HEADER);
-                        } else if (isPotentialSASLNegotiation(elementName)) {
+                        } else if (isPotentialSaslNegotiation(elementName)) {
                             strategy = cache.get(SASL_NEGOTIATION);
                         } else if (isPotentialStanza(elementName)) {
                             strategy = cache.get(STANZA);
