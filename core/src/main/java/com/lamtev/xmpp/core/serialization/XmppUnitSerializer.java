@@ -29,6 +29,7 @@ public final class XmppUnitSerializer {
     @SuppressWarnings("unchecked")
     private final Consumer<? super XmppStanza.Entry>[] iqStanzaSerializers = new Consumer[]{
             (Consumer<XmppStanza.IqBind>) this::serializeIqStanzaBind,
+            (Consumer<XmppStanza.IqQuery>) this::serializeIqStanzaQuery
     };
     @SuppressWarnings("unchecked")
     private final Consumer<? super XmppStanza.Entry>[] messageStanzaSerializers = new Consumer[]{
@@ -158,20 +159,7 @@ public final class XmppUnitSerializer {
     private void serializeMessageStanza(@NotNull final XmppStanza stanza) {
         try {
             writer.writeStartElement("message");
-            final var from = stanza.from();
-            if (from != null) {
-                writer.writeAttribute("from", from);
-            }
-            writer.writeAttribute("id", stanza.id());
-            final var to = stanza.to();
-            if (to != null) {
-                writer.writeAttribute("to", to);
-            }
-            writer.writeAttribute("type", stanza.type().toString());
-            final var lang = stanza.lang();
-            if (lang != null) {
-                writer.writeAttribute("xml:lang", lang);
-            }
+            serializeCommonAttributes(stanza);
 
             messageStanzaSerializers[stanza.entry().code() - MESSAGE_BODY_CODE].accept(stanza.entry());
 
@@ -189,15 +177,30 @@ public final class XmppUnitSerializer {
     private void serializeIqStanza(@NotNull final XmppStanza stanza) {
         try {
             writer.writeStartElement("iq");
-            writer.writeAttribute("id", stanza.id());
-            writer.writeAttribute("type", stanza.type().toString());
-
+            serializeCommonAttributes(stanza);
             iqStanzaSerializers[stanza.entry().code()].accept(stanza.entry());
 
             writer.writeEndElement();
             writer.flush();
         } catch (XMLStreamException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void serializeCommonAttributes(@NotNull final XmppStanza stanza) throws XMLStreamException {
+        final var from = stanza.from();
+        if (from != null) {
+            writer.writeAttribute("from", from);
+        }
+        writer.writeAttribute("id", stanza.id());
+        final var to = stanza.to();
+        if (to != null) {
+            writer.writeAttribute("to", to);
+        }
+        writer.writeAttribute("type", stanza.type().toString());
+        final var lang = stanza.lang();
+        if (lang != null) {
+            writer.writeAttribute("xml:lang", lang);
         }
     }
 
@@ -214,6 +217,27 @@ public final class XmppUnitSerializer {
                 writer.writeStartElement("jid");
                 writer.writeCharacters(bind.jid());
                 writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeIqStanzaQuery(@NotNull final XmppStanza.IqQuery iqQuery) {
+        try {
+            writer.writeStartElement("query");
+            writer.writeDefaultNamespace(iqQuery.namespace().toString());
+            final var ver = iqQuery.version();
+            if (ver != null) {
+                writer.writeAttribute("ver", ver);
+            }
+            final var items = iqQuery.items();
+            if (items != null) {
+                for (final var it : items) {
+                    writer.writeEmptyElement("item");
+                    writer.writeAttribute("jid", it.jid());
+                }
             }
             writer.writeEndElement();
         } catch (XMLStreamException e) {

@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class XmppUnitSerializerTest {
@@ -139,6 +140,36 @@ final class XmppUnitSerializerTest {
                     "romeo@example.net/orchard",
                     "juliet@im.example.com/balcony",
                     "en"
+            )));
+
+            assertEquals(expectedStanza, baos.toString(UTF_8));
+        }
+    }
+
+    @Test
+    void testRosterResultSerialization() throws IOException {
+        final var expectedStanza = "<iq id=\"bv1bs71f\" " +
+                "to=\"juliet@example.com/chamber\" " +
+                "type=\"result\">" +
+                "<query xmlns=\"jabber:iq:roster\" ver=\"ver7\">" +
+                "<item jid=\"nurse@example.com\"/>" +
+                "<item jid=\"romeo@example.net\"/>" +
+                "</query>" +
+                "</iq>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(new XmppStanza(
+                    XmppStanza.Kind.IQ,
+                    "bv1bs71f",
+                    XmppStanza.TypeAttribute.of(XmppStanza.Kind.IQ, "result"),
+                    new XmppStanza.IqQuery(
+                            XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                            "ver7",
+                            asList(new XmppStanza.IqQuery.Item("nurse@example.com"), new XmppStanza.IqQuery.Item("romeo@example.net"))
+                    ),
+                    null,
+                    "juliet@example.com/chamber",
+                    null
             )));
 
             assertEquals(expectedStanza, baos.toString(UTF_8));

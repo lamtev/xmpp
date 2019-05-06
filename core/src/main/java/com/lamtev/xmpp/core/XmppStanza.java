@@ -4,6 +4,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public final class XmppStanza implements XmppUnit {
     @NotNull
     private final Kind kind;
@@ -30,7 +32,7 @@ public final class XmppStanza implements XmppUnit {
         this.lang = null;
     }
 
-    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final Entry entry, @NotNull final String from, @NotNull final String to, @NotNull final String lang) {
+    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final Entry entry, @Nullable final String from, @Nullable final String to, @Nullable final String lang) {
         this.kind = kind;
         this.id = id;
         this.type = type;
@@ -181,6 +183,7 @@ public final class XmppStanza implements XmppUnit {
     public enum IqTypeAttribute implements TypeAttribute {
         SET("set"),
         RESULT("result"),
+        GET("get")
         ;
 
         @NotNull
@@ -195,6 +198,8 @@ public final class XmppStanza implements XmppUnit {
                 return SET;
             } else if (RESULT.string.equals(string)) {
                 return RESULT;
+            } else if (GET.string.equals(string)) {
+                return GET;
             }
 
             throw new IllegalArgumentException();
@@ -208,7 +213,9 @@ public final class XmppStanza implements XmppUnit {
 
     public interface Entry {
         int IQ_BIND_CODE = 0;
-        int MESSAGE_BODY_CODE = 1;
+        int IQ_QUERY_CODE = 1;
+
+        int MESSAGE_BODY_CODE = 2;
 
         int code();
     }
@@ -304,6 +311,109 @@ public final class XmppStanza implements XmppUnit {
         @Override
         public int hashCode() {
             return body.hashCode();
+        }
+    }
+
+    public static final class IqQuery implements Entry {
+        @NotNull
+        private final ContentNamespace namespace;
+        @Nullable
+        private String version;
+        @Nullable
+        private List<Item> items;
+
+        public IqQuery(@NotNull final ContentNamespace namespace, @Nullable final String version, @Nullable final List<Item> items) {
+            this.namespace = namespace;
+            this.version = version;
+            this.items = items;
+        }
+
+        @NotNull
+        public ContentNamespace namespace() {
+            return namespace;
+        }
+
+        @Nullable
+        public String version() {
+            return version;
+        }
+
+        @Nullable
+        public List<Item> items() {
+            return items;
+        }
+
+        @Override
+        public int code() {
+            return IQ_QUERY_CODE;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final IqQuery iqQuery = (IqQuery) o;
+
+            if (namespace != iqQuery.namespace) return false;
+            if (version != null ? !version.equals(iqQuery.version) : iqQuery.version != null) { return false;}
+
+            return items != null ? items.equals(iqQuery.items) : iqQuery.items == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = namespace.hashCode();
+            result = 31 * result + (version != null ? version.hashCode() : 0);
+            result = 31 * result + (items != null ? items.hashCode() : 0);
+
+            return result;
+        }
+
+        public enum ContentNamespace {
+            ROSTER("jabber:iq:roster"),
+            ;
+
+            @NotNull
+            private final String string;
+
+            ContentNamespace(@NotNull final String string) {
+                this.string = string;
+            }
+
+            @Override
+            public String toString() {
+                return string;
+            }
+        }
+
+        public static final class Item {
+            @NotNull
+            private final String jid;
+
+            public Item(@NotNull final String jid) {
+                this.jid = jid;
+            }
+
+            public String jid() {
+                return jid;
+            }
+
+            @Override
+            public boolean equals(final Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+
+                final Item item = (Item) o;
+
+                return jid.equals(item.jid);
+
+            }
+
+            @Override
+            public int hashCode() {
+                return jid.hashCode();
+            }
         }
     }
 }

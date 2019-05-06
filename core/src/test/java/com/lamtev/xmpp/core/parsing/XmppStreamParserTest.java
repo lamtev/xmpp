@@ -197,4 +197,46 @@ final class XmppStreamParserTest {
             parser.startParsing();
         }
     }
+
+    @Test
+    void testIqStanzaRosterGetParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<iq from='juliet@example.com/balcony' " +
+                "id='bv1bs71f' " +
+                "type='get'>" +
+                "<query xmlns='jabber:iq:roster'/>" +
+                "</iq>";
+
+        try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var rosterGet = (XmppStanza) unit;
+                    final var expected = new XmppStanza(
+                            IQ,
+                            "bv1bs71f",
+                            XmppStanza.TypeAttribute.of(IQ, "get"),
+                            new XmppStanza.IqQuery(
+                                    XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                                    null,
+                                    null
+                            ),
+                            "juliet@example.com/balcony",
+                            null,
+                            null
+                    );
+
+                    assertEquals(expected, rosterGet);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) {
+                    fail("Unexpected error: " + error);
+                }
+            });
+
+            parser.startParsing();
+        }
+    }
 }
