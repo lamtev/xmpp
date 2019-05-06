@@ -7,14 +7,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategyStanza {
     @Nullable
-    private String resource;
+    private Bind bind;
     @Nullable
-    private String jid;
-    private boolean waitingForResource = false;
-    private boolean waitingForJid = false;
+    private Query query;
 
     @Nullable
     private XmppStanza stanza;
@@ -27,13 +27,38 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
     public void startElementReached(@NotNull final String name) {
         super.startElementReached(name);
 
-        if (tagCount > 0) {
+        if (tagCount == 2) {
             if ("bind".equals(name) && XmppStreamFeatures.Type.RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
                 System.out.println("OK!");
-            } else if ("resource".equals(name)) {
-                waitingForResource = true;
-            } else if ("jid".equals(name)) {
-                waitingForJid = true;
+                bind = new Bind();
+            } else if ("query".equals(name) && XmppStanza.IqQuery.ContentNamespace.ROSTER.toString().equals(reader.getNamespaceURI())) {
+                query = new Query(XmppStanza.IqQuery.ContentNamespace.ROSTER);
+
+                for (int idx = 0; idx < reader.getAttributeCount(); idx++) {
+                    if ("ver".equals(reader.getAttributeLocalName(idx))) {
+                        query.version = reader.getAttributeValue(idx);
+                    }
+                }
+            }
+        }
+
+        if (tagCount == 3) {
+            if (bind != null) {
+                if ("resource".equals(name)) {
+                    bind.waitingForResource = true;
+                } else if ("jid".equals(name)) {
+                    bind.waitingForJid = true;
+                }
+            } else if (query != null) {
+                if ("item".equals(name)) {
+                    if (query.items == null) {
+                        query.items = new ArrayList<>();
+                    }
+                    final var jid = reader.getAttributeValue(null, "jid");
+                    if (jid != null) {
+                        query.items.add(new XmppStanza.IqQuery.Item(jid));
+                    }
+                }
             }
         }
     }
@@ -42,10 +67,28 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
     public void endElementReached() {
         super.endElementReached();
 
+        if (kind == null) {
+            //TODO error
+            return;
+        }
+
         if (tagCount == 0) {
-            if (kind == null) {
-                //TODO error
-            } else if (reader.getLocalName().equals(kind.toString())) {
+            if (bind != null) {
+                if (reader.getLocalName().equals(kind.toString())) {
+                    if (id == null) {
+                        //TODO error
+                        return;
+                    }
+                    if (type == null) {
+                        //TODO error
+                        return;
+                    }
+                    stanza = new XmppStanza(kind, id, type, new XmppStanza.IqBind(bind.resource, bind.jid));
+                } else {
+                    //TODO error
+                }
+                bind = null;
+            } else if (query != null) {
                 if (id == null) {
                     //TODO error
                     return;
@@ -54,21 +97,24 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
                     //TODO error
                     return;
                 }
-                stanza = new XmppStanza(kind, id, type, new XmppStanza.IqBind(resource, jid));
-            } else {
-                //TODO error
+                stanza = new XmppStanza(kind, id, type, new XmppStanza.IqQuery(query.namespace, query.version, query.items), from, to, lang);
+                query = null;
             }
         }
     }
 
     @Override
     public void charactersReached() {
-        if (waitingForResource) {
-            waitingForResource = false;
-            resource = reader.getText();
-        } else if (waitingForJid) {
-            waitingForJid = false;
-            jid = reader.getText();
+        if (bind != null) {
+            if (bind.waitingForResource) {
+                bind.waitingForResource = false;
+                bind.resource = reader.getText();
+            } else if (bind.waitingForJid) {
+                bind.waitingForJid = false;
+                bind.jid = reader.getText();
+            }
+        } else if (query != null) {
+
         }
     }
 
@@ -86,5 +132,27 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
         this.stanza = null;
 
         return stanza;
+    }
+
+    private static final class Bind {
+        private boolean waitingForResource = false;
+        private boolean waitingForJid = false;
+        @Nullable
+        private String resource;
+        @Nullable
+        private String jid;
+    }
+
+    private static final class Query {
+        @NotNull
+        private final XmppStanza.IqQuery.ContentNamespace namespace;
+        @Nullable
+        private String version;
+        @Nullable
+        private List<XmppStanza.IqQuery.Item> items;
+
+        private Query(@NotNull final XmppStanza.IqQuery.ContentNamespace namespace) {
+            this.namespace = namespace;
+        }
     }
 }
