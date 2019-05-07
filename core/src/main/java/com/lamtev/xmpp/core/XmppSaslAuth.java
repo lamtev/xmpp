@@ -23,8 +23,7 @@ public class XmppSaslAuth implements XmppUnit {
 
     @Override
     public int code() {
-        //TODO:
-        return 0;
+        return CODE_SASL_AUTH;
     }
 
     @Override

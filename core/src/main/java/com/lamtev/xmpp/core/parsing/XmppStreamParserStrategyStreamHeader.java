@@ -96,6 +96,7 @@ final class XmppStreamParserStrategyStreamHeader extends XmppStreamParserAbstrac
         final var res = streamHeader;
         streamHeader = null;
 
+        System.out.println("Received Stream header parsed");
         return res;
     }
 }

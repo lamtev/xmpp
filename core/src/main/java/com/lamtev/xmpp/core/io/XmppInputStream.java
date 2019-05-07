@@ -1,7 +1,6 @@
 package com.lamtev.xmpp.core.io;
 
-import com.lamtev.xmpp.core.XmppStreamFeatures;
-import com.lamtev.xmpp.core.XmppUnit;
+import com.lamtev.xmpp.core.*;
 import com.lamtev.xmpp.core.parsing.XmppStreamParser;
 import com.lamtev.xmpp.core.parsing.XmppStreamParserException;
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Consumer;
 
 //TODO: change exchange state
 public final class XmppInputStream implements AutoCloseable, XmppStreamParser.Delegate {
@@ -21,11 +21,15 @@ public final class XmppInputStream implements AutoCloseable, XmppStreamParser.De
 
     @NotNull
     private Handler handler;
+    @SuppressWarnings("unchecked")
     @NotNull
-    private final Runnable[] featureProcessors = new Runnable[]{
-            this::tlsFeaturesReceived,
-            this::saslFeaturesReceived,
-            this::bindingFeaturesReceived,
+    private final Consumer<? super XmppUnit>[] unitHandlers = new Consumer[]{
+            (Consumer<XmppStreamHeader>) this::streamHeaderReceived,
+            (Consumer<XmppStreamFeatures>) this::streamFeaturesReceived,
+            (Consumer<XmppStanza>) this::stanzaReceived,
+            (Consumer<XmppError>) this::errorReceived,
+            (Consumer<XmppSaslAuth>) this::saslAuthReceived,
+            (Consumer<XmppSaslAuthSuccess>) this::saslAuthSuccessReceived,
     };
     @Nullable
     private XmppUnit unit;
@@ -94,9 +98,8 @@ public final class XmppInputStream implements AutoCloseable, XmppStreamParser.De
     @Override
     public void parserDidParseUnit(@NotNull final XmppUnit unit) {
         System.out.println(unit + " parsed");
-        if (unit instanceof XmppStreamFeatures) {
-            featureProcessors[((XmppStreamFeatures) unit).type().ordinal()].run();
-        }
+
+        unitHandlers[unit.code()].accept(unit);
 
         this.unit = unit;
         handler.handle();
@@ -108,22 +111,28 @@ public final class XmppInputStream implements AutoCloseable, XmppStreamParser.De
         handler.handle();
     }
 
-    private void tlsFeaturesReceived() {
-        if (exchange != null) {
-            exchange.setState(XmppExchange.State.TLS_NEGOTIATION);
-        }
+    private void streamHeaderReceived(@NotNull final XmppStreamHeader xmppStreamHeader) {
+
     }
 
-    private void saslFeaturesReceived() {
-        if (exchange != null) {
-            exchange.setState(XmppExchange.State.SASL_NEGOTIATION);
-        }
+    private void streamFeaturesReceived(@NotNull final XmppStreamFeatures xmppStreamFeatures) {
+
     }
 
-    private void bindingFeaturesReceived() {
-        if (exchange != null) {
-            exchange.setState(XmppExchange.State.RESOURCE_BINDING);
-        }
+    private void stanzaReceived(@NotNull final XmppStanza stanza) {
+
+    }
+
+    private void errorReceived(@NotNull final XmppError xmppError) {
+
+    }
+
+    private void saslAuthReceived(@NotNull final XmppSaslAuth xmppSaslAuth) {
+
+    }
+
+    private void saslAuthSuccessReceived(@NotNull final XmppSaslAuthSuccess xmppSaslAuthSuccess) {
+
     }
 
     public interface Handler {

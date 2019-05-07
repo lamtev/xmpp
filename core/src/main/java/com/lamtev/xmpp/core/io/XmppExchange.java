@@ -2,6 +2,8 @@ package com.lamtev.xmpp.core.io;
 
 import org.jetbrains.annotations.NotNull;
 
+import static com.lamtev.xmpp.core.io.XmppExchange.State.*;
+
 public final class XmppExchange {
     @NotNull
     private final XmppInputStream initialStream;
@@ -13,7 +15,7 @@ public final class XmppExchange {
     public XmppExchange(@NotNull final XmppInputStream initialStream, @NotNull final XmppOutputStream responseStream) {
         this.initialStream = initialStream;
         this.responseStream = responseStream;
-        this.state = State.INITIAL;
+        this.state = WAITING_FOR_STREAM_HEADER;
 
         this.initialStream.setExchange(this);
         this.responseStream.setExchange(this);
@@ -34,16 +36,17 @@ public final class XmppExchange {
         return state;
     }
 
-    void setState(@NotNull final State state) {
+    void changeState(@NotNull final State state) {
+        System.out.println("State set: " + state);
         this.state = state;
 
-        if (state == State.RESOURCE_BINDING) {
+        if (state == WAITING_FOR_STREAM_HEADER) {
             initialStream.reopen();
         }
     }
 
     public enum State {
-        INITIAL,
+        WAITING_FOR_STREAM_HEADER,
         TLS_NEGOTIATION,
         SASL_NEGOTIATION,
         RESOURCE_BINDING,

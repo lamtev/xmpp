@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.stream.XMLStreamReader;
 
 interface XmppStreamParserStrategy {
-
     static boolean isPotentialStreamHeader(@NotNull final String element) {
         return "stream".equals(element);
     }
@@ -71,5 +70,4 @@ interface XmppStreamParserStrategy {
     interface ErrorObserver {
         void onError(@NotNull final XmppStreamParser.Error error);
     }
-
 }

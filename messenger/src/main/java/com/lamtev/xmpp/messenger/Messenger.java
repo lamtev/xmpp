@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -45,28 +46,58 @@ public class Messenger implements XmppServer.Handler {
         final var unit = initialStream.unit();
 
         switch (exchange.state()) {
-            case INITIAL:
+            case WAITING_FOR_STREAM_HEADER:
                 if (unit instanceof XmppStreamHeader) {
-                    final var initialStreamHeader = (XmppStreamHeader) unit;
-
-                    final var streamHeader = new XmppStreamHeader(
-                            "lamtev.com",
-                            initialStreamHeader.from(),
-                            idGenerator.nextString(),
-                            initialStreamHeader.version(),
-                            initialStreamHeader.contentNamespace()
-                    );
-
-                    if (initialStreamHeader.from() != null) {
-                        user.setJid(initialStreamHeader.from());
+                    System.out.println("Handling " + unit);
+                    final var nextState = user.stateQueue.pollFirst();
+                    if (nextState == null) {
+                        throw new NullPointerException();
                     }
 
-                    responseStream.open(streamHeader, XmppStreamFeatures.of(PLAIN));
-                    System.out.println(PLAIN + " sent");
+                    switch (nextState) {
+                        case SASL_NEGOTIATION: {
+                            final var initialStreamHeader = (XmppStreamHeader) unit;
+
+                            final var streamHeader = new XmppStreamHeader(
+                                    "lamtev.com",
+                                    initialStreamHeader.from(),
+                                    idGenerator.nextString(),
+                                    initialStreamHeader.version(),
+                                    initialStreamHeader.contentNamespace()
+                            );
+
+                            if (initialStreamHeader.from() != null) {
+                                user.setJid(initialStreamHeader.from());
+                            }
+
+                            responseStream.open(streamHeader, XmppStreamFeatures.of(PLAIN));
+                            System.out.println(PLAIN + " sent");
+                        }
+                        break;
+                        case RESOURCE_BINDING: {
+                            final var initialStreamHeader = (XmppStreamHeader) unit;
+
+                            final var streamHeader = new XmppStreamHeader(
+                                    "lamtev.com",
+                                    initialStreamHeader.from(),
+                                    idGenerator.nextString(),
+                                    initialStreamHeader.version(),
+                                    initialStreamHeader.contentNamespace()
+                            );
+
+                            responseStream.open(streamHeader, XmppStreamFeatures.of(XmppStreamFeatures.Type.RESOURCE_BINDING));
+                        }
+                        break;
+                        case EXCHANGE: {
+
+                        }
+                        break;
+                    }
                 }
                 break;
             case SASL_NEGOTIATION:
                 if (unit instanceof XmppSaslAuth) {
+                    System.out.println("Handling " + unit);
 
                     final var auth = (XmppSaslAuth) unit;
 
@@ -87,31 +118,32 @@ public class Messenger implements XmppServer.Handler {
                 break;
             case RESOURCE_BINDING:
                 System.out.println("binding");
-                if (unit instanceof XmppStreamHeader) {
-                    final var initialStreamHeader = (XmppStreamHeader) unit;
-
-                    final var streamHeader = new XmppStreamHeader(
-                            "lamtev.com",
-                            initialStreamHeader.from(),
-                            idGenerator.nextString(),
-                            initialStreamHeader.version(),
-                            initialStreamHeader.contentNamespace()
-                    );
-
-                    responseStream.open(streamHeader, XmppStreamFeatures.of(XmppStreamFeatures.Type.RESOURCE_BINDING));
-                } else if (unit instanceof XmppStanza) {
+                if (unit instanceof XmppStanza) {
+                    System.out.println("Handling " + unit);
                     final var st = (XmppStanza) unit;
 
-                    System.out.println(((XmppStanza.IqBind) st.entry()).resource());
-
-                    responseStream.sendUnit("<iq id='" + st.id() + "' type='result'>\n" +
-                            "     <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>\n" +
-                            "       <jid>\n" +
-                            "         anton@lamtev.com\n" +
-                            "       </jid>\n" +
-                            "     </bind>\n" +
-                            "   </iq>");
+                    if (st.entry() instanceof XmppStanza.IqBind) {
+                        responseStream.sendUnit(new XmppStanza(
+                                IQ,
+                                st.id(),
+                                XmppStanza.TypeAttribute.of(IQ, "result"),
+                                new XmppStanza.IqBind(null, "anton@lamtev.com")
+                        ));
+                        System.out.println("iq bind result sent");
+                    }
                 }
+                break;
+            case EXCHANGE:
+                System.out.println("exchange");
+                if (unit instanceof XmppStanza) {
+                    System.out.println("Handling " + unit);
+                    final var stanza = (XmppStanza) unit;
+
+                    if (stanza.entry() instanceof XmppStanza.IqQuery) {
+                        System.out.println("query!!!");
+                    }
+                }
+                break;
         }
     }
 }

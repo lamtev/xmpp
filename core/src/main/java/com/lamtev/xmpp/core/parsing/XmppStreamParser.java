@@ -112,6 +112,7 @@ public final class XmppStreamParser {
                 }
             }
         } catch (XMLStreamException e) {
+            System.out.println(e.getMessage());
             e.printStackTrace();
             if (delegate != null) {
                 delegate.parserDidFailWithError(Error.NOT_WELL_FORMED_XML);
@@ -132,6 +133,7 @@ public final class XmppStreamParser {
             reader.close();
             reader = factory.createXMLStreamReader(in);
             strategyCache.updateReader(reader);
+            System.out.println("RESET");
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
