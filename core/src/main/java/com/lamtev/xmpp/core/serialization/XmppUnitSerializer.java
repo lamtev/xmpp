@@ -49,6 +49,7 @@ public final class XmppUnitSerializer {
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeatures,
             (Consumer<XmppStanza>) this::serializeStanza,
             (Consumer<XmppError>) this::serializeError,
+            (Consumer<XmppSaslAuth>) (any) -> {},
             (Consumer<XmppSaslAuthSuccess>) this::serializeSaslAuthSuccess,
     };
 
@@ -66,6 +67,8 @@ public final class XmppUnitSerializer {
     @NotNull
     public byte[] serialize(@NotNull final XmppUnit unit) {
         unitSerializers[unit.code()].accept(unit);
+
+        System.out.println(out.toString(UTF_8));
 
         final var bytes = out.toByteArray();
         out.reset();
@@ -95,7 +98,6 @@ public final class XmppUnitSerializer {
             writer.writeNamespace("stream", XmppStreamHeader.STREAM_NAMESPACE);
             writer.writeCharacters(null);
             writer.flush();
-            System.out.println(out.toString(UTF_8));
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
@@ -118,7 +120,6 @@ public final class XmppUnitSerializer {
             writer.writeEndElement();
             writer.writeEndElement();
             writer.flush();
-            System.out.println(out.toString(UTF_8));
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
@@ -131,7 +132,6 @@ public final class XmppUnitSerializer {
             writer.writeDefaultNamespace(XmppStreamFeatures.Type.RESOURCE_BINDING.toString());
             writer.writeEndElement();
             writer.flush();
-            System.out.println(out.toString(UTF_8));
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }

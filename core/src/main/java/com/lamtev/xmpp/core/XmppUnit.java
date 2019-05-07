@@ -5,7 +5,8 @@ public interface XmppUnit {
     int CODE_STREAM_FEATURES = 1;
     int CODE_STANZA = 2;
     int CODE_ERROR = 3;
-    int CODE_SASL_AUTH_SUCCESS = 4;
+    int CODE_SASL_AUTH = 4;
+    int CODE_SASL_AUTH_SUCCESS = 5;
 
     /**
      * Unique sequential code associated with concrete XmppUnit implementation.

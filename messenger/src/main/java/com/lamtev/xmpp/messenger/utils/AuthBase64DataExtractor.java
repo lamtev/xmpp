@@ -15,11 +15,13 @@ public class AuthBase64DataExtractor {
         final var separatedBy0 = decodedStr.split("\0");
 
         if (separatedBy0.length != 3) {
+            System.out.println("bad length: " + separatedBy0.length);
             return null;
         }
 
         final var result = new String[2];
         System.arraycopy(separatedBy0, 1, result, 0, 2);
+        System.out.println(Arrays.toString(result));
 
         return result;
     }

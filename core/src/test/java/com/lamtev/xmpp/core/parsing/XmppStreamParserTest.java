@@ -206,6 +206,20 @@ final class XmppStreamParserTest {
                 "<query xmlns='jabber:iq:roster'/>" +
                 "</iq>";
 
+        final var expected = new XmppStanza(
+                IQ,
+                "bv1bs71f",
+                XmppStanza.TypeAttribute.of(IQ, "get"),
+                new XmppStanza.IqQuery(
+                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        null,
+                        null
+                ),
+                "juliet@example.com/balcony",
+                null,
+                null
+        );
+
         try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
@@ -213,19 +227,41 @@ final class XmppStreamParserTest {
                 @Override
                 public void parserDidParseUnit(@NotNull XmppUnit unit) {
                     final var rosterGet = (XmppStanza) unit;
-                    final var expected = new XmppStanza(
-                            IQ,
-                            "bv1bs71f",
-                            XmppStanza.TypeAttribute.of(IQ, "get"),
-                            new XmppStanza.IqQuery(
-                                    XmppStanza.IqQuery.ContentNamespace.ROSTER,
-                                    null,
-                                    null
-                            ),
-                            "juliet@example.com/balcony",
-                            null,
-                            null
-                    );
+
+                    assertEquals(expected, rosterGet);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) {
+                    fail("Unexpected error: " + error);
+                }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testIqStanzaRosterGetParsing2() throws IOException, XmppStreamParserException {
+        final var xml = "<iq id=\"b11881b6-e336-4592-9539-d14b7c01caef\" type=\"get\"><query xmlns=\"jabber:iq:roster\"/></iq>";
+        final var expected = new XmppStanza(
+                IQ,
+                "b11881b6-e336-4592-9539-d14b7c01caef",
+                XmppStanza.TypeAttribute.of(IQ, "get"),
+                new XmppStanza.IqQuery(
+                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        null,
+                        null
+                )
+        );
+
+        try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var rosterGet = (XmppStanza) unit;
 
                     assertEquals(expected, rosterGet);
                 }
