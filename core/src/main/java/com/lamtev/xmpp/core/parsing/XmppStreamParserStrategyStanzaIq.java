@@ -1,7 +1,6 @@
 package com.lamtev.xmpp.core.parsing;
 
 import com.lamtev.xmpp.core.XmppStanza;
-import com.lamtev.xmpp.core.XmppStreamFeatures;
 import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,6 +8,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.RESOURCE_BINDING;
 
 final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategyStanza {
     @Nullable
@@ -28,7 +29,7 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
         super.startElementReached(name);
 
         if (tagCount == 2) {
-            if ("bind".equals(name) && XmppStreamFeatures.Type.RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
+            if ("bind".equals(name) && RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
                 System.out.println("OK!");
                 bind = new Bind();
             } else if ("query".equals(name) && XmppStanza.IqQuery.ContentNamespace.ROSTER.toString().equals(reader.getNamespaceURI())) {
@@ -39,6 +40,20 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
                         query.version = reader.getAttributeValue(idx);
                     }
                 }
+            } else {
+                if (kind == null) {
+                    //TODO error
+                    return;
+                }
+                if (id == null) {
+                    //TODO error
+                    return;
+                }
+                if (type == null) {
+                    //TODO error
+                    return;
+                }
+                stanza = new XmppStanza(kind, id, type, new XmppStanza.UnsupportedElement(reader.getLocalName()));
             }
         }
 
@@ -97,7 +112,7 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
                     //TODO error
                     return;
                 }
-                stanza = new XmppStanza(kind, id, type, new XmppStanza.IqQuery(query.namespace, query.version, query.items), from, to, lang);
+                stanza = new XmppStanza(kind, id, type, from, to, lang, new XmppStanza.IqQuery(query.namespace, query.version, query.items));
                 query = null;
             }
         }

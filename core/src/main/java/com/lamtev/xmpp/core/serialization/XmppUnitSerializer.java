@@ -9,7 +9,7 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.ByteArrayOutputStream;
 import java.util.function.Consumer;
 
-import static com.lamtev.xmpp.core.XmppStanza.Entry.MESSAGE_BODY_CODE;
+import static com.lamtev.xmpp.core.XmppStanza.TopElement.CODE_MESSAGE_BODY_CODE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class XmppUnitSerializer {
@@ -27,12 +27,14 @@ public final class XmppUnitSerializer {
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
     };
     @SuppressWarnings("unchecked")
-    private final Consumer<? super XmppStanza.Entry>[] iqStanzaSerializers = new Consumer[]{
+    private final Consumer<? super XmppStanza.TopElement>[] iqStanzaSerializers = new Consumer[]{
             (Consumer<XmppStanza.IqBind>) this::serializeIqStanzaBind,
-            (Consumer<XmppStanza.IqQuery>) this::serializeIqStanzaQuery
+            (Consumer<XmppStanza.IqQuery>) this::serializeIqStanzaQuery,
+            (Consumer<XmppStanza.IqError>) this::serializeIqStanzaError,
     };
+
     @SuppressWarnings("unchecked")
-    private final Consumer<? super XmppStanza.Entry>[] messageStanzaSerializers = new Consumer[]{
+    private final Consumer<? super XmppStanza.TopElement>[] messageStanzaSerializers = new Consumer[]{
             (Consumer<XmppStanza.MessageBody>) this::serializeMessageStanzaBody,
     };
     @SuppressWarnings("unchecked")
@@ -161,7 +163,7 @@ public final class XmppUnitSerializer {
             writer.writeStartElement("message");
             serializeCommonAttributes(stanza);
 
-            messageStanzaSerializers[stanza.entry().code() - MESSAGE_BODY_CODE].accept(stanza.entry());
+            messageStanzaSerializers[stanza.topElement().code() - CODE_MESSAGE_BODY_CODE].accept(stanza.topElement());
 
             writer.writeEndElement();
             writer.flush();
@@ -178,7 +180,7 @@ public final class XmppUnitSerializer {
         try {
             writer.writeStartElement("iq");
             serializeCommonAttributes(stanza);
-            iqStanzaSerializers[stanza.entry().code()].accept(stanza.entry());
+            iqStanzaSerializers[stanza.topElement().code()].accept(stanza.topElement());
 
             writer.writeEndElement();
             writer.flush();
@@ -239,6 +241,16 @@ public final class XmppUnitSerializer {
                     writer.writeAttribute("jid", it.jid());
                 }
             }
+            writer.writeEndElement();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeIqStanzaError(final XmppStanza.IqError iqError) {
+        try {
+            writer.writeStartElement("error");
+            writer.writeAttribute("type", iqError.type);
             writer.writeEndElement();
         } catch (XMLStreamException e) {
             e.printStackTrace();

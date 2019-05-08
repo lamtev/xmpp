@@ -14,7 +14,7 @@ public final class XmppStanza implements XmppUnit {
     @NotNull
     private final TypeAttribute type;
     @NotNull
-    private final Entry entry;
+    private final XmppStanza.TopElement topElement;
     @Nullable
     private final String from;
     @Nullable
@@ -22,21 +22,21 @@ public final class XmppStanza implements XmppUnit {
     @Nullable
     private final String lang;
 
-    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final Entry entry) {
+    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final XmppStanza.TopElement topElement) {
         this.kind = kind;
         this.id = id;
         this.type = type;
-        this.entry = entry;
+        this.topElement = topElement;
         this.from = null;
         this.to = null;
         this.lang = null;
     }
 
-    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final Entry entry, @Nullable final String from, @Nullable final String to, @Nullable final String lang) {
+    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @Nullable final String from, @Nullable final String to, @Nullable final String lang, @NotNull final XmppStanza.TopElement topElement) {
         this.kind = kind;
         this.id = id;
         this.type = type;
-        this.entry = entry;
+        this.topElement = topElement;
         this.from = from;
         this.to = to;
         this.lang = lang;
@@ -58,8 +58,8 @@ public final class XmppStanza implements XmppUnit {
     }
 
     @NotNull
-    public Entry entry() {
-        return entry;
+    public XmppStanza.TopElement topElement() {
+        return topElement;
     }
 
     @Nullable
@@ -92,7 +92,7 @@ public final class XmppStanza implements XmppUnit {
         if (kind != that.kind) return false;
         if (!id.equals(that.id)) return false;
         if (!type.equals(that.type)) return false;
-        if (!entry.equals(that.entry)) return false;
+        if (!topElement.equals(that.topElement)) return false;
         if (from != null ? !from.equals(that.from) : that.from != null) return false;
         if (to != null ? !to.equals(that.to) : that.to != null) return false;
 
@@ -104,7 +104,7 @@ public final class XmppStanza implements XmppUnit {
         int result = kind.hashCode();
         result = 31 * result + id.hashCode();
         result = 31 * result + type.hashCode();
-        result = 31 * result + entry.hashCode();
+        result = 31 * result + topElement.hashCode();
         result = 31 * result + (from != null ? from.hashCode() : 0);
         result = 31 * result + (to != null ? to.hashCode() : 0);
         result = 31 * result + (lang != null ? lang.hashCode() : 0);
@@ -183,7 +183,8 @@ public final class XmppStanza implements XmppUnit {
     public enum IqTypeAttribute implements TypeAttribute {
         SET("set"),
         RESULT("result"),
-        GET("get")
+        GET("get"),
+        ERROR("error"),
         ;
 
         @NotNull
@@ -211,11 +212,14 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
-    public interface Entry {
-        int IQ_BIND_CODE = 0;
-        int IQ_QUERY_CODE = 1;
+    public interface TopElement {
+        int CODE_IQ_BIND_CODE = 0;
+        int CODE_IQ_QUERY_CODE = 1;
+        int CODE_IQ_ERROR = 2;
 
-        int MESSAGE_BODY_CODE = 2;
+        int CODE_MESSAGE_BODY_CODE = 3;
+
+        int CODE_UNSUPPORTED = 4;
 
         int code();
     }
@@ -234,7 +238,7 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
-    public static final class IqBind implements Entry {
+    public static final class IqBind implements TopElement {
         @Nullable
         private final String resource;
         @Nullable
@@ -258,7 +262,7 @@ public final class XmppStanza implements XmppUnit {
 
         @Override
         public int code() {
-            return IQ_BIND_CODE;
+            return CODE_IQ_BIND_CODE;
         }
 
         @Override
@@ -280,7 +284,7 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
-    public static final class MessageBody implements Entry {
+    public static final class MessageBody implements TopElement {
         @NotNull
         private final String body;
 
@@ -295,7 +299,7 @@ public final class XmppStanza implements XmppUnit {
 
         @Override
         public int code() {
-            return MESSAGE_BODY_CODE;
+            return CODE_MESSAGE_BODY_CODE;
         }
 
         @Override
@@ -314,7 +318,7 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
-    public static final class IqQuery implements Entry {
+    public static final class IqQuery implements TopElement {
         @NotNull
         private final ContentNamespace namespace;
         @Nullable
@@ -345,7 +349,7 @@ public final class XmppStanza implements XmppUnit {
 
         @Override
         public int code() {
-            return IQ_QUERY_CODE;
+            return CODE_IQ_QUERY_CODE;
         }
 
         @Override
@@ -414,6 +418,34 @@ public final class XmppStanza implements XmppUnit {
             public int hashCode() {
                 return jid.hashCode();
             }
+        }
+    }
+
+    public static final class UnsupportedElement implements TopElement {
+        @NotNull
+        public final String name;
+
+        public UnsupportedElement(@NotNull final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public int code() {
+            return CODE_UNSUPPORTED;
+        }
+    }
+
+    public static final class IqError implements TopElement {
+        @NotNull
+        public final String type;
+
+        public IqError(@NotNull final String type) {
+            this.type = type;
+        }
+
+        @Override
+        public int code() {
+            return CODE_IQ_ERROR;
         }
     }
 }

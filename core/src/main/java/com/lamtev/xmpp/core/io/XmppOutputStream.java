@@ -69,7 +69,7 @@ public final class XmppOutputStream implements AutoCloseable {
 
         if (unit instanceof XmppStanza) {
             final var stanza = (XmppStanza) unit;
-            if (stanza.kind() == XmppStanza.Kind.IQ && stanza.entry() instanceof XmppStanza.IqBind) {
+            if (stanza.kind() == XmppStanza.Kind.IQ && stanza.topElement() instanceof XmppStanza.IqBind) {
                 if (exchange != null) {
                     exchange.changeState(EXCHANGE);
                 }

@@ -179,10 +179,7 @@ final class XmppStreamParserTest {
                             MESSAGE,
                             "ju2ba41c",
                             XmppStanza.TypeAttribute.of(MESSAGE, "chat"),
-                            new XmppStanza.MessageBody("Art thou not Romeo, and a Montague?"),
-                            "juliet@im.example.com/balcony",
-                            "romeo@example.net",
-                            "en"
+                            "juliet@im.example.com/balcony", "romeo@example.net", "en", new XmppStanza.MessageBody("Art thou not Romeo, and a Montague?")
                     );
 
                     assertEquals(expected, messageStanza);
@@ -210,14 +207,11 @@ final class XmppStreamParserTest {
                 IQ,
                 "bv1bs71f",
                 XmppStanza.TypeAttribute.of(IQ, "get"),
-                new XmppStanza.IqQuery(
+                "juliet@example.com/balcony", null, null, new XmppStanza.IqQuery(
                         XmppStanza.IqQuery.ContentNamespace.ROSTER,
                         null,
                         null
-                ),
-                "juliet@example.com/balcony",
-                null,
-                null
+                )
         );
 
         try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
