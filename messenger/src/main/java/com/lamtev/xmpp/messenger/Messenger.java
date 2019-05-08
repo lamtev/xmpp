@@ -2,7 +2,7 @@ package com.lamtev.xmpp.messenger;
 
 import com.lamtev.xmpp.core.*;
 import com.lamtev.xmpp.core.io.XmppExchange;
-import com.lamtev.xmpp.messenger.utils.AuthBase64DataExtractor;
+import com.lamtev.xmpp.messenger.utils.AuthBase64LoginPasswordExtractor;
 import com.lamtev.xmpp.messenger.utils.StringGenerator;
 import com.lamtev.xmpp.server.api.XmppServer;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
 
 public class Messenger implements XmppServer.Handler {
     @NotNull
@@ -101,7 +102,7 @@ public class Messenger implements XmppServer.Handler {
 
                     final var auth = (XmppSaslAuth) unit;
 
-                    final var jidPass = AuthBase64DataExtractor.extract(auth.body(), UTF_8);
+                    final var jidPass = AuthBase64LoginPasswordExtractor.extract(auth.body(), UTF_8);
                     if (jidPass == null) {
                         return;
                     }
@@ -122,7 +123,7 @@ public class Messenger implements XmppServer.Handler {
                     System.out.println("Handling " + unit);
                     final var st = (XmppStanza) unit;
 
-                    if (st.entry() instanceof XmppStanza.IqBind) {
+                    if (st.topElement() instanceof XmppStanza.IqBind) {
                         responseStream.sendUnit(new XmppStanza(
                                 IQ,
                                 st.id(),
@@ -139,8 +140,44 @@ public class Messenger implements XmppServer.Handler {
                     System.out.println("Handling " + unit);
                     final var stanza = (XmppStanza) unit;
 
-                    if (stanza.entry() instanceof XmppStanza.IqQuery) {
+                    if (stanza.type() == XmppStanza.IqTypeAttribute.GET && stanza.topElement() instanceof XmppStanza.IqQuery) {
                         System.out.println("query!!!");
+
+                        final var query = (XmppStanza.IqQuery) stanza.topElement();
+
+                        if (query.namespace() == XmppStanza.IqQuery.ContentNamespace.ROSTER) {
+
+                            final var rosterResult = new XmppStanza(
+                                    IQ,
+                                    stanza.id(),
+                                    XmppStanza.IqTypeAttribute.RESULT,
+                                    null,
+                                    stanza.from(),
+                                    null,
+                                    new XmppStanza.IqQuery(
+                                            XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                                            "ver7",
+                                            asList(
+                                                    new XmppStanza.IqQuery.Item("admin@lamtev.com"),
+                                                    new XmppStanza.IqQuery.Item("root@lamtev.com")
+                                            )
+                                    )
+                            );
+
+                            responseStream.sendUnit(rosterResult);
+                        }
+                    } else if (stanza.topElement() instanceof XmppStanza.UnsupportedElement) {
+                        final var error = new XmppStanza(
+                                IQ,
+                                stanza.id(),
+                                XmppStanza.IqTypeAttribute.ERROR,
+                                null,
+                                stanza.from(),
+                                null,
+                                new XmppStanza.IqError("cancel")
+                        );
+
+                        responseStream.sendUnit(error);
                     }
                 }
                 break;

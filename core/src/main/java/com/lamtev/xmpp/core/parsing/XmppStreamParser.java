@@ -150,6 +150,7 @@ public final class XmppStreamParser {
         UNRECOGNIZED_ELEMENT,
         SASL_INVALID_MECHANISM,
         SASL_MALFORMED_REQUEST,
+        IQ_STANZA_TOP_ELEMENT_NOT_SUPPORTED,
         //TODO
     }
 
