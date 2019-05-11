@@ -23,4 +23,6 @@ abstract class XmppStreamParserAbstractStrategy implements XmppStreamParserStrat
     public void setErrorObserver(@NotNull final ErrorObserver observer) {
         errorObserver = observer;
     }
+
+    abstract void resetState();
 }

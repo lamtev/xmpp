@@ -167,6 +167,8 @@ public class Messenger implements XmppServer.Handler {
                             responseStream.sendUnit(rosterResult);
                         }
                     } else if (stanza.topElement() instanceof XmppStanza.UnsupportedElement) {
+                        final var unsupported = (XmppStanza.UnsupportedElement) stanza.topElement();
+                        System.out.println("Usupported: " + unsupported.name);
                         final var error = new XmppStanza(
                                 IQ,
                                 stanza.id(),

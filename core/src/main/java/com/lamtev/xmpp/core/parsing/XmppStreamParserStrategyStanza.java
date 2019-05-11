@@ -7,7 +7,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.xml.stream.XMLStreamReader;
 
 abstract class XmppStreamParserStrategyStanza extends XmppStreamParserAbstractStrategy {
-    int tagCount = 0;
+    int openingTagCount = 0;
+    int closingTagCount = 0;
     @Nullable
     XmppStanza.Kind kind;
     @Nullable
@@ -26,7 +27,7 @@ abstract class XmppStreamParserStrategyStanza extends XmppStreamParserAbstractSt
 
     @Override
     public void startElementReached(@NotNull final String name) {
-        if (tagCount == 0) {
+        if (tagCountsAreSame()) {
             kind = XmppStanza.Kind.of(name);
 
             for (int i = 0; i < reader.getAttributeCount(); ++i) {
@@ -50,11 +51,23 @@ abstract class XmppStreamParserStrategyStanza extends XmppStreamParserAbstractSt
                 }
             }
         }
-        ++tagCount;
+        ++openingTagCount;
     }
 
     @Override
     public void endElementReached() {
-        --tagCount;
+        ++closingTagCount;
+    }
+
+    @Override
+    void resetState() {
+        openingTagCount = closingTagCount = 0;
+        kind = null;
+        type = null;
+        id = from = to = lang = null;
+    }
+
+    final boolean tagCountsAreSame() {
+        return openingTagCount == closingTagCount;
     }
 }

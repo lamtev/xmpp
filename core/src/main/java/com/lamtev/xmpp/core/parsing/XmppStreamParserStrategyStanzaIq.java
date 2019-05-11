@@ -28,7 +28,7 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
     public void startElementReached(@NotNull final String name) {
         super.startElementReached(name);
 
-        if (tagCount == 2) {
+        if (openingTagCount == 2) {
             if ("bind".equals(name) && RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
                 System.out.println("OK!");
                 bind = new Bind();
@@ -57,7 +57,7 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
             }
         }
 
-        if (tagCount == 3) {
+        if (openingTagCount == 3) {
             if (bind != null) {
                 if ("resource".equals(name)) {
                     bind.waitingForResource = true;
@@ -87,7 +87,7 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
             return;
         }
 
-        if (tagCount == 0) {
+        if (tagCountsAreSame()) {
             if (bind != null) {
                 if (reader.getLocalName().equals(kind.toString())) {
                     if (id == null) {
@@ -144,9 +144,18 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
             throw new IllegalStateException("");
         }
         final var stanza = this.stanza;
-        this.stanza = null;
+        resetState();
 
         return stanza;
+    }
+
+    @Override
+    void resetState() {
+        super.resetState();
+
+        stanza = null;
+        bind = null;
+        query = null;
     }
 
     private static final class Bind {

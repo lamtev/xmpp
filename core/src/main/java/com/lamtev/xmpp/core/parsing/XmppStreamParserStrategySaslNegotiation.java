@@ -22,6 +22,11 @@ final class XmppStreamParserStrategySaslNegotiation extends XmppStreamParserAbst
     }
 
     @Override
+    void resetState() {
+
+    }
+
+    @Override
     public void startElementReached(@NotNull final String name) {
         final var namespaceURI = reader.getNamespaceURI(0);
         if (!XmppStreamFeatures.Type.SASL.toString().equals(namespaceURI)) {
