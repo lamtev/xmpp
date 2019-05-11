@@ -11,6 +11,11 @@ final class XmppStreamParserStrategyError extends XmppStreamParserAbstractStrate
     }
 
     @Override
+    void resetState() {
+
+    }
+
+    @Override
     public void startElementReached(@NotNull final String name) {
 
     }

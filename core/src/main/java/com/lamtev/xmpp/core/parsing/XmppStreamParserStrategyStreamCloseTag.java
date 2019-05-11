@@ -11,6 +11,11 @@ final class XmppStreamParserStrategyStreamCloseTag extends XmppStreamParserAbstr
     }
 
     @Override
+    void resetState() {
+
+    }
+
+    @Override
     public void startElementReached(@NotNull final String name) {
 
     }

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 public final class XmppStanza implements XmppUnit {
     @NotNull
@@ -272,8 +273,8 @@ public final class XmppStanza implements XmppUnit {
 
             IqBind iqBind = (IqBind) o;
 
-            if (resource != null ? !resource.equals(iqBind.resource) : iqBind.resource != null) return false;
-            return jid != null ? jid.equals(iqBind.jid) : iqBind.jid == null;
+            if (!Objects.equals(resource, iqBind.resource)) return false;
+            return Objects.equals(jid, iqBind.jid);
         }
 
         @Override
@@ -360,9 +361,9 @@ public final class XmppStanza implements XmppUnit {
             final IqQuery iqQuery = (IqQuery) o;
 
             if (namespace != iqQuery.namespace) return false;
-            if (version != null ? !version.equals(iqQuery.version) : iqQuery.version != null) { return false;}
+            if (!Objects.equals(version, iqQuery.version)) { return false;}
 
-            return items != null ? items.equals(iqQuery.items) : iqQuery.items == null;
+            return Objects.equals(items, iqQuery.items);
         }
 
         @Override

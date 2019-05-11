@@ -22,7 +22,7 @@ final class XmppStreamParserStrategyStanzaMessage extends XmppStreamParserStrate
     public void startElementReached(@NotNull final String name) {
         super.startElementReached(name);
 
-        if (tagCount > 0) {
+        if (openingTagCount > 0) {
             if ("body".equals(name)) {
                 waitingForBody = true;
             }
@@ -33,7 +33,7 @@ final class XmppStreamParserStrategyStanzaMessage extends XmppStreamParserStrate
     public void endElementReached() {
         super.endElementReached();
 
-        if (tagCount == 0) {
+        if (tagCountsAreSame()) {
             if (body != null) {
                 if (kind == null) {
                     //TODO error

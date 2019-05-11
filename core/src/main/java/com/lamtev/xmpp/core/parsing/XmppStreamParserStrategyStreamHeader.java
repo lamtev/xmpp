@@ -25,6 +25,11 @@ final class XmppStreamParserStrategyStreamHeader extends XmppStreamParserAbstrac
     }
 
     @Override
+    void resetState() {
+
+    }
+
+    @Override
     public void startElementReached(@NotNull final String name) {
         final int namespaceCount = reader.getNamespaceCount();
         for (int i = 0; i < namespaceCount; ++i) {
