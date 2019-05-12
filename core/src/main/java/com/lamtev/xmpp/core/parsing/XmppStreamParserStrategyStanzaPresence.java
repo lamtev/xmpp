@@ -1,6 +1,6 @@
 package com.lamtev.xmpp.core.parsing;
 
-import com.lamtev.xmpp.core.XmppUnit;
+import com.lamtev.xmpp.core.XmppStanza;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;
@@ -13,6 +13,10 @@ final class XmppStreamParserStrategyStanzaPresence extends XmppStreamParserStrat
     @Override
     public void startElementReached(@NotNull final String name) {
         super.startElementReached(name);
+
+        if (openingTagCount == 2) {
+            stanza = new XmppStanza(kind, id, type, new XmppStanza.UnsupportedElement(reader.getLocalName()));
+        }
     }
 
     @Override
@@ -26,12 +30,6 @@ final class XmppStreamParserStrategyStanzaPresence extends XmppStreamParserStrat
     }
 
     @Override
-    public boolean unitIsReady() {
-        return false;
-    }
-
-    @Override
-    public @NotNull XmppUnit readyUnit() {
-        return null;
+    void resetState() {
     }
 }

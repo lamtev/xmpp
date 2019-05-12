@@ -1,6 +1,7 @@
 package com.lamtev.xmpp.messenger;
 
 import com.lamtev.xmpp.core.*;
+import com.lamtev.xmpp.core.XmppStanza.UnsupportedElement;
 import com.lamtev.xmpp.core.io.XmppExchange;
 import com.lamtev.xmpp.messenger.utils.AuthBase64LoginPasswordExtractor;
 import com.lamtev.xmpp.messenger.utils.StringGenerator;
@@ -9,7 +10,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.*;
+import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
+import static com.lamtev.xmpp.core.XmppStanza.Error.Type.MODIFY;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
+import static com.lamtev.xmpp.core.XmppStanza.errorOf;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -154,7 +159,7 @@ public class Messenger implements XmppServer.Handler {
                                     null,
                                     new XmppStanza.IqQuery(
                                             XmppStanza.IqQuery.ContentNamespace.ROSTER,
-                                            "ver7",
+                                            null,
                                             asList(
                                                     new XmppStanza.IqQuery.Item("admin@lamtev.com"),
                                                     new XmppStanza.IqQuery.Item("root@lamtev.com")
@@ -164,16 +169,10 @@ public class Messenger implements XmppServer.Handler {
 
                             responseStream.sendUnit(rosterResult);
                         }
-                    } else if (stanza.topElement() instanceof XmppStanza.UnsupportedElement) {
-                        final var unsupported = (XmppStanza.UnsupportedElement) stanza.topElement();
+                    } else if (stanza.topElement() instanceof UnsupportedElement) {
+                        final var unsupported = (UnsupportedElement) stanza.topElement();
                         System.out.println("Usupported: " + unsupported.name);
-                        final var error = new XmppStanza(
-                                IQ,
-                                stanza.from(), null, stanza.id(),
-                                XmppStanza.IqTypeAttribute.ERROR,
-                                null,
-                                XmppStanza.Error.of(IQ, XmppStanza.IqError.Type.CANCEL)
-                        );
+                        final var error = errorOf(stanza, CANCEL, ITEM_NOT_FOUND);
 
                         responseStream.sendUnit(error);
                     }

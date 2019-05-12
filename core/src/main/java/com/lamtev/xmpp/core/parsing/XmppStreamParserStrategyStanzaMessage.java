@@ -1,7 +1,6 @@
 package com.lamtev.xmpp.core.parsing;
 
 import com.lamtev.xmpp.core.XmppStanza;
-import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,8 +10,6 @@ final class XmppStreamParserStrategyStanzaMessage extends XmppStreamParserStrate
     private boolean waitingForBody = false;
     @Nullable
     private XmppStanza.MessageBody body;
-    @Nullable
-    private XmppStanza stanza;
 
     XmppStreamParserStrategyStanzaMessage(@NotNull final XMLStreamReader reader) {
         super(reader);
@@ -76,20 +73,4 @@ final class XmppStreamParserStrategyStanzaMessage extends XmppStreamParserStrate
         }
     }
 
-    @Override
-    public boolean unitIsReady() {
-        return stanza != null;
-    }
-
-    @Override
-    public @NotNull XmppUnit readyUnit() {
-        if (stanza == null) {
-            throw new IllegalStateException("");
-        }
-
-        final var stanza = this.stanza;
-        this.stanza = null;
-
-        return stanza;
-    }
 }

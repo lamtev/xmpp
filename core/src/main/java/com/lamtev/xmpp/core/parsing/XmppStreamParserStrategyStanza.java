@@ -1,6 +1,7 @@
 package com.lamtev.xmpp.core.parsing;
 
 import com.lamtev.xmpp.core.XmppStanza;
+import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +22,9 @@ abstract class XmppStreamParserStrategyStanza extends XmppStreamParserAbstractSt
     String to;
     @Nullable
     String lang;
+    @Nullable
+    XmppStanza stanza;
+
     XmppStreamParserStrategyStanza(@NotNull final XMLStreamReader reader) {
         super(reader);
     }
@@ -60,11 +64,30 @@ abstract class XmppStreamParserStrategyStanza extends XmppStreamParserAbstractSt
     }
 
     @Override
+    public final boolean unitIsReady() {
+        return stanza != null;
+    }
+
+    @Override
+    @NotNull
+    public final XmppUnit readyUnit() {
+        if (stanza == null) {
+            throw new IllegalStateException("");
+        }
+
+        final var stanza = this.stanza;
+        resetState();
+
+        return stanza;
+    }
+
+    @Override
     void resetState() {
         openingTagCount = closingTagCount = 0;
         kind = null;
         type = null;
         id = from = to = lang = null;
+        stanza = null;
     }
 
     final boolean tagCountsAreSame() {

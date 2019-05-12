@@ -1,7 +1,6 @@
 package com.lamtev.xmpp.core.parsing;
 
 import com.lamtev.xmpp.core.XmppStanza;
-import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,8 +15,6 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
     private Bind bind;
     @Nullable
     private Query query;
-    @Nullable
-    private XmppStanza stanza;
 
     XmppStreamParserStrategyStanzaIq(@NotNull final XMLStreamReader reader) {
         super(reader);
@@ -54,9 +51,7 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
                 }
                 stanza = new XmppStanza(kind, id, type, new XmppStanza.UnsupportedElement(reader.getLocalName()));
             }
-        }
-
-        if (openingTagCount == 3) {
+        } else if (openingTagCount == 3) {
             if (bind != null) {
                 if ("resource".equals(name)) {
                     bind.waitingForResource = true;
@@ -133,26 +128,9 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
     }
 
     @Override
-    public boolean unitIsReady() {
-        return stanza != null;
-    }
-
-    @Override
-    public @NotNull XmppUnit readyUnit() {
-        if (stanza == null) {
-            throw new IllegalStateException("");
-        }
-        final var stanza = this.stanza;
-        resetState();
-
-        return stanza;
-    }
-
-    @Override
     void resetState() {
         super.resetState();
 
-        stanza = null;
         bind = null;
         query = null;
     }

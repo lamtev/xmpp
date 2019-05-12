@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 public final class XmppStanza implements XmppUnit {
     @NotNull
@@ -198,6 +197,8 @@ public final class XmppStanza implements XmppUnit {
                 return RESULT;
             } else if (GET.string.equals(string)) {
                 return GET;
+            } else if (ERROR.string.equals(string)) {
+                return ERROR;
             }
 
             throw new IllegalArgumentException();
@@ -463,37 +464,44 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
-    public interface Error extends TopElement {
-        @SuppressWarnings("unchecked")
+    public static class Error implements TopElement {
         @NotNull
-        Function<? super Type, ? extends Error>[] CONSTRUCTORS = new Function[] {
-                (Function<MessageError.Type, MessageError>) MessageError::new,
-                (Function<PresenceError.Type, PresenceError>) PresenceError::new,
-                (Function<IqError.Type, IqError>) IqError::new
-        };
-        @NotNull
-        static Error of(@NotNull final Kind kind, @NotNull final Type type) {
-            return CONSTRUCTORS[kind.ordinal()].apply(type);
-        }
-
-        interface Type {}
-    }
-
-    public static final class IqError implements Error {
+        public final Kind kind;
         @NotNull
         public final Type type;
+        @NotNull
+        public final DefinedCondition definedCondition;
+        private final int code;
 
-        public IqError(@NotNull final Type type) {
+        @NotNull
+         private Error(@NotNull final Kind kind, @NotNull final Type type, @NotNull final DefinedCondition definedCondition, final int code) {
+            this.kind = kind;
             this.type = type;
+            this.definedCondition = definedCondition;
+            this.code = code;
+        }
+
+        public static Error of(@NotNull final Kind kind, @NotNull final Type type, @NotNull final DefinedCondition definedCondition) {
+            //TODO: check
+
+            return new Error(kind, type, definedCondition, switch (kind) {
+                case IQ -> CODE_IQ_ERROR;
+                case MESSAGE ->CODE_MESSAGE_ERROR;
+                case PRESENCE -> CODE_PRESENCE_ERROR;
+            });
         }
 
         @Override
         public int code() {
-            return CODE_IQ_ERROR;
+            return code;
         }
 
-        public enum Type implements Error.Type {
+        public enum Type {
+            AUTH("auth"),
             CANCEL("cancel"),
+            CONTINUE("continue"),
+            MODIFY("modify"),
+            WAIT("wait")
             ;
 
             @NotNull
@@ -508,39 +516,41 @@ public final class XmppStanza implements XmppUnit {
                 return string;
             }
         }
-    }
 
-    public static final class PresenceError implements Error {
-        public PresenceError(@NotNull final Type type) {
+        public enum DefinedCondition {
+            BAD_REQUEST("bad-request"),
+            CONFLICT("conflict"),
+            FEATURE_NOT_IMPLEMENTED("feature-not-implemented"),
+            ITEM_NOT_FOUND("item-not-found")
+            ;
+
+            @NotNull
+            private static final String NAMESPACE = "urn:ietf:params:xml:ns:xmpp-stanzas";
+            @NotNull
+            private final String string;
+
+            DefinedCondition(@NotNull final String string) {
+                this.string = string;
+            }
+
+            @Override
+            public String toString() {
+                return string;
+            }
+
+            @NotNull
+            public String namespace() {
+                return NAMESPACE;
+            }
+        }
+
+        public interface ApplicationSpecificCondition {
 
         }
-        @Override
-        public int code() {
-            return CODE_PRESENCE_ERROR;
-        }
-
-        public enum Type implements Error.Type {
-
-        }
-    }
-
-    public static final class MessageError implements Error {
-        public MessageError(@NotNull final Type type) {
-
-        }
-
-        @Override
-        public int code() {
-            return CODE_MESSAGE_ERROR;
-        }
-
-        public enum Type implements Error.Type {
-        }
-
     }
 
     @NotNull
-    public static XmppStanza errorOf(@NotNull final XmppStanza stanza, @NotNull final Error.Type type) {
+    public static XmppStanza errorOf(@NotNull final XmppStanza stanza, @NotNull final Error.Type type, @NotNull final Error.DefinedCondition definedCondition) {
         return new XmppStanza(
                 stanza.kind(),
                 stanza.from(),
@@ -548,7 +558,7 @@ public final class XmppStanza implements XmppUnit {
                 stanza.id(),
                 TypeAttribute.of(stanza.kind(), "error"),
                 null,
-                Error.of(stanza.kind(), type)
+                Error.of(stanza.kind(), type, definedCondition)
         );
     }
 }
