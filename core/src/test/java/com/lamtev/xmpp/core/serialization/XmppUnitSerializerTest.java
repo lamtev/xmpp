@@ -134,9 +134,12 @@ final class XmppUnitSerializerTest {
         try (final var baos = new ByteArrayOutputStream()) {
             baos.writeBytes(serializer.serialize(new XmppStanza(
                     XmppStanza.Kind.MESSAGE,
+                    "juliet@im.example.com/balcony",
+                    "romeo@example.net/orchard",
                     "ju2ba41c",
                     XmppStanza.TypeAttribute.of(XmppStanza.Kind.MESSAGE, "chat"),
-                    "romeo@example.net/orchard", "juliet@im.example.com/balcony", "en", new XmppStanza.MessageBody("Neither, fair saint, if either thee dislike.")
+                    "en",
+                    new XmppStanza.MessageBody("Neither, fair saint, if either thee dislike.")
             )));
 
             assertEquals(expectedStanza, baos.toString(UTF_8));
@@ -157,9 +160,9 @@ final class XmppUnitSerializerTest {
         try (final var baos = new ByteArrayOutputStream()) {
             baos.writeBytes(serializer.serialize(new XmppStanza(
                     XmppStanza.Kind.IQ,
-                    "bv1bs71f",
+                    "juliet@example.com/chamber", null, "bv1bs71f",
                     XmppStanza.TypeAttribute.of(XmppStanza.Kind.IQ, "result"),
-                    null, "juliet@example.com/chamber", null, new XmppStanza.IqQuery(
+                    null, new XmppStanza.IqQuery(
                             XmppStanza.IqQuery.ContentNamespace.ROSTER,
                             "ver7",
                             asList(new XmppStanza.IqQuery.Item("nurse@example.com"), new XmppStanza.IqQuery.Item("romeo@example.net"))

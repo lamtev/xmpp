@@ -10,18 +10,18 @@ import java.util.Objects;
 public final class XmppStanza implements XmppUnit {
     @NotNull
     private final Kind kind;
+    @Nullable
+    private final String to;
+    @Nullable
+    private final String from;
     @NotNull
     private final String id;
     @NotNull
     private final TypeAttribute type;
-    @NotNull
-    private final XmppStanza.TopElement topElement;
-    @Nullable
-    private final String from;
-    @Nullable
-    private final String to;
     @Nullable
     private final String lang;
+    @NotNull
+    private final XmppStanza.TopElement topElement;
 
     public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final XmppStanza.TopElement topElement) {
         this.kind = kind;
@@ -33,7 +33,7 @@ public final class XmppStanza implements XmppUnit {
         this.lang = null;
     }
 
-    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @Nullable final String from, @Nullable final String to, @Nullable final String lang, @NotNull final XmppStanza.TopElement topElement) {
+    public XmppStanza(@NotNull final Kind kind, @Nullable final String to, @Nullable final String from, @NotNull final String id, @NotNull final TypeAttribute type, @Nullable final String lang, @NotNull final XmppStanza.TopElement topElement) {
         this.kind = kind;
         this.id = id;
         this.type = type;
@@ -94,10 +94,10 @@ public final class XmppStanza implements XmppUnit {
         if (!id.equals(that.id)) return false;
         if (!type.equals(that.type)) return false;
         if (!topElement.equals(that.topElement)) return false;
-        if (from != null ? !from.equals(that.from) : that.from != null) return false;
-        if (to != null ? !to.equals(that.to) : that.to != null) return false;
+        if (!Objects.equals(from, that.from)) return false;
+        if (!Objects.equals(to, that.to)) return false;
 
-        return lang != null ? lang.equals(that.lang) : that.lang == null;
+        return Objects.equals(lang, that.lang);
     }
 
     @Override
@@ -195,7 +195,7 @@ public final class XmppStanza implements XmppUnit {
             this.string = string;
         }
 
-        static IqTypeAttribute of(@NotNull final String string) {
+        public static IqTypeAttribute of(@NotNull final String string) {
             if (SET.string.equals(string)) {
                 return SET;
             } else if (RESULT.string.equals(string)) {

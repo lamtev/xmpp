@@ -177,9 +177,9 @@ final class XmppStreamParserTest {
                     final var messageStanza = (XmppStanza) unit;
                     final var expected = new XmppStanza(
                             MESSAGE,
-                            "ju2ba41c",
+                            "romeo@example.net", "juliet@im.example.com/balcony", "ju2ba41c",
                             XmppStanza.TypeAttribute.of(MESSAGE, "chat"),
-                            "juliet@im.example.com/balcony", "romeo@example.net", "en", new XmppStanza.MessageBody("Art thou not Romeo, and a Montague?")
+                            "en", new XmppStanza.MessageBody("Art thou not Romeo, and a Montague?")
                     );
 
                     assertEquals(expected, messageStanza);
@@ -205,9 +205,9 @@ final class XmppStreamParserTest {
 
         final var expected = new XmppStanza(
                 IQ,
-                "bv1bs71f",
+                null, "juliet@example.com/balcony", "bv1bs71f",
                 XmppStanza.TypeAttribute.of(IQ, "get"),
-                "juliet@example.com/balcony", null, null, new XmppStanza.IqQuery(
+                null, new XmppStanza.IqQuery(
                         XmppStanza.IqQuery.ContentNamespace.ROSTER,
                         null,
                         null
