@@ -30,12 +30,13 @@ public final class XmppUnitSerializer {
     private final Consumer<? super XmppStanza.TopElement>[] iqStanzaSerializers = new Consumer[]{
             (Consumer<XmppStanza.IqBind>) this::serializeIqStanzaBind,
             (Consumer<XmppStanza.IqQuery>) this::serializeIqStanzaQuery,
-            (Consumer<XmppStanza.IqError>) this::serializeIqStanzaError,
+            (Consumer<XmppStanza.Error>) this::serializeStanzaError,
     };
 
     @SuppressWarnings("unchecked")
     private final Consumer<? super XmppStanza.TopElement>[] messageStanzaSerializers = new Consumer[]{
             (Consumer<XmppStanza.MessageBody>) this::serializeMessageStanzaBody,
+            (Consumer<XmppStanza.Error>) this::serializeStanzaError,
     };
     @SuppressWarnings("unchecked")
     @NotNull
@@ -247,12 +248,12 @@ public final class XmppUnitSerializer {
         }
     }
 
-    private void serializeIqStanzaError(final XmppStanza.IqError iqError) {
+    private void serializeStanzaError(@NotNull final XmppStanza.Error error) {
         try {
             writer.writeStartElement("error");
-            writer.writeAttribute("type", iqError.type.toString());
-            writer.writeStartElement("feature-not-implemented");
-            writer.writeDefaultNamespace("urn:ietf:params:xml:ns:xmpp-stanzas");
+            writer.writeAttribute("type", error.type.toString());
+            writer.writeStartElement(error.definedCondition.toString());
+            writer.writeDefaultNamespace(error.definedCondition.namespace());
             writer.writeEndElement();
             writer.writeEndElement();
         } catch (XMLStreamException e) {
