@@ -16,7 +16,6 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
     private Bind bind;
     @Nullable
     private Query query;
-
     @Nullable
     private XmppStanza stanza;
 
@@ -112,7 +111,7 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
                     //TODO error
                     return;
                 }
-                stanza = new XmppStanza(kind, id, type, from, to, lang, new XmppStanza.IqQuery(query.namespace, query.version, query.items));
+                stanza = new XmppStanza(kind, to, from, id, type, lang, new XmppStanza.IqQuery(query.namespace, query.version, query.items));
                 query = null;
             }
         }

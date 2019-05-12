@@ -251,6 +251,9 @@ public final class XmppUnitSerializer {
         try {
             writer.writeStartElement("error");
             writer.writeAttribute("type", iqError.type);
+            writer.writeStartElement("feature-not-implemented");
+            writer.writeDefaultNamespace("urn:ietf:params:xml:ns:xmpp-stanzas");
+            writer.writeEndElement();
             writer.writeEndElement();
         } catch (XMLStreamException e) {
             e.printStackTrace();

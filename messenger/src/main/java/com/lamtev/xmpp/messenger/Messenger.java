@@ -149,10 +149,8 @@ public class Messenger implements XmppServer.Handler {
 
                             final var rosterResult = new XmppStanza(
                                     IQ,
-                                    stanza.id(),
+                                    stanza.from(), null, stanza.id(),
                                     XmppStanza.IqTypeAttribute.RESULT,
-                                    null,
-                                    stanza.from(),
                                     null,
                                     new XmppStanza.IqQuery(
                                             XmppStanza.IqQuery.ContentNamespace.ROSTER,
@@ -171,10 +169,8 @@ public class Messenger implements XmppServer.Handler {
                         System.out.println("Usupported: " + unsupported.name);
                         final var error = new XmppStanza(
                                 IQ,
-                                stanza.id(),
+                                stanza.from(), null, stanza.id(),
                                 XmppStanza.IqTypeAttribute.ERROR,
-                                null,
-                                stanza.from(),
                                 null,
                                 new XmppStanza.IqError("cancel")
                         );
