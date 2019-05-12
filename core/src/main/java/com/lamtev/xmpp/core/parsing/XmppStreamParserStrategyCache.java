@@ -12,7 +12,7 @@ final class XmppStreamParserStrategyCache {
     private final XmppStreamParserStrategy[] cache = new XmppStreamParserStrategy[XmppStreamParserStrategy.Name.values().length];
     @SuppressWarnings("unchecked")
     @NotNull
-    private final Function<XMLStreamReader, ? extends XmppStreamParserStrategy>[] constructors = new Function[]{
+    private static final Function<XMLStreamReader, ? extends XmppStreamParserStrategy>[] CONSTRUCTORS = new Function[]{
             (Function<XMLStreamReader, XmppStreamParserStrategyStreamHeader>) XmppStreamParserStrategyStreamHeader::new,
             (Function<XMLStreamReader, XmppStreamParserStrategyStreamFeatures>) XmppStreamParserStrategyStreamFeatures::new,
             (Function<XMLStreamReader, XmppStreamParserStrategySaslNegotiation>) XmppStreamParserStrategySaslNegotiation::new,
@@ -35,7 +35,7 @@ final class XmppStreamParserStrategyCache {
     XmppStreamParserStrategy get(@NotNull final XmppStreamParserStrategy.Name name) {
         final var idx = name.ordinal();
         if (cache[idx] == null) {
-            cache[idx] = constructors[idx].apply(reader);
+            cache[idx] = CONSTRUCTORS[idx].apply(reader);
             cache[idx].setErrorObserver(errorObserver);
         }
 

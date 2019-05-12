@@ -9,7 +9,7 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.ByteArrayOutputStream;
 import java.util.function.Consumer;
 
-import static com.lamtev.xmpp.core.XmppStanza.TopElement.CODE_MESSAGE_BODY_CODE;
+import static com.lamtev.xmpp.core.XmppStanza.TopElement.CODE_MESSAGE_BODY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class XmppUnitSerializer {
@@ -163,7 +163,7 @@ public final class XmppUnitSerializer {
             writer.writeStartElement("message");
             serializeCommonAttributes(stanza);
 
-            messageStanzaSerializers[stanza.topElement().code() - CODE_MESSAGE_BODY_CODE].accept(stanza.topElement());
+            messageStanzaSerializers[stanza.topElement().code() - CODE_MESSAGE_BODY].accept(stanza.topElement());
 
             writer.writeEndElement();
             writer.flush();
@@ -250,7 +250,7 @@ public final class XmppUnitSerializer {
     private void serializeIqStanzaError(final XmppStanza.IqError iqError) {
         try {
             writer.writeStartElement("error");
-            writer.writeAttribute("type", iqError.type);
+            writer.writeAttribute("type", iqError.type.toString());
             writer.writeStartElement("feature-not-implemented");
             writer.writeDefaultNamespace("urn:ietf:params:xml:ns:xmpp-stanzas");
             writer.writeEndElement();
