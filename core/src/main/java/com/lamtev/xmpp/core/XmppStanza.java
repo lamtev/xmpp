@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 public final class XmppStanza implements XmppUnit {
     @NotNull
@@ -24,23 +25,17 @@ public final class XmppStanza implements XmppUnit {
     private final XmppStanza.TopElement topElement;
 
     public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final XmppStanza.TopElement topElement) {
-        this.kind = kind;
-        this.id = id;
-        this.type = type;
-        this.topElement = topElement;
-        this.from = null;
-        this.to = null;
-        this.lang = null;
+        this(kind, null, null, id, type, null, topElement);
     }
 
     public XmppStanza(@NotNull final Kind kind, @Nullable final String to, @Nullable final String from, @NotNull final String id, @NotNull final TypeAttribute type, @Nullable final String lang, @NotNull final XmppStanza.TopElement topElement) {
         this.kind = kind;
+        this.to = to;
+        this.from = from;
         this.id = id;
         this.type = type;
-        this.topElement = topElement;
-        this.from = from;
-        this.to = to;
         this.lang = lang;
+        this.topElement = topElement;
     }
 
     @NotNull
@@ -195,6 +190,7 @@ public final class XmppStanza implements XmppUnit {
             this.string = string;
         }
 
+        @NotNull
         public static IqTypeAttribute of(@NotNull final String string) {
             if (SET.string.equals(string)) {
                 return SET;
@@ -213,14 +209,43 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
+    public enum PresenceTypeAttribute implements TypeAttribute {
+        ERROR("error"),
+        ;
+
+        @NotNull
+        private final String string;
+
+        PresenceTypeAttribute(@NotNull final String string) {
+            this.string = string;
+        }
+
+        @NotNull
+        public static PresenceTypeAttribute of(@NotNull final String string) {
+            if (ERROR.string.equals(string)) {
+                return ERROR;
+            }
+
+            throw new IllegalArgumentException();
+        }
+
+        @Override
+        public String toString() {
+            return string;
+        }
+    }
+
     public interface TopElement {
-        int CODE_IQ_BIND_CODE = 0;
-        int CODE_IQ_QUERY_CODE = 1;
+        int CODE_IQ_BIND = 0;
+        int CODE_IQ_QUERY = 1;
         int CODE_IQ_ERROR = 2;
 
-        int CODE_MESSAGE_BODY_CODE = 3;
+        int CODE_MESSAGE_BODY = 3;
+        int CODE_MESSAGE_ERROR = 4;
 
-        int CODE_UNSUPPORTED = 4;
+        int CODE_PRESENCE_ERROR = 5;
+
+        int CODE_UNSUPPORTED = 6;
 
         int code();
     }
@@ -233,6 +258,8 @@ public final class XmppStanza implements XmppUnit {
                     return IqTypeAttribute.of(string);
                 case MESSAGE:
                     return MessageTypeAttribute.of(string);
+                case PRESENCE:
+                    return PresenceTypeAttribute.of(string);
                 default:
                     throw new IllegalArgumentException();
             }
@@ -263,7 +290,7 @@ public final class XmppStanza implements XmppUnit {
 
         @Override
         public int code() {
-            return CODE_IQ_BIND_CODE;
+            return CODE_IQ_BIND;
         }
 
         @Override
@@ -300,7 +327,7 @@ public final class XmppStanza implements XmppUnit {
 
         @Override
         public int code() {
-            return CODE_MESSAGE_BODY_CODE;
+            return CODE_MESSAGE_BODY;
         }
 
         @Override
@@ -350,7 +377,7 @@ public final class XmppStanza implements XmppUnit {
 
         @Override
         public int code() {
-            return CODE_IQ_QUERY_CODE;
+            return CODE_IQ_QUERY;
         }
 
         @Override
@@ -436,11 +463,27 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
-    public static final class IqError implements TopElement {
+    public interface Error extends TopElement {
+        @SuppressWarnings("unchecked")
         @NotNull
-        public final String type;
+        Function<? super Type, ? extends Error>[] CONSTRUCTORS = new Function[] {
+                (Function<MessageError.Type, MessageError>) MessageError::new,
+                (Function<PresenceError.Type, PresenceError>) PresenceError::new,
+                (Function<IqError.Type, IqError>) IqError::new
+        };
+        @NotNull
+        static Error of(@NotNull final Kind kind, @NotNull final Type type) {
+            return CONSTRUCTORS[kind.ordinal()].apply(type);
+        }
 
-        public IqError(@NotNull final String type) {
+        interface Type {}
+    }
+
+    public static final class IqError implements Error {
+        @NotNull
+        public final Type type;
+
+        public IqError(@NotNull final Type type) {
             this.type = type;
         }
 
@@ -448,5 +491,65 @@ public final class XmppStanza implements XmppUnit {
         public int code() {
             return CODE_IQ_ERROR;
         }
+
+        public enum Type implements Error.Type {
+            CANCEL("cancel"),
+            ;
+
+            @NotNull
+            private final String string;
+
+            Type(@NotNull final String string) {
+                this.string = string;
+            }
+
+            @Override
+            public String toString() {
+                return string;
+            }
+        }
+    }
+
+    public static final class PresenceError implements Error {
+        public PresenceError(@NotNull final Type type) {
+
+        }
+        @Override
+        public int code() {
+            return CODE_PRESENCE_ERROR;
+        }
+
+        public enum Type implements Error.Type {
+
+        }
+    }
+
+    public static final class MessageError implements Error {
+        public MessageError(@NotNull final Type type) {
+
+        }
+
+        @Override
+        public int code() {
+            return CODE_MESSAGE_ERROR;
+        }
+
+        public enum Type implements Error.Type {
+        }
+
+    }
+
+    @NotNull
+    public static XmppStanza errorOf(@NotNull final XmppStanza stanza, @NotNull final Error.Type type) {
+        return new XmppStanza(
+                stanza.kind(),
+                stanza.from(),
+                stanza.to(),
+                stanza.id(),
+                TypeAttribute.of(stanza.kind(), "error"),
+                null,
+                Error.of(stanza.kind(), type)
+        );
     }
 }
+

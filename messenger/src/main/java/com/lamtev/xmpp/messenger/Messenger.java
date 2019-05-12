@@ -172,7 +172,7 @@ public class Messenger implements XmppServer.Handler {
                                 stanza.from(), null, stanza.id(),
                                 XmppStanza.IqTypeAttribute.ERROR,
                                 null,
-                                new XmppStanza.IqError("cancel")
+                                XmppStanza.Error.of(IQ, XmppStanza.IqError.Type.CANCEL)
                         );
 
                         responseStream.sendUnit(error);
