@@ -240,6 +240,12 @@ public final class XmppUnitSerializer {
                 for (final var it : items) {
                     writer.writeEmptyElement("item");
                     writer.writeAttribute("jid", it.jid());
+                    if (it.name() != null) {
+                        writer.writeAttribute("name", it.name());
+                    }
+                    if (it.subscription() != null) {
+                        writer.writeAttribute("subscription", it.subscription().toString());
+                    }
                 }
             }
             writer.writeEndElement();
