@@ -212,6 +212,7 @@ public final class XmppStanza implements XmppUnit {
 
     public enum PresenceTypeAttribute implements TypeAttribute {
         ERROR("error"),
+        SUBSCRIBE("subscribe"),
         ;
 
         @NotNull
@@ -225,6 +226,8 @@ public final class XmppStanza implements XmppUnit {
         public static PresenceTypeAttribute of(@NotNull final String string) {
             if (ERROR.string.equals(string)) {
                 return ERROR;
+            } else if (SUBSCRIBE.string.equals(string)) {
+                return SUBSCRIBE;
             }
 
             throw new IllegalArgumentException();
@@ -416,6 +419,8 @@ public final class XmppStanza implements XmppUnit {
         }
 
         public static final class Item {
+            @Nullable
+            private Ask ask;
             @NotNull
             private final String jid;
             @Nullable
@@ -428,9 +433,19 @@ public final class XmppStanza implements XmppUnit {
             }
 
             public Item(@NotNull final String jid, @Nullable final String name, @Nullable final Subscription subscription) {
+                this(null, jid, name, subscription);
+            }
+
+            public Item(@Nullable final Ask ask, @NotNull final String jid, @Nullable final String name, @Nullable final Subscription subscription) {
+                this.ask = ask;
                 this.jid = jid;
                 this.name = name;
                 this.subscription = subscription;
+            }
+
+            @Nullable
+            public Ask ask() {
+                return ask;
             }
 
             @NotNull
@@ -479,6 +494,23 @@ public final class XmppStanza implements XmppUnit {
                 private final String string;
 
                 Subscription(@NotNull final String string) {
+                    this.string = string;
+                }
+
+                @Override
+                public String toString() {
+                    return string;
+                }
+            }
+
+            public enum Ask {
+                SUBSCRIBE("subscribe"),
+                ;
+
+                @NotNull
+                private final String string;
+
+                Ask(@NotNull final String string) {
                     this.string = string;
                 }
 
