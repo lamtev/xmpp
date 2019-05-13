@@ -205,9 +205,12 @@ final class XmppStreamParserTest {
 
         final var expected = new XmppStanza(
                 IQ,
-                null, "juliet@example.com/balcony", "bv1bs71f",
+                null,
+                "juliet@example.com/balcony",
+                "bv1bs71f",
                 XmppStanza.TypeAttribute.of(IQ, "get"),
-                null, new XmppStanza.IqQuery(
+                null,
+                new XmppStanza.IqQuery(
                         XmppStanza.IqQuery.ContentNamespace.ROSTER,
                         null,
                         null
@@ -269,4 +272,6 @@ final class XmppStreamParserTest {
             parser.startParsing();
         }
     }
+
+
 }

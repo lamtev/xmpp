@@ -12,10 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.*;
 import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
-import static com.lamtev.xmpp.core.XmppStanza.Error.Type.MODIFY;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
-import static com.lamtev.xmpp.core.XmppStanza.errorOf;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
+import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
+import static com.lamtev.xmpp.core.util.XmppStanzas.rosterResultOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 
@@ -151,23 +151,7 @@ public class Messenger implements XmppServer.Handler {
                         final var query = (XmppStanza.IqQuery) stanza.topElement();
 
                         if (query.namespace() == XmppStanza.IqQuery.ContentNamespace.ROSTER) {
-
-                            final var rosterResult = new XmppStanza(
-                                    IQ,
-                                    stanza.from(), null, stanza.id(),
-                                    XmppStanza.IqTypeAttribute.RESULT,
-                                    null,
-                                    new XmppStanza.IqQuery(
-                                            XmppStanza.IqQuery.ContentNamespace.ROSTER,
-                                            null,
-                                            asList(
-                                                    new XmppStanza.IqQuery.Item("admin@lamtev.com"),
-                                                    new XmppStanza.IqQuery.Item("root@lamtev.com")
-                                            )
-                                    )
-                            );
-
-                            responseStream.sendUnit(rosterResult);
+                            responseStream.sendUnit(rosterResultOf(stanza, asList("admin@lamtev.com", "root@lamtev.com")));
                         }
                     } else if (stanza.topElement() instanceof UnsupportedElement) {
                         final var unsupported = (UnsupportedElement) stanza.topElement();
