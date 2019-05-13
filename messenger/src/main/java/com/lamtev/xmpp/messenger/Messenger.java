@@ -1,6 +1,7 @@
 package com.lamtev.xmpp.messenger;
 
 import com.lamtev.xmpp.core.*;
+import com.lamtev.xmpp.core.XmppStanza.IqQuery.Item;
 import com.lamtev.xmpp.core.XmppStanza.UnsupportedElement;
 import com.lamtev.xmpp.core.io.XmppExchange;
 import com.lamtev.xmpp.messenger.utils.AuthBase64LoginPasswordExtractor;
@@ -10,8 +11,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.*;
+import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.ITEM_NOT_FOUND;
 import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
+import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.BOTH;
+import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.TO;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
@@ -151,7 +154,10 @@ public class Messenger implements XmppServer.Handler {
                         final var query = (XmppStanza.IqQuery) stanza.topElement();
 
                         if (query.namespace() == XmppStanza.IqQuery.ContentNamespace.ROSTER) {
-                            responseStream.sendUnit(rosterResultOf(stanza, asList("admin@lamtev.com", "root@lamtev.com")));
+                            responseStream.sendUnit(rosterResultOf(stanza, asList(
+                                    new Item("admin@lamtev.com", "Admin", BOTH),
+                                    new Item("root@lamtev.com", "Root", TO)
+                            )));
                         }
                     } else if (stanza.topElement() instanceof UnsupportedElement) {
                         final var unsupported = (UnsupportedElement) stanza.topElement();

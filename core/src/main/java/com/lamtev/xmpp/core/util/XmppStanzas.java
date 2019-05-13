@@ -1,10 +1,12 @@
 package com.lamtev.xmpp.core.util;
 
 import com.lamtev.xmpp.core.XmppStanza;
+import com.lamtev.xmpp.core.XmppStanza.IqQuery.Item;
+import com.lamtev.xmpp.core.XmppStanza.IqTypeAttribute;
+import com.lamtev.xmpp.core.XmppStanza.TypeAttribute;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 
@@ -16,27 +18,25 @@ public final class XmppStanzas {
                 stanza.from(),
                 stanza.to(),
                 stanza.id(),
-                XmppStanza.TypeAttribute.of(stanza.kind(), "error"),
+                TypeAttribute.of(stanza.kind(), "error"),
                 null,
                 XmppStanza.Error.of(stanza.kind(), type, definedCondition)
         );
     }
 
     @NotNull
-    public static XmppStanza rosterResultOf(@NotNull final XmppStanza stanza, @NotNull final List<String> jids) {
+    public static XmppStanza rosterResultOf(@NotNull final XmppStanza stanza, @NotNull final List<Item> items) {
         return new XmppStanza(
                 IQ,
                 stanza.from(),
                 null,
                 stanza.id(),
-                XmppStanza.IqTypeAttribute.RESULT,
+                IqTypeAttribute.RESULT,
                 null,
                 new XmppStanza.IqQuery(
                         XmppStanza.IqQuery.ContentNamespace.ROSTER,
                         null,
-                        jids.stream()
-                                .map(XmppStanza.IqQuery.Item::new)
-                                .collect(Collectors.toList())
+                        items
                 )
         );
     }

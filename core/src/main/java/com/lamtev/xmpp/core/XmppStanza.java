@@ -419,20 +419,28 @@ public final class XmppStanza implements XmppUnit {
             @NotNull
             private final String jid;
             @Nullable
+            private String name;
+            @Nullable
             private Subscription subscription;
 
             public Item(@NotNull final String jid) {
-                this(jid, null);
+                this(jid, null, null);
             }
 
-            public Item(@NotNull final String jid, @Nullable final Subscription subscription) {
+            public Item(@NotNull final String jid, @Nullable final String name, @Nullable final Subscription subscription) {
                 this.jid = jid;
+                this.name = name;
                 this.subscription = subscription;
             }
 
             @NotNull
             public String jid() {
                 return jid;
+            }
+
+            @Nullable
+            public String name() {
+                return name;
             }
 
             @Nullable

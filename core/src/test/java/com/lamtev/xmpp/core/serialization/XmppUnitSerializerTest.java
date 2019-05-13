@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.*;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -149,26 +150,38 @@ final class XmppUnitSerializerTest {
 
     @Test
     void testRosterResultSerialization() throws IOException {
-        final var expectedStanza = "<iq id=\"bv1bs71f\" " +
-                "to=\"juliet@example.com/chamber\" " +
+        final var expectedStanza = "<iq id=\"hu2bac18\" " +
+                "to=\"juliet@example.com/balcony\" " +
                 "type=\"result\">" +
-                "<query xmlns=\"jabber:iq:roster\" ver=\"ver7\">" +
-                "<item jid=\"nurse@example.com\"/>" +
-                "<item jid=\"romeo@example.net\"/>" +
+                "<query xmlns=\"jabber:iq:roster\" ver=\"ver11\">" +
+                "<item jid=\"romeo@example.net\" " +
+                "name=\"Romeo\" " +
+                "subscription=\"both\"/>" +
+                "<item jid=\"mercutio@example.com\" " +
+                "name=\"Mercutio\" " +
+                "subscription=\"from\"/>" +
+                "<item jid=\"benvolio@example.net\" " +
+                "name=\"Benvolio\" " +
+                "subscription=\"to\"/>" +
                 "</query>" +
                 "</iq>";
 
         try (final var baos = new ByteArrayOutputStream()) {
             baos.writeBytes(serializer.serialize(new XmppStanza(
                     IQ,
-                    "juliet@example.com/chamber",
+                    "juliet@example.com/balcony",
                     null,
-                    "bv1bs71f",
+                    "hu2bac18",
                     XmppStanza.TypeAttribute.of(IQ, "result"),
-                    null, new XmppStanza.IqQuery(
+                    null,
+                    new XmppStanza.IqQuery(
                             XmppStanza.IqQuery.ContentNamespace.ROSTER,
-                            "ver7",
-                            asList(new XmppStanza.IqQuery.Item("nurse@example.com"), new XmppStanza.IqQuery.Item("romeo@example.net"))
+                            "ver11",
+                            asList(
+                                    new XmppStanza.IqQuery.Item("romeo@example.net", "Romeo", BOTH),
+                                    new XmppStanza.IqQuery.Item("mercutio@example.com", "Mercutio", FROM),
+                                    new XmppStanza.IqQuery.Item("benvolio@example.net", "Benvolio", TO)
+                            )
                     )
             )));
 
