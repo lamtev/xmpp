@@ -254,16 +254,11 @@ public final class XmppStanza implements XmppUnit {
     public interface TypeAttribute {
         @NotNull
         static TypeAttribute of(@NotNull final Kind kind, @NotNull final String string) {
-            switch (kind) {
-                case IQ:
-                    return IqTypeAttribute.of(string);
-                case MESSAGE:
-                    return MessageTypeAttribute.of(string);
-                case PRESENCE:
-                    return PresenceTypeAttribute.of(string);
-                default:
-                    throw new IllegalArgumentException();
-            }
+            return switch (kind) {
+                case IQ -> IqTypeAttribute.of(string);
+                case MESSAGE -> MessageTypeAttribute.of(string);
+                case PRESENCE -> PresenceTypeAttribute.of(string);
+            };
         }
     }
 
@@ -423,13 +418,26 @@ public final class XmppStanza implements XmppUnit {
         public static final class Item {
             @NotNull
             private final String jid;
+            @Nullable
+            private Subscription subscription;
 
             public Item(@NotNull final String jid) {
-                this.jid = jid;
+                this(jid, null);
             }
 
+            public Item(@NotNull final String jid, @Nullable final Subscription subscription) {
+                this.jid = jid;
+                this.subscription = subscription;
+            }
+
+            @NotNull
             public String jid() {
                 return jid;
+            }
+
+            @Nullable
+            public Subscription subscription() {
+                return subscription;
             }
 
             @Override
@@ -439,13 +447,37 @@ public final class XmppStanza implements XmppUnit {
 
                 final Item item = (Item) o;
 
-                return jid.equals(item.jid);
+                if (!jid.equals(item.jid)) return false;
+                return subscription == item.subscription;
 
             }
 
             @Override
             public int hashCode() {
-                return jid.hashCode();
+                int result = jid.hashCode();
+                result = 31 * result + (subscription != null ? subscription.hashCode() : 0);
+                return result;
+            }
+
+            public enum Subscription {
+                NONE("none"),
+                FROM("from"),
+                TO("to"),
+                BOTH("both"),
+                REMOVE("remove")
+                ;
+
+                @NotNull
+                private final String string;
+
+                Subscription(@NotNull final String string) {
+                    this.string = string;
+                }
+
+                @Override
+                public String toString() {
+                    return string;
+                }
             }
         }
     }
@@ -462,20 +494,32 @@ public final class XmppStanza implements XmppUnit {
         public int code() {
             return CODE_UNSUPPORTED;
         }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final UnsupportedElement that = (UnsupportedElement) o;
+
+            return name.equals(that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode();
+        }
     }
 
     public static class Error implements TopElement {
-        @NotNull
-        public final Kind kind;
+        private final int code;
         @NotNull
         public final Type type;
         @NotNull
         public final DefinedCondition definedCondition;
-        private final int code;
 
         @NotNull
-         private Error(@NotNull final Kind kind, @NotNull final Type type, @NotNull final DefinedCondition definedCondition, final int code) {
-            this.kind = kind;
+         private Error(@NotNull final Type type, @NotNull final DefinedCondition definedCondition, final int code) {
             this.type = type;
             this.definedCondition = definedCondition;
             this.code = code;
@@ -484,7 +528,7 @@ public final class XmppStanza implements XmppUnit {
         public static Error of(@NotNull final Kind kind, @NotNull final Type type, @NotNull final DefinedCondition definedCondition) {
             //TODO: check
 
-            return new Error(kind, type, definedCondition, switch (kind) {
+            return new Error(type, definedCondition, switch (kind) {
                 case IQ -> CODE_IQ_ERROR;
                 case MESSAGE ->CODE_MESSAGE_ERROR;
                 case PRESENCE -> CODE_PRESENCE_ERROR;
@@ -494,6 +538,26 @@ public final class XmppStanza implements XmppUnit {
         @Override
         public int code() {
             return code;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final Error error = (Error) o;
+
+            if (code != error.code) return false;
+            if (type != error.type) return false;
+            return definedCondition == error.definedCondition;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = code;
+            result = 31 * result + type.hashCode();
+            result = 31 * result + definedCondition.hashCode();
+            return result;
         }
 
         public enum Type {
@@ -547,19 +611,6 @@ public final class XmppStanza implements XmppUnit {
         public interface ApplicationSpecificCondition {
 
         }
-    }
-
-    @NotNull
-    public static XmppStanza errorOf(@NotNull final XmppStanza stanza, @NotNull final Error.Type type, @NotNull final Error.DefinedCondition definedCondition) {
-        return new XmppStanza(
-                stanza.kind(),
-                stanza.from(),
-                stanza.to(),
-                stanza.id(),
-                TypeAttribute.of(stanza.kind(), "error"),
-                null,
-                Error.of(stanza.kind(), type, definedCondition)
-        );
     }
 }
 
