@@ -6,9 +6,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 
 import static com.lamtev.xmpp.core.io.XmppExchange.State.*;
-import static java.util.Arrays.asList;
 
 public class User {
     @NotNull
@@ -17,7 +17,7 @@ public class User {
     private String jid;
     //TODO: construct in accordance with config
     @NotNull
-    public final Deque<XmppExchange.State> stateQueue = new ArrayDeque<>(asList(SASL_NEGOTIATION, RESOURCE_BINDING, EXCHANGE));
+    public final Deque<XmppExchange.State> stateQueue = new ArrayDeque<>(List.of(SASL_NEGOTIATION, RESOURCE_BINDING, EXCHANGE));
 
     public User(@NotNull final String id) {
         this.id = id;

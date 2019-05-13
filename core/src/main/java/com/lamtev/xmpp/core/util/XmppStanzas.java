@@ -5,6 +5,7 @@ import com.lamtev.xmpp.core.XmppStanza.IqQuery.Item;
 import com.lamtev.xmpp.core.XmppStanza.IqTypeAttribute;
 import com.lamtev.xmpp.core.XmppStanza.TypeAttribute;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public final class XmppStanzas {
     }
 
     @NotNull
-    public static XmppStanza rosterResultOf(@NotNull final XmppStanza stanza, @NotNull final List<Item> items) {
+    public static XmppStanza rosterResultOf(@NotNull final XmppStanza stanza, @Nullable final List<Item> items) {
         return new XmppStanza(
                 IQ,
                 stanza.from(),
