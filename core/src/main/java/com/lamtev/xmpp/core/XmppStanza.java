@@ -429,6 +429,7 @@ public final class XmppStanza implements XmppUnit {
             private String name;
             @Nullable
             private Subscription subscription;
+
             @Nullable
             private Set<String> groups;
 
@@ -477,6 +478,10 @@ public final class XmppStanza implements XmppUnit {
                 return groups;
             }
 
+            public void setGroups(@NotNull final Set<String> groups) {
+                this.groups = groups;
+            }
+
             @Override
             public boolean equals(final Object o) {
                 if (this == o) return true;
@@ -516,6 +521,23 @@ public final class XmppStanza implements XmppUnit {
                     this.string = string;
                 }
 
+                @Nullable
+                public static Subscription of(@Nullable final String string) {
+                    if (NONE.string.equals(string)) {
+                        return NONE;
+                    } else if (FROM.string.equals(string)) {
+                        return FROM;
+                    } else if (TO.string.equals(string)) {
+                        return TO;
+                    } else if (BOTH.string.equals(string)) {
+                        return BOTH;
+                    } else if (REMOVE.string.equals(string)) {
+                        return REMOVE;
+                    }
+
+                    return null;
+                }
+
                 @Override
                 public String toString() {
                     return string;
@@ -531,6 +553,15 @@ public final class XmppStanza implements XmppUnit {
 
                 Ask(@NotNull final String string) {
                     this.string = string;
+                }
+
+                @Nullable
+                public static Ask of(@Nullable final String string) {
+                    if (SUBSCRIBE.string.equals(string)) {
+                        return SUBSCRIBE;
+                    }
+
+                    return null;
                 }
 
                 @Override

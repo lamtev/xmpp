@@ -6,12 +6,15 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.MESSAGE;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static java.nio.charset.StandardCharsets.UTF_16;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 final class XmppStreamParserTest {
@@ -281,7 +284,58 @@ final class XmppStreamParserTest {
                 new XmppStanza.IqQuery(XmppStanza.IqQuery.ContentNamespace.ROSTER, null, List.of(new XmppStanza.IqQuery.Item("nurse@example.com")))
         );
 
-        try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var rosterSet = (XmppStanza) unit;
+
+                    assertEquals(expected, rosterSet);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testIqStanzaRosterSetParsing2() throws IOException, XmppStreamParserException {
+        final var xml = "<iq id=\"hu2bac18\" " +
+                "from=\"juliet@example.com/balcony\" " +
+                "type=\"set\">" +
+                "<query xmlns=\"jabber:iq:roster\" ver=\"ver11\">" +
+                "<item jid=\"romeo@example.net\" " +
+                "name=\"\">" +
+                "<group>Family</group>" +
+                "<group>Job</group>" +
+                "</item>" +
+                "</query>" +
+                "</iq>";
+
+        final var expected = new XmppStanza(
+                IQ,
+                null,
+                "juliet@example.com/balcony",
+                "hu2bac18",
+                XmppStanza.TypeAttribute.of(IQ, "set"),
+                null,
+                new XmppStanza.IqQuery(
+                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        "ver11",
+                        singletonList(new XmppStanza.IqQuery.Item(
+                                "romeo@example.net",
+                                "",
+                                new LinkedHashSet<>(List.of("Family", "Job"))
+                        ))
+                )
+        );
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
             parser.setDelegate(new XmppStreamParser.Delegate() {

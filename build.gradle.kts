@@ -1,5 +1,3 @@
-import java.util.List
-
 allprojects {
     group = "com.lamtev.xmpp"
 
@@ -34,7 +32,7 @@ tasks {
             sourceDirectories.from(files(sourceSets["main"].allSource.srcDirs))
             classDirectories.from(files(sourceSets["main"].output))
 
-            List.of(xml, html).forEach {
+            listOf(xml, html).forEach {
                 it.isEnabled = true
                 it.destination = File("$buildDir/reports/jacoco/report.${it.name}")
             }
