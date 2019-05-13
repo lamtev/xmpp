@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.RESOURCE_BINDING;
@@ -21,13 +22,13 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
     }
 
     @Override
-    public void startElementReached(@NotNull final String name) {
-        super.startElementReached(name);
+    public void startElementReached(@NotNull final String elName) {
+        super.startElementReached(elName);
 
         if (openingTagCount == 2) {
-            if ("bind".equals(name) && RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
+            if ("bind".equals(elName) && RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
                 bind = new Bind();
-            } else if ("query".equals(name) && XmppStanza.IqQuery.ContentNamespace.ROSTER.toString().equals(reader.getNamespaceURI())) {
+            } else if ("query".equals(elName) && XmppStanza.IqQuery.ContentNamespace.ROSTER.toString().equals(reader.getNamespaceURI())) {
                 query = new Query(XmppStanza.IqQuery.ContentNamespace.ROSTER);
 
                 for (int idx = 0; idx < reader.getAttributeCount(); idx++) {
@@ -52,20 +53,32 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
             }
         } else if (openingTagCount >= 3 && openingTagCount - closingTagCount == 3) {
             if (bind != null) {
-                if ("resource".equals(name)) {
+                if ("resource".equals(elName)) {
                     bind.waitingForResource = true;
-                } else if ("jid".equals(name)) {
+                } else if ("jid".equals(elName)) {
                     bind.waitingForJid = true;
                 }
             } else if (query != null) {
-                if ("item".equals(name)) {
+                if ("item".equals(elName)) {
                     if (query.items == null) {
                         query.items = new ArrayList<>();
                     }
                     final var jid = reader.getAttributeValue(null, "jid");
+                    final var askString = reader.getAttributeValue(null, "ask");
+                    final var ask = XmppStanza.IqQuery.Item.Ask.of(askString);
+                    final var name = reader.getAttributeValue(null, "name");
+                    final var subscriptionString = reader.getAttributeValue(null, "subscription");
+                    final var subscription = XmppStanza.IqQuery.Item.Subscription.of(subscriptionString);
                     if (jid != null) {
-                        query.items.add(new XmppStanza.IqQuery.Item(jid));
+                        query.items.add(new XmppStanza.IqQuery.Item(ask, jid, name, subscription, null));
                     }
+                }
+            }
+        } else if (openingTagCount >= 4 && openingTagCount - closingTagCount == 4) {
+            if (query != null && query.items != null && !query.items.isEmpty() && "group".equals(elName)) {
+                final var lastItem = query.items.get(query.items.size() - 1);
+                if (lastItem.groups() == null) {
+                    lastItem.setGroups(new LinkedHashSet<>());
                 }
             }
         }
@@ -122,7 +135,13 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
                 bind.jid = reader.getText();
             }
         } else if (query != null) {
-
+            if (query.items != null && !query.items.isEmpty()) {
+                final var lastItem = query.items.get(query.items.size() - 1);
+                final var lastItemGroups = lastItem.groups();
+                if (lastItemGroups != null) {
+                    lastItemGroups.add(reader.getText());
+                }
+            }
         }
     }
 
