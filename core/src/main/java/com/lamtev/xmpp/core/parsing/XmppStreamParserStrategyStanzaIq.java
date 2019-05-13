@@ -26,7 +26,6 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
 
         if (openingTagCount == 2) {
             if ("bind".equals(name) && RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
-                System.out.println("OK!");
                 bind = new Bind();
             } else if ("query".equals(name) && XmppStanza.IqQuery.ContentNamespace.ROSTER.toString().equals(reader.getNamespaceURI())) {
                 query = new Query(XmppStanza.IqQuery.ContentNamespace.ROSTER);
@@ -51,7 +50,7 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
                 }
                 stanza = new XmppStanza(kind, id, type, new XmppStanza.UnsupportedElement(reader.getLocalName()));
             }
-        } else if (openingTagCount == 3) {
+        } else if (openingTagCount >= 3 && openingTagCount - closingTagCount == 3) {
             if (bind != null) {
                 if ("resource".equals(name)) {
                     bind.waitingForResource = true;
