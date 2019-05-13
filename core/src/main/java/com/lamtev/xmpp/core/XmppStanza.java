@@ -259,11 +259,16 @@ public final class XmppStanza implements XmppUnit {
     public interface TypeAttribute {
         @NotNull
         static TypeAttribute of(@NotNull final Kind kind, @NotNull final String string) {
-            return switch (kind) {
-                case IQ -> IqTypeAttribute.of(string);
-                case MESSAGE -> MessageTypeAttribute.of(string);
-                case PRESENCE -> PresenceTypeAttribute.of(string);
-            };
+            switch (kind) {
+                case IQ:
+                    return IqTypeAttribute.of(string);
+                case MESSAGE:
+                    return MessageTypeAttribute.of(string);
+                case PRESENCE:
+                    return PresenceTypeAttribute.of(string);
+                default:
+                    throw new IllegalArgumentException();
+            }
         }
     }
 
@@ -617,12 +622,20 @@ public final class XmppStanza implements XmppUnit {
 
         public static Error of(@NotNull final Kind kind, @NotNull final Type type, @NotNull final DefinedCondition definedCondition) {
             //TODO: check
+            int code = CODE_IQ_ERROR;
+            switch (kind) {
+                case IQ:
+                    code = CODE_IQ_ERROR;
+                    break;
+                case MESSAGE:
+                    code = CODE_MESSAGE_ERROR;
+                    break;
+                case PRESENCE:
+                    code = CODE_PRESENCE_ERROR;
+                    break;
+            }
 
-            return new Error(type, definedCondition, switch (kind) {
-                case IQ -> CODE_IQ_ERROR;
-                case MESSAGE ->CODE_MESSAGE_ERROR;
-                case PRESENCE -> CODE_PRESENCE_ERROR;
-            });
+            return new Error(type, definedCondition, code);
         }
 
         @Override
