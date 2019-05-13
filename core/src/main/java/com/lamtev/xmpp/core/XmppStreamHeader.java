@@ -53,6 +53,32 @@ public final class XmppStreamHeader implements XmppUnit {
         return CODE_STREAM_HEADER;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        XmppStreamHeader that = (XmppStreamHeader) o;
+
+        if (Float.compare(that.version, version) != 0) return false;
+        if (from != null ? !from.equals(that.from) : that.from != null) return false;
+        if (to != null ? !to.equals(that.to) : that.to != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+
+        return contentNamespace == that.contentNamespace;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = from != null ? from.hashCode() : 0;
+        result = 31 * result + (to != null ? to.hashCode() : 0);
+        result = 31 * result + (id != null ? id.hashCode() : 0);
+        result = 31 * result + (version != +0.0f ? Float.floatToIntBits(version) : 0);
+        result = 31 * result + contentNamespace.hashCode();
+
+        return result;
+    }
+
     public enum ContentNamespace {
         CLIENT("jabber:client"),
         SERVER("jabber:server");

@@ -6,12 +6,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
 
-final class XmppStreamParserStrategyStreamHeader implements XmppStreamParserStrategy {
-    @NotNull
-    private final XMLStreamReader reader;
+final class XmppStreamParserStrategyStreamHeader extends XmppStreamParserAbstractStrategy {
     @Nullable
     private XmppStreamHeader streamHeader;
-
     @Nullable
     private String from;
     @Nullable
@@ -22,11 +19,14 @@ final class XmppStreamParserStrategyStreamHeader implements XmppStreamParserStra
     @Nullable
     private XmppStreamHeader.ContentNamespace contentNamespace;
     private boolean hasStreamNamespace = false;
-    @NotNull
-    private ErrorObserver errorObserver;
 
     XmppStreamParserStrategyStreamHeader(@NotNull final XMLStreamReader reader) {
-        this.reader = reader;
+        super(reader);
+    }
+
+    @Override
+    void resetState() {
+
     }
 
     @Override
@@ -101,11 +101,7 @@ final class XmppStreamParserStrategyStreamHeader implements XmppStreamParserStra
         final var res = streamHeader;
         streamHeader = null;
 
+        System.out.println("Received Stream header parsed");
         return res;
-    }
-
-    @Override
-    public void setErrorObserver(@NotNull final ErrorObserver observer) {
-        errorObserver = observer;
     }
 }

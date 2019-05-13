@@ -1,39 +1,37 @@
 package com.lamtev.xmpp.core.parsing;
 
-import com.lamtev.xmpp.core.*;
+import com.lamtev.xmpp.core.XmppStanza;
+import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
 
-final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
-    @NotNull
-    private final XMLStreamReader reader;
-
+abstract class XmppStreamParserStrategyStanza extends XmppStreamParserAbstractStrategy {
+    int openingTagCount = 0;
+    int closingTagCount = 0;
     @Nullable
-    private XmppStanza.Kind kind;
+    XmppStanza.Kind kind;
     @Nullable
-    private String id;
+    String id;
     @Nullable
-    private XmppStanza.TypeAttribute type;
+    XmppStanza.TypeAttribute type;
     @Nullable
-    private String resource;
-
-    private boolean waitingForResource = false;
-    private int endCount = 0;
-
+    String from;
     @Nullable
-    private XmppStanza stanza;
+    String to;
+    @Nullable
+    String lang;
+    @Nullable
+    XmppStanza stanza;
 
     XmppStreamParserStrategyStanza(@NotNull final XMLStreamReader reader) {
-        this.reader = reader;
+        super(reader);
     }
 
     @Override
     public void startElementReached(@NotNull final String name) {
-        System.out.println(name);
-        if (kind == null) {
-            System.out.println("Stanza!!!");
+        if (tagCountsAreSame()) {
             kind = XmppStanza.Kind.of(name);
 
             for (int i = 0; i < reader.getAttributeCount(); ++i) {
@@ -44,47 +42,55 @@ final class XmppStreamParserStrategyStanza implements XmppStreamParserStrategy {
                     case "type":
                         type = XmppStanza.TypeAttribute.of(kind, reader.getAttributeValue(i));
                         break;
+                    case "from":
+                        from = reader.getAttributeValue(i);
+                        break;
+                    case "to":
+                        to = reader.getAttributeValue(i);
+                        break;
+                    case "lang":
+                        //TODO: check that that works
+                        lang = reader.getAttributeValue(i);
+                        break;
                 }
             }
-        } else {
-            switch (kind) {
-                case IQ:
-                    if ("bind".equals(name) && XmppStreamFeatures.Type.RESOURCE_BINDING.toString().equals(reader.getNamespaceURI())) {
-                        System.out.println("OK!");
-                    } else if ("resource".equals(name)) {
-                        waitingForResource = true;
-                    }
-            }
         }
+        ++openingTagCount;
     }
 
     @Override
     public void endElementReached() {
-        if (reader.getLocalName().equals("iq")) {
-            stanza = new XmppStanza(kind, id, type, resource != null ? resource : "");
-        }
+        ++closingTagCount;
     }
 
     @Override
-    public void charactersReached() {
-        if (waitingForResource) {
-            waitingForResource = false;
-            resource = reader.getText();
-        }
-    }
-
-    @Override
-    public boolean unitIsReady() {
+    public final boolean unitIsReady() {
         return stanza != null;
     }
 
     @Override
-    public @NotNull XmppUnit readyUnit() {
+    @NotNull
+    public final XmppUnit readyUnit() {
+        if (stanza == null) {
+            throw new IllegalStateException("");
+        }
+
+        final var stanza = this.stanza;
+        resetState();
+
         return stanza;
     }
 
     @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
+    void resetState() {
+        openingTagCount = closingTagCount = 0;
+        kind = null;
+        type = null;
+        id = from = to = lang = null;
+        stanza = null;
+    }
 
+    final boolean tagCountsAreSame() {
+        return openingTagCount == closingTagCount;
     }
 }
