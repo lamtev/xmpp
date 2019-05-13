@@ -9,6 +9,7 @@ import com.lamtev.xmpp.messenger.utils.StringGenerator;
 import com.lamtev.xmpp.server.api.XmppServer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.ITEM_NOT_FOUND;
@@ -20,7 +21,6 @@ import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
 import static com.lamtev.xmpp.core.util.XmppStanzas.rosterResultOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.asList;
 
 public class Messenger implements XmppServer.Handler {
     @NotNull
@@ -154,7 +154,7 @@ public class Messenger implements XmppServer.Handler {
                         final var query = (XmppStanza.IqQuery) stanza.topElement();
 
                         if (query.namespace() == XmppStanza.IqQuery.ContentNamespace.ROSTER) {
-                            responseStream.sendUnit(rosterResultOf(stanza, asList(
+                            responseStream.sendUnit(rosterResultOf(stanza, List.of(
                                     new Item("admin@lamtev.com", "Admin", BOTH),
                                     new Item("root@lamtev.com", "Root", TO)
                             )));

@@ -4,8 +4,10 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public final class XmppStanza implements XmppUnit {
     @NotNull
@@ -427,20 +429,27 @@ public final class XmppStanza implements XmppUnit {
             private String name;
             @Nullable
             private Subscription subscription;
+            @Nullable
+            private Set<String> groups;
 
             public Item(@NotNull final String jid) {
-                this(jid, null, null);
+                this(jid, null, (Subscription) null);
             }
 
             public Item(@NotNull final String jid, @Nullable final String name, @Nullable final Subscription subscription) {
-                this(null, jid, name, subscription);
+                this(null, jid, name, subscription, null);
             }
 
-            public Item(@Nullable final Ask ask, @NotNull final String jid, @Nullable final String name, @Nullable final Subscription subscription) {
+            public Item(@NotNull final String jid, @Nullable final String name, @Nullable Set<String> groups) {
+                this(null, jid, name, null, groups);
+            }
+
+            public Item(@Nullable final Ask ask, @NotNull final String jid, @Nullable final String name, @Nullable final Subscription subscription, @Nullable Set<String> groups) {
                 this.ask = ask;
                 this.jid = jid;
                 this.name = name;
                 this.subscription = subscription;
+                this.groups = groups;
             }
 
             @Nullable
@@ -463,6 +472,11 @@ public final class XmppStanza implements XmppUnit {
                 return subscription;
             }
 
+            @Nullable
+            public Collection<String> groups() {
+                return groups;
+            }
+
             @Override
             public boolean equals(final Object o) {
                 if (this == o) return true;
@@ -470,15 +484,20 @@ public final class XmppStanza implements XmppUnit {
 
                 final Item item = (Item) o;
 
+                if (ask != item.ask) return false;
                 if (!jid.equals(item.jid)) return false;
-                return subscription == item.subscription;
-
+                if (!Objects.equals(name, item.name)) return false;
+                if (subscription != item.subscription) return false;
+                return Objects.equals(groups, item.groups);
             }
 
             @Override
             public int hashCode() {
-                int result = jid.hashCode();
+                int result = ask != null ? ask.hashCode() : 0;
+                result = 31 * result + jid.hashCode();
+                result = 31 * result + (name != null ? name.hashCode() : 0);
                 result = 31 * result + (subscription != null ? subscription.hashCode() : 0);
+                result = 31 * result + (groups != null ? groups.hashCode() : 0);
                 return result;
             }
 

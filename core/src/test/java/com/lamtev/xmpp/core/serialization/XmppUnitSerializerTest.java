@@ -2,6 +2,7 @@ package com.lamtev.xmpp.core.serialization;
 
 import com.lamtev.xmpp.core.XmppSaslAuthSuccess;
 import com.lamtev.xmpp.core.XmppStanza;
+import com.lamtev.xmpp.core.XmppStanza.IqQuery.Item;
 import com.lamtev.xmpp.core.XmppStreamFeatures;
 import com.lamtev.xmpp.core.XmppStreamHeader;
 import org.jetbrains.annotations.NotNull;
@@ -9,11 +10,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.*;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class XmppUnitSerializerTest {
@@ -177,11 +179,44 @@ final class XmppUnitSerializerTest {
                     new XmppStanza.IqQuery(
                             XmppStanza.IqQuery.ContentNamespace.ROSTER,
                             "ver11",
-                            asList(
-                                    new XmppStanza.IqQuery.Item("romeo@example.net", "Romeo", BOTH),
-                                    new XmppStanza.IqQuery.Item("mercutio@example.com", "Mercutio", FROM),
-                                    new XmppStanza.IqQuery.Item("benvolio@example.net", "Benvolio", TO)
+                            List.of(
+                                    new Item("romeo@example.net", "Romeo", BOTH),
+                                    new Item("mercutio@example.com", "Mercutio", FROM),
+                                    new Item("benvolio@example.net", "Benvolio", TO)
                             )
+                    )
+            )));
+
+            assertEquals(expectedStanza, baos.toString(UTF_8));
+        }
+    }
+
+    @Test
+    void testRosterSetSerialization() throws IOException {
+        final var expectedStanza = "<iq id=\"hu2bac18\" " +
+                "to=\"juliet@example.com/balcony\" " +
+                "type=\"set\">" +
+                "<query xmlns=\"jabber:iq:roster\" ver=\"ver11\">" +
+                "<item jid=\"romeo@example.net\" " +
+                "name=\"\">" +
+                "<group>Family</group>" +
+                "<group>Job</group>" +
+                "</item>" +
+                "</query>" +
+                "</iq>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(new XmppStanza(
+                    IQ,
+                    "juliet@example.com/balcony",
+                    null,
+                    "hu2bac18",
+                    XmppStanza.TypeAttribute.of(IQ, "set"),
+                    null,
+                    new XmppStanza.IqQuery(
+                            XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                            "ver11",
+                            List.of(new Item("romeo@example.net", "", new LinkedHashSet<>(List.of("Family", "Job"))))
                     )
             )));
 

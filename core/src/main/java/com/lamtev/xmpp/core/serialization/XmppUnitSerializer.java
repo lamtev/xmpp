@@ -237,7 +237,12 @@ public final class XmppUnitSerializer {
             final var items = iqQuery.items();
             if (items != null) {
                 for (final var it : items) {
-                    writer.writeEmptyElement("item");
+                    final var groups = it.groups();
+                    if (groups != null) {
+                        writer.writeStartElement("item");
+                    } else {
+                        writer.writeEmptyElement("item");
+                    }
                     writer.writeAttribute("jid", it.jid());
                     final var name = it.name();
                     if (name != null) {
@@ -246,6 +251,14 @@ public final class XmppUnitSerializer {
                     final var subscription = it.subscription();
                     if (subscription != null) {
                         writer.writeAttribute("subscription", subscription.toString());
+                    }
+                    if (groups != null) {
+                        for (final var group : groups) {
+                            writer.writeStartElement("group");
+                            writer.writeCharacters(group);
+                            writer.writeEndElement();
+                        }
+                        writer.writeEndElement();
                     }
                 }
             }
