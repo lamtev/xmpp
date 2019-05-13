@@ -32,7 +32,6 @@ public final class XmppUnitSerializer {
             (Consumer<XmppStanza.IqQuery>) this::serializeIqStanzaQuery,
             (Consumer<XmppStanza.Error>) this::serializeStanzaError,
     };
-
     @SuppressWarnings("unchecked")
     private final Consumer<? super XmppStanza.TopElement>[] messageStanzaSerializers = new Consumer[]{
             (Consumer<XmppStanza.MessageBody>) this::serializeMessageStanzaBody,
@@ -240,11 +239,13 @@ public final class XmppUnitSerializer {
                 for (final var it : items) {
                     writer.writeEmptyElement("item");
                     writer.writeAttribute("jid", it.jid());
-                    if (it.name() != null) {
-                        writer.writeAttribute("name", it.name());
+                    final var name = it.name();
+                    if (name != null) {
+                        writer.writeAttribute("name", name);
                     }
-                    if (it.subscription() != null) {
-                        writer.writeAttribute("subscription", it.subscription().toString());
+                    final var subscription = it.subscription();
+                    if (subscription != null) {
+                        writer.writeAttribute("subscription", subscription.toString());
                     }
                 }
             }
