@@ -26,7 +26,7 @@ final class XmppStreamParserStrategyCacheTest {
 
     @Test
     void testCacheGetReturnsNotNull() {
-        for (final var name : XmppStreamParserStrategy.Name.values()) {
+        for (final var name : names) {
             assertNotNull(cache.get(name));
         }
     }

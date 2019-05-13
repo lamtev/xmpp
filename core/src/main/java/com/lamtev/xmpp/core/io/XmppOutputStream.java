@@ -1,9 +1,6 @@
 package com.lamtev.xmpp.core.io;
 
-import com.lamtev.xmpp.core.XmppSaslAuthSuccess;
-import com.lamtev.xmpp.core.XmppStreamFeatures;
-import com.lamtev.xmpp.core.XmppStreamHeader;
-import com.lamtev.xmpp.core.XmppUnit;
+import com.lamtev.xmpp.core.*;
 import com.lamtev.xmpp.core.serialization.XmppUnitSerializer;
 import gnu.trove.list.TByteList;
 import gnu.trove.list.array.TByteArrayList;
@@ -12,6 +9,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.OutputStream;
+
+import static com.lamtev.xmpp.core.XmppUnit.CODE_STREAM_FEATURES;
+import static com.lamtev.xmpp.core.io.XmppExchange.State.*;
 
 public final class XmppOutputStream implements AutoCloseable {
     @NotNull
@@ -26,7 +26,7 @@ public final class XmppOutputStream implements AutoCloseable {
     private XmppExchange exchange;
     //TODO: clearer name
     @NotNull
-    private final Runnable[] featureProcessors = new Runnable[]{
+    private final Runnable[] featureHandlers = new Runnable[]{
             this::tlsFeaturesSent,
             this::saslFeaturesSent,
             this::bindingFeaturesSent,
@@ -57,8 +57,8 @@ public final class XmppOutputStream implements AutoCloseable {
     }
 
     public void sendUnit(@NotNull final XmppUnit unit) {
-        if (unit.code() == XmppUnit.CODE_STREAM_FEATURES) {
-            featureProcessors[((XmppStreamFeatures) unit).type().ordinal()].run();
+        if (unit.code() == CODE_STREAM_FEATURES) {
+            featureHandlers[((XmppStreamFeatures) unit).type().ordinal()].run();
         }
 
         try {
@@ -67,9 +67,16 @@ public final class XmppOutputStream implements AutoCloseable {
             e.printStackTrace();
         }
 
-        if (unit instanceof XmppSaslAuthSuccess) {
+        if (unit instanceof XmppStanza) {
+            final var stanza = (XmppStanza) unit;
+            if (stanza.kind() == XmppStanza.Kind.IQ && stanza.topElement() instanceof XmppStanza.IqBind) {
+                if (exchange != null) {
+                    exchange.changeState(EXCHANGE);
+                }
+            }
+        } else if (unit instanceof XmppSaslAuthSuccess) {
             if (exchange != null) {
-                exchange.setState(XmppExchange.State.RESOURCE_BINDING);
+                exchange.changeState(WAITING_FOR_STREAM_HEADER);
             }
         }
     }
@@ -77,8 +84,8 @@ public final class XmppOutputStream implements AutoCloseable {
     public void addUnitToBatch(@NotNull final XmppUnit unit) {
         buf.add(serializer.serialize(unit));
 
-        if (unit.code() == XmppUnit.CODE_STREAM_FEATURES) {
-            batchFeatureProcessor = featureProcessors[((XmppStreamFeatures) unit).type().ordinal()];
+        if (unit.code() == CODE_STREAM_FEATURES) {
+            batchFeatureProcessor = featureHandlers[((XmppStreamFeatures) unit).type().ordinal()];
         }
     }
 
@@ -108,19 +115,19 @@ public final class XmppOutputStream implements AutoCloseable {
 
     private void tlsFeaturesSent() {
         if (exchange != null) {
-            exchange.setState(XmppExchange.State.TLS_NEGOTIATION);
+            exchange.changeState(TLS_NEGOTIATION);
         }
     }
 
     private void saslFeaturesSent() {
         if (exchange != null) {
-            exchange.setState(XmppExchange.State.SASL_NEGOTIATION);
+            exchange.changeState(SASL_NEGOTIATION);
         }
     }
 
     private void bindingFeaturesSent() {
         if (exchange != null) {
-            exchange.setState(XmppExchange.State.RESOURCE_BINDING);
+            exchange.changeState(RESOURCE_BINDING);
         }
     }
 }

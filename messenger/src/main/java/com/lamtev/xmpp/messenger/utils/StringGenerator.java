@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.security.SecureRandom;
 import java.util.Random;
 
-public class StringGenerator {
+public final class StringGenerator {
     @NotNull
     private static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     @NotNull
@@ -14,9 +14,8 @@ public class StringGenerator {
     private static final String DIGITS = "0123456789";
     @NotNull
     private static final String SYMBOLS = "!@#$%^&*-_+=,.:;\"'(){}[]<>~`\\/|";
-
     @NotNull
-    private final char[] symbols = (UPPER + LOWER + DIGITS + SYMBOLS).toCharArray();
+    private final char[] symbols = (UPPER + LOWER + UPPER + LOWER + DIGITS + SYMBOLS).toCharArray();
     @NotNull
     private final Random random = new SecureRandom();
     @NotNull

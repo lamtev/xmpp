@@ -6,9 +6,15 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
+import static com.lamtev.xmpp.core.XmppStanza.Kind.MESSAGE;
+import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static java.nio.charset.StandardCharsets.UTF_16;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 final class XmppStreamParserTest {
@@ -33,13 +39,15 @@ final class XmppStreamParserTest {
                         assertTrue(unit instanceof XmppStreamHeader);
 
                         final var header = (XmppStreamHeader) unit;
+                        final var expected = new XmppStreamHeader(
+                                "juliet@im.example.com",
+                                "im.example.com",
+                                null,
+                                1.0f,
+                                XmppStreamHeader.ContentNamespace.CLIENT
+                        );
 
-                        assertEquals("juliet@im.example.com", header.from());
-                        assertEquals("im.example.com", header.to());
-                        assertNull(header.id());
-                        assertEquals(1.0, header.version());
-                        assertSame(XmppStreamHeader.ContentNamespace.CLIENT, header.contentNamespace());
-                        assertEquals("jabber:client", header.contentNamespace().toString());
+                        assertEquals(expected, header);
                     } else if (parserDidParseUnitCallCount == 1) {
                         assertTrue(unit instanceof XmppStreamCloseTag);
                     } else {
@@ -50,8 +58,7 @@ final class XmppStreamParserTest {
                 }
 
                 @Override
-                public void parserDidFailWithError(@NotNull final XmppStreamParser.Error error) {
-                }
+                public void parserDidFailWithError(@NotNull final XmppStreamParser.Error error) {}
             });
             parser.startParsing();
         }
@@ -62,22 +69,20 @@ final class XmppStreamParserTest {
         final var xml = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"\n" +
                 "mechanism=\"PLAIN\">AGFudG9uADEyMzQ1</auth>";
 
-        try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
             parser.setDelegate(new XmppStreamParser.Delegate() {
                 @Override
                 public void parserDidParseUnit(@NotNull XmppUnit unit) {
                     final var auth = (XmppSaslAuth) unit;
+                    final var expected = new XmppSaslAuth(PLAIN, "AGFudG9uADEyMzQ1");
 
-                    assertEquals("AGFudG9uADEyMzQ1", auth.body());
-                    assertEquals(XmppStreamFeatures.Type.SASLMechanism.PLAIN, auth.mechanism());
+                    assertEquals(expected, auth);
                 }
 
                 @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) {
-                    fail("Unexpected error: " + error);
-                }
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
             });
 
             parser.startParsing();
@@ -85,35 +90,316 @@ final class XmppStreamParserTest {
     }
 
     @Test
-    void testResourceBindingIqParsing() throws XmppStreamParserException, IOException {
-        final var xml = "<iq id='yhc13a95' type='set'>\n" +
-                "     <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>\n" +
-                "       <resource>balcony</resource>\n" +
-                "     </bind>\n" +
-                "   </iq>";
+    void testResourceBindingIqBindResourceParsing() throws XmppStreamParserException, IOException {
+        final var xml = "<iq id='yhc13a95' type='set'>" +
+                "<bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>" +
+                "<resource>balcony</resource>" +
+                "</bind>" +
+                "</iq>";
 
-        try (var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
             parser.setDelegate(new XmppStreamParser.Delegate() {
                 @Override
                 public void parserDidParseUnit(@NotNull XmppUnit unit) {
                     final var resBindingStanza = (XmppStanza) unit;
+                    final var expected = new XmppStanza(
+                            IQ,
+                            "yhc13a95",
+                            XmppStanza.TypeAttribute.of(IQ, "set"),
+                            new XmppStanza.IqBind("balcony", null)
+                    );
 
-                    assertEquals(IQ, resBindingStanza.kind());
-                    assertEquals("yhc13a95", resBindingStanza.id());
-                    assertSame(XmppStanza.IqTypeAttribute.SET, resBindingStanza.type());
-                    assertEquals("balcony", resBindingStanza.resource());
+                    assertEquals(expected, resBindingStanza);
                 }
 
                 @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) {
-                    fail("Unexpected error: " + error);
-                }
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
             });
 
             parser.startParsing();
         }
     }
 
+    @Test
+    void testResourceBindingIqBindJidParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<iq id=\"yhc13a95\" type=\"set\">" +
+                "<bind xmlns=\"urn:ietf:params:xml:ns:xmpp-bind\">" +
+                "<jid>juliet@im.example.com/balcony</jid>" +
+                "</bind>" +
+                "</iq>";
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var resBindingStanza = (XmppStanza) unit;
+                    final var expected = new XmppStanza(
+                            IQ,
+                            "yhc13a95",
+                            XmppStanza.TypeAttribute.of(IQ, "set"),
+                            new XmppStanza.IqBind(null, "juliet@im.example.com/balcony")
+                    );
+
+                    assertEquals(expected, resBindingStanza);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testMessageStanzaParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<message from='juliet@im.example.com/balcony' " +
+                "id='ju2ba41c' " +
+                "to='romeo@example.net' " +
+                "type='chat' " +
+                "xml:lang='en'> " +
+                "<body>Art thou not Romeo, and a Montague?</body>" +
+                "</message>";
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var messageStanza = (XmppStanza) unit;
+                    final var expected = new XmppStanza(
+                            MESSAGE,
+                            "romeo@example.net", "juliet@im.example.com/balcony", "ju2ba41c",
+                            XmppStanza.TypeAttribute.of(MESSAGE, "chat"),
+                            "en", new XmppStanza.MessageBody("Art thou not Romeo, and a Montague?")
+                    );
+
+                    assertEquals(expected, messageStanza);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testIqStanzaRosterGetParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<iq from='juliet@example.com/balcony' " +
+                "id='bv1bs71f' " +
+                "type='get'>" +
+                "<query xmlns='jabber:iq:roster'/>" +
+                "</iq>";
+
+        final var expected = new XmppStanza(
+                IQ,
+                null,
+                "juliet@example.com/balcony",
+                "bv1bs71f",
+                XmppStanza.TypeAttribute.of(IQ, "get"),
+                null,
+                new XmppStanza.IqQuery(
+                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        null,
+                        null
+                )
+        );
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var rosterGet = (XmppStanza) unit;
+
+                    assertEquals(expected, rosterGet);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testIqStanzaRosterGetParsing2() throws IOException, XmppStreamParserException {
+        final var xml = "<iq id=\"b11881b6-e336-4592-9539-d14b7c01caef\" type=\"get\"><query xmlns=\"jabber:iq:roster\"/></iq>";
+        final var expected = new XmppStanza(
+                IQ,
+                "b11881b6-e336-4592-9539-d14b7c01caef",
+                XmppStanza.TypeAttribute.of(IQ, "get"),
+                new XmppStanza.IqQuery(
+                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        null,
+                        null
+                )
+        );
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var rosterGet = (XmppStanza) unit;
+
+                    assertEquals(expected, rosterGet);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testIqStanzaRosterSetParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<iq from='juliet@example.com/balcony' " +
+                "id='rs1' " +
+                "type='set'>" +
+                "<query xmlns='jabber:iq:roster'>" +
+                "<item jid='nurse@example.com'/>" +
+                "</query>" +
+                "</iq>";
+
+        final var expected = new XmppStanza(
+                IQ,
+                null,
+                "juliet@example.com/balcony",
+                "rs1",
+                XmppStanza.TypeAttribute.of(IQ, "set"),
+                null,
+                new XmppStanza.IqQuery(XmppStanza.IqQuery.ContentNamespace.ROSTER, null, List.of(new XmppStanza.IqQuery.Item("nurse@example.com")))
+        );
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var rosterSet = (XmppStanza) unit;
+
+                    assertEquals(expected, rosterSet);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testIqStanzaRosterSetParsing2() throws IOException, XmppStreamParserException {
+        final var xml = "<iq id=\"hu2bac18\" " +
+                "from=\"juliet@example.com/balcony\" " +
+                "type=\"set\">" +
+                "<query xmlns=\"jabber:iq:roster\" ver=\"ver11\">" +
+                "<item jid=\"romeo@example.net\" " +
+                "name=\"\">" +
+                "<group>Family</group>" +
+                "<group>Job</group>" +
+                "</item>" +
+                "</query>" +
+                "</iq>";
+
+        final var expected = new XmppStanza(
+                IQ,
+                null,
+                "juliet@example.com/balcony",
+                "hu2bac18",
+                XmppStanza.TypeAttribute.of(IQ, "set"),
+                null,
+                new XmppStanza.IqQuery(
+                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        "ver11",
+                        singletonList(new XmppStanza.IqQuery.Item(
+                                "romeo@example.net",
+                                "",
+                                new LinkedHashSet<>(List.of("Family", "Job"))
+                        ))
+                )
+        );
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var rosterSet = (XmppStanza) unit;
+
+                    assertEquals(expected, rosterSet);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testIqStanzaRosterDeleteItemParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<iq id=\"hu2bac18\" " +
+                "from=\"juliet@example.com/balcony\" " +
+                "type=\"set\">" +
+                "<query xmlns=\"jabber:iq:roster\">" +
+                "<item jid=\"romeo@example.net\" " +
+                "subscription=\"remove\">" +
+                "</item>" +
+                "</query>" +
+                "</iq>";
+
+        final var expected = new XmppStanza(
+                IQ,
+                null,
+                "juliet@example.com/balcony",
+                "hu2bac18",
+                XmppStanza.TypeAttribute.of(IQ, "set"),
+                null,
+                new XmppStanza.IqQuery(
+                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        null,
+                        singletonList(new XmppStanza.IqQuery.Item(
+                                "romeo@example.net",
+                                null,
+                                XmppStanza.IqQuery.Item.Subscription.REMOVE
+                        ))
+                )
+        );
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-16");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var rosterSet = (XmppStanza) unit;
+
+                    assertEquals(expected, rosterSet);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
 }

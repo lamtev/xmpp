@@ -23,7 +23,25 @@ public class XmppSaslAuth implements XmppUnit {
 
     @Override
     public int code() {
-        //TODO:
-        return 0;
+        return CODE_SASL_AUTH;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        XmppSaslAuth that = (XmppSaslAuth) o;
+
+        if (mechanism != that.mechanism) return false;
+
+        return body.equals(that.body);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mechanism.hashCode();
+        result = 31 * result + body.hashCode();
+        return result;
     }
 }

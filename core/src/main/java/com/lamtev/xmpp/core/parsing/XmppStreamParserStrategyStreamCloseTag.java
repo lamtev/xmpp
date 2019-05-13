@@ -3,9 +3,20 @@ package com.lamtev.xmpp.core.parsing;
 import com.lamtev.xmpp.core.XmppStreamCloseTag;
 import org.jetbrains.annotations.NotNull;
 
-final class XmppStreamParserStrategyStreamCloseTag implements XmppStreamParserStrategy {
+import javax.xml.stream.XMLStreamReader;
+
+final class XmppStreamParserStrategyStreamCloseTag extends XmppStreamParserAbstractStrategy {
+    XmppStreamParserStrategyStreamCloseTag(@NotNull final XMLStreamReader reader) {
+        super(reader);
+    }
+
     @Override
-    public void startElementReached(String name) {
+    void resetState() {
+
+    }
+
+    @Override
+    public void startElementReached(@NotNull final String name) {
 
     }
 
@@ -27,10 +38,5 @@ final class XmppStreamParserStrategyStreamCloseTag implements XmppStreamParserSt
     @Override
     public @NotNull XmppStreamCloseTag readyUnit() {
         return XmppStreamCloseTag.INSTANCE;
-    }
-
-    @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
-
     }
 }

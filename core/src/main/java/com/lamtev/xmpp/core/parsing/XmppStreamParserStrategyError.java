@@ -5,14 +5,18 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.stream.XMLStreamReader;
 
-final class XmppStreamParserStrategyError implements XmppStreamParserStrategy {
+final class XmppStreamParserStrategyError extends XmppStreamParserAbstractStrategy {
+    XmppStreamParserStrategyError(@NotNull final XMLStreamReader reader) {
+        super(reader);
+    }
 
-    public XmppStreamParserStrategyError(@NotNull final XMLStreamReader reader) {
+    @Override
+    void resetState() {
 
     }
 
     @Override
-    public void startElementReached(String name) {
+    public void startElementReached(@NotNull final String name) {
 
     }
 
@@ -35,10 +39,5 @@ final class XmppStreamParserStrategyError implements XmppStreamParserStrategy {
     @NotNull
     public XmppUnit readyUnit() {
         return null;
-    }
-
-    @Override
-    public void setErrorObserver(@NotNull ErrorObserver observer) {
-
     }
 }

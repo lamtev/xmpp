@@ -5,7 +5,8 @@ public interface XmppUnit {
     int CODE_STREAM_FEATURES = 1;
     int CODE_STANZA = 2;
     int CODE_ERROR = 3;
-    int CODE_SASL_AUTH_SUCCESS = 4;
+    int CODE_SASL_AUTH = 4;
+    int CODE_SASL_AUTH_SUCCESS = 5;
 
     /**
      * Unique sequential code associated with concrete XmppUnit implementation.
@@ -31,19 +32,20 @@ public interface XmppUnit {
      *         actions[unit.code()].perform(unit);
      *
      *         // instead of
-     *         // if (unit instanceof FirstXMPPUnit) {
-     *         //    //invoke method expecting instance of FirstXMPPUnit
-     *         //} else if (unit instanceof SecondXMPPUnit) {
-     *         //    //invoke method expecting instance of SecondXMPPUnit
+     *         // if (unit instanceof FirstXmppUnit) {
+     *         //    //invoke method expecting instance of FirstXmppUnit
+     *         //} else if (unit instanceof SecondXmppUnit) {
+     *         //    //invoke method expecting instance of SecondXmppUnit
      *         //} else if (...) {
      *         //
-     *         //} else if (unit instanceof NthXMPPUnit) {
-     *         //     //invoke method expecting instance of NthXMPPUnit
+     *         //} else if (unit instanceof NthXmppUnit) {
+     *         //     //invoke method expecting instance of NthXmppUnit
      *         //}
      *     }
      *
      * }
      *
+     * }
      * </pre>
      *
      * @return Unique sequential code

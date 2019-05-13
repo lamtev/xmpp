@@ -1,15 +1,25 @@
 package com.lamtev.xmpp.messenger;
 
 import com.lamtev.xmpp.core.*;
+import com.lamtev.xmpp.core.XmppStanza.IqQuery.Item;
+import com.lamtev.xmpp.core.XmppStanza.UnsupportedElement;
 import com.lamtev.xmpp.core.io.XmppExchange;
-import com.lamtev.xmpp.messenger.utils.AuthBase64DataExtractor;
+import com.lamtev.xmpp.messenger.utils.AuthBase64LoginPasswordExtractor;
 import com.lamtev.xmpp.messenger.utils.StringGenerator;
 import com.lamtev.xmpp.server.api.XmppServer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.ITEM_NOT_FOUND;
+import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
+import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.BOTH;
+import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.TO;
+import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
+import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
+import static com.lamtev.xmpp.core.util.XmppStanzas.rosterResultOf;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Messenger implements XmppServer.Handler {
@@ -45,32 +55,62 @@ public class Messenger implements XmppServer.Handler {
         final var unit = initialStream.unit();
 
         switch (exchange.state()) {
-            case INITIAL:
+            case WAITING_FOR_STREAM_HEADER:
                 if (unit instanceof XmppStreamHeader) {
-                    final var initialStreamHeader = (XmppStreamHeader) unit;
-
-                    final var streamHeader = new XmppStreamHeader(
-                            "lamtev.com",
-                            initialStreamHeader.from(),
-                            idGenerator.nextString(),
-                            initialStreamHeader.version(),
-                            initialStreamHeader.contentNamespace()
-                    );
-
-                    if (initialStreamHeader.from() != null) {
-                        user.setJid(initialStreamHeader.from());
+                    System.out.println("Handling " + unit);
+                    final var nextState = user.stateQueue.pollFirst();
+                    if (nextState == null) {
+                        throw new NullPointerException();
                     }
 
-                    responseStream.open(streamHeader, XmppStreamFeatures.of(PLAIN));
-                    System.out.println(PLAIN + " sent");
+                    switch (nextState) {
+                        case SASL_NEGOTIATION: {
+                            final var initialStreamHeader = (XmppStreamHeader) unit;
+
+                            final var streamHeader = new XmppStreamHeader(
+                                    "lamtev.com",
+                                    initialStreamHeader.from(),
+                                    idGenerator.nextString(),
+                                    initialStreamHeader.version(),
+                                    initialStreamHeader.contentNamespace()
+                            );
+
+                            if (initialStreamHeader.from() != null) {
+                                user.setJid(initialStreamHeader.from());
+                            }
+
+                            responseStream.open(streamHeader, XmppStreamFeatures.of(PLAIN));
+                            System.out.println(PLAIN + " sent");
+                        }
+                        break;
+                        case RESOURCE_BINDING: {
+                            final var initialStreamHeader = (XmppStreamHeader) unit;
+
+                            final var streamHeader = new XmppStreamHeader(
+                                    "lamtev.com",
+                                    initialStreamHeader.from(),
+                                    idGenerator.nextString(),
+                                    initialStreamHeader.version(),
+                                    initialStreamHeader.contentNamespace()
+                            );
+
+                            responseStream.open(streamHeader, XmppStreamFeatures.of(XmppStreamFeatures.Type.RESOURCE_BINDING));
+                        }
+                        break;
+                        case EXCHANGE: {
+
+                        }
+                        break;
+                    }
                 }
                 break;
             case SASL_NEGOTIATION:
                 if (unit instanceof XmppSaslAuth) {
+                    System.out.println("Handling " + unit);
 
                     final var auth = (XmppSaslAuth) unit;
 
-                    final var jidPass = AuthBase64DataExtractor.extract(auth.body(), UTF_8);
+                    final var jidPass = AuthBase64LoginPasswordExtractor.extract(auth.body(), UTF_8);
                     if (jidPass == null) {
                         return;
                     }
@@ -82,36 +122,52 @@ public class Messenger implements XmppServer.Handler {
 
                     responseStream.sendUnit(new XmppSaslAuthSuccess());
                     System.out.println("Auth success sent");
+                    System.out.println(exchange.state());
                 }
                 break;
             case RESOURCE_BINDING:
                 System.out.println("binding");
-                if (unit instanceof XmppStreamHeader) {
-                    final var initialStreamHeader = (XmppStreamHeader) unit;
-
-                    final var streamHeader = new XmppStreamHeader(
-                            "lamtev.com",
-                            initialStreamHeader.from(),
-                            idGenerator.nextString(),
-                            initialStreamHeader.version(),
-                            initialStreamHeader.contentNamespace()
-                    );
-
-                    responseStream.open(streamHeader, XmppStreamFeatures.of(XmppStreamFeatures.Type.RESOURCE_BINDING));
-                } else if (unit instanceof XmppStanza) {
+                if (unit instanceof XmppStanza) {
+                    System.out.println("Handling " + unit);
                     final var st = (XmppStanza) unit;
 
-                    System.out.println(st.resource());
-
-                    responseStream.sendUnit("<iq id='" + st.id() + "' type='result'>\n" +
-                            "     <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>\n" +
-                            "       <jid>\n" +
-                            "         anton@lamtev.com\n" +
-                            "       </jid>\n" +
-                            "     </bind>\n" +
-                            "   </iq>");
+                    if (st.topElement() instanceof XmppStanza.IqBind) {
+                        responseStream.sendUnit(new XmppStanza(
+                                IQ,
+                                st.id(),
+                                XmppStanza.TypeAttribute.of(IQ, "result"),
+                                new XmppStanza.IqBind(null, "anton@lamtev.com")
+                        ));
+                        System.out.println("iq bind result sent");
+                    }
                 }
-        }
+                break;
+            case EXCHANGE:
+                System.out.println("exchange");
+                if (unit instanceof XmppStanza) {
+                    System.out.println("Handling " + unit);
+                    final var stanza = (XmppStanza) unit;
 
+                    if (stanza.type() == XmppStanza.IqTypeAttribute.GET && stanza.topElement() instanceof XmppStanza.IqQuery) {
+                        System.out.println("query!!!");
+
+                        final var query = (XmppStanza.IqQuery) stanza.topElement();
+
+                        if (query.namespace() == XmppStanza.IqQuery.ContentNamespace.ROSTER) {
+                            responseStream.sendUnit(rosterResultOf(stanza, List.of(
+                                    new Item("admin@lamtev.com", "Admin", BOTH),
+                                    new Item("root@lamtev.com", "Root", TO)
+                            )));
+                        }
+                    } else if (stanza.topElement() instanceof UnsupportedElement) {
+                        final var unsupported = (UnsupportedElement) stanza.topElement();
+                        System.out.println("Usupported: " + unsupported.name);
+                        final var error = errorOf(stanza, CANCEL, ITEM_NOT_FOUND);
+
+                        responseStream.sendUnit(error);
+                    }
+                }
+                break;
+        }
     }
 }
