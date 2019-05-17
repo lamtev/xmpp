@@ -6,14 +6,13 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
-import static com.lamtev.xmpp.core.XmppStanza.Kind.MESSAGE;
+import static com.lamtev.xmpp.core.XmppStanza.Kind.*;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static java.nio.charset.StandardCharsets.UTF_16;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -393,6 +392,41 @@ final class XmppStreamParserTest {
                     final var rosterSet = (XmppStanza) unit;
 
                     assertEquals(expected, rosterSet);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testPresenceStanzaSubscribeParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<presence id='xk3h1v69' " +
+                "to='juliet@example.com' " +
+                "type='subscribe'/>";
+
+        final var expected = new XmppStanza(
+                PRESENCE,
+                "juliet@example.com",
+                null,
+                "xk3h1v69",
+                XmppStanza.TypeAttribute.of(PRESENCE, "subscribe"),
+                null,
+                new XmppStanza.Empty()
+        );
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_8))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-8");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var presence = (XmppStanza) unit;
+
+                    assertEquals(expected, presence);
                 }
 
                 @Override

@@ -20,13 +20,16 @@ import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
 import static com.lamtev.xmpp.core.util.XmppStanzas.rosterResultOf;
+import static com.lamtev.xmpp.messenger.utils.StringGenerator.Mode.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Messenger implements XmppServer.Handler {
     @NotNull
     private final ConcurrentHashMap<XmppExchange, User> users = new ConcurrentHashMap<>(10);
     @NotNull
-    private final StringGenerator idGenerator = new StringGenerator(64);
+    private final StringGenerator idGenerator = new StringGenerator(LETTERS | DIGITS | SPECIAL_SYMBOLS, 64);
+    @NotNull
+    private final StringGenerator resourceGenerator = new StringGenerator(LETTERS | DIGITS,32);
 
     public static void main(String[] args) {
         new Messenger().run();
@@ -132,11 +135,13 @@ public class Messenger implements XmppServer.Handler {
                     final var st = (XmppStanza) unit;
 
                     if (st.topElement() instanceof XmppStanza.IqBind) {
+                        final var iqBind = (XmppStanza.IqBind) st.topElement();
+                        final var resource = iqBind.resource();
                         responseStream.sendUnit(new XmppStanza(
                                 IQ,
                                 st.id(),
                                 XmppStanza.TypeAttribute.of(IQ, "result"),
-                                new XmppStanza.IqBind(null, "anton@lamtev.com")
+                                new XmppStanza.IqBind(null, "anton@lamtev.com/" + (resource  != null ? resource : resourceGenerator.nextString()))
                         ));
                         System.out.println("iq bind result sent");
                     }

@@ -252,6 +252,7 @@ public final class XmppStanza implements XmppUnit {
         int CODE_PRESENCE_ERROR = 5;
 
         int CODE_UNSUPPORTED = 6;
+        int CODE_EMPTY = 7;
 
         int code();
     }
@@ -622,7 +623,7 @@ public final class XmppStanza implements XmppUnit {
 
         public static Error of(@NotNull final Kind kind, @NotNull final Type type, @NotNull final DefinedCondition definedCondition) {
             //TODO: check
-            int code = CODE_IQ_ERROR;
+            int code = 0;
             switch (kind) {
                 case IQ:
                     code = CODE_IQ_ERROR;
@@ -715,5 +716,21 @@ public final class XmppStanza implements XmppUnit {
 
         }
     }
-}
 
+    public static final class Empty implements TopElement {
+        @Override
+        public int code() {
+            return CODE_EMPTY;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            return o instanceof Empty;
+        }
+
+        @Override
+        public int hashCode() {
+            return Empty.class.getName().hashCode();
+        }
+    }
+}

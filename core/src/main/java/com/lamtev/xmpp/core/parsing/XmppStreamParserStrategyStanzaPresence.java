@@ -14,8 +14,8 @@ final class XmppStreamParserStrategyStanzaPresence extends XmppStreamParserStrat
     public void startElementReached(@NotNull final String name) {
         super.startElementReached(name);
 
-        if (openingTagCount == 2) {
-            stanza = new XmppStanza(kind, id, type, new XmppStanza.UnsupportedElement(reader.getLocalName()));
+        if (openingTagCount == 1) {
+            stanza = new XmppStanza(kind, to, from, id, type, lang, new XmppStanza.Empty());
         }
     }
 
@@ -25,11 +25,8 @@ final class XmppStreamParserStrategyStanzaPresence extends XmppStreamParserStrat
     }
 
     @Override
-    public void charactersReached() {
-
-    }
+    public void charactersReached() {}
 
     @Override
-    void resetState() {
-    }
+    void resetState() {}
 }
