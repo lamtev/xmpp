@@ -16,12 +16,11 @@ public final class UserStorage {
     }
 
     public boolean isPresent(@NotNull final String jidLocalPart, @NotNull final String password) {
-        try {
-            final var statement = connection.createStatement();
+        try (final var statement = connection.createStatement()) {
             final var query = String.format(
                     "SELECT count(*) " +
-                            "FROM \"user\" " +
-                            "WHERE jid_local_part = '%s' AND password = '%s'", jidLocalPart, password);
+                    "FROM \"user\" " +
+                    "WHERE jid_local_part = '%s' AND password = '%s'", jidLocalPart, password);
             statement.execute(query);
             final var result = statement.getResultSet();
             if (result != null && result.next()) {
@@ -36,8 +35,7 @@ public final class UserStorage {
 
     @Nullable
     public User userForJidLocalPart(@NotNull final String jidLocalPart) {
-        try {
-            final var statement = connection.createStatement();
+        try (final var statement = connection.createStatement()) {
             final var query = String.format(
                     "SELECT first_name, last_name " +
                     "FROM \"user\" " +

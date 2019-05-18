@@ -3,10 +3,15 @@ package com.lamtev.xmpp.db;
 import com.typesafe.config.Config;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public final class DBStorage {
+public final class DBStorage implements Closeable {
+    @NotNull
+    private final Connection connection;
     @NotNull
     private final UserStorage users;
 
@@ -22,7 +27,7 @@ public final class DBStorage {
         final var password = config.getString("endpoint.password");
 
         try {
-            final var connection = DriverManager.getConnection(url, user, password);
+            connection = DriverManager.getConnection(url, user, password);
 
             users = new UserStorage(connection);
         } catch (SQLException e) {
@@ -36,5 +41,14 @@ public final class DBStorage {
     @NotNull
     public UserStorage users() {
         return users;
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
