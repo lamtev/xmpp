@@ -196,7 +196,7 @@ final class XmppUnitSerializerTest {
                     XmppStanza.TypeAttribute.of(IQ, "result"),
                     null,
                     new XmppStanza.IqQuery(
-                            XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                            XmppStanza.IqQuery.SupportedContentNamespace.ROSTER,
                             "ver11",
                             List.of(
                                     new Item("romeo@example.net", "Romeo", BOTH),
@@ -233,7 +233,7 @@ final class XmppUnitSerializerTest {
                     XmppStanza.TypeAttribute.of(IQ, "set"),
                     null,
                     new XmppStanza.IqQuery(
-                            XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                            XmppStanza.IqQuery.SupportedContentNamespace.ROSTER,
                             "ver11",
                             List.of(new Item("romeo@example.net", "", new LinkedHashSet<>(List.of("Family", "Job"))))
                     )
@@ -259,10 +259,46 @@ final class XmppUnitSerializerTest {
                     "1d474603-25ff-41ca-9a4c-a41f04e3cf42",
                     XmppStanza.TypeAttribute.of(IQ, "error"),
                     null,
-                    XmppStanza.Error.of(IQ, XmppStanza.Error.Type.CANCEL, XmppStanza.Error.DefinedCondition.ITEM_NOT_FOUND))
-            ));
+                    XmppStanza.Error.of(IQ, XmppStanza.Error.Type.CANCEL, XmppStanza.Error.DefinedCondition.ITEM_NOT_FOUND)
+            )));
 
             assertEquals(expectedStanza, baos.toString(UTF_8));
+        }
+    }
+
+    @Test
+    void testIqStanzaUnsupportedSerialization() throws IOException {
+        final var expectedIqStanza = "<iq id=\"553f51bc-58c6-4425-942c-bd4365734e19\" type=\"result\"><vCard xmlns=\"vcard-temp\"/></iq>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(new XmppStanza(
+                    IQ,
+                    "553f51bc-58c6-4425-942c-bd4365734e19",
+                    XmppStanza.TypeAttribute.of(IQ, "result"),
+                    new XmppStanza.UnsupportedElement("vCard", "vcard-temp", XmppStanza.TopElement.CODE_IQ_UNSUPPORTED)
+            )));
+
+            assertEquals(expectedIqStanza, baos.toString(UTF_8));
+        }
+    }
+
+    @Test
+    void testIqStanzaQueryUnsupportedElementSerialization() throws IOException {
+        final var expectedIqQueryStanza = "<iq id=\"8467485a\" type=\"result\"><query xmlns=\"jabber:iq:private\"><storage xmlns=\"storage:bookmarks\"/></query></iq>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(new XmppStanza(
+                    IQ,
+                    "8467485a",
+                    XmppStanza.TypeAttribute.of(IQ, "result"),
+                    new XmppStanza.IqQuery(
+                            new XmppStanza.IqQuery.UnsupportedContentNamespace("jabber:iq:private"),
+                            null,
+                            List.of(new XmppStanza.IqQuery.UnsupportedElement("storage", "storage:bookmarks"))
+                    )
+            )));
+
+            assertEquals(expectedIqQueryStanza, baos.toString(UTF_8));
         }
     }
 }

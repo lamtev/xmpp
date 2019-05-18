@@ -35,7 +35,7 @@ public final class XmppStanzas {
                 IqTypeAttribute.RESULT,
                 null,
                 new XmppStanza.IqQuery(
-                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        XmppStanza.IqQuery.SupportedContentNamespace.ROSTER,
                         null,
                         items
                 )

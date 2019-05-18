@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+//TODO: may be extract many classes to new files
 public final class XmppStanza implements XmppUnit {
     @NotNull
     private final Kind kind;
@@ -245,13 +246,13 @@ public final class XmppStanza implements XmppUnit {
         int CODE_IQ_BIND = 0;
         int CODE_IQ_QUERY = 1;
         int CODE_IQ_ERROR = 2;
+        int CODE_IQ_UNSUPPORTED = 3;
 
-        int CODE_MESSAGE_BODY = 3;
-        int CODE_MESSAGE_ERROR = 4;
+        int CODE_MESSAGE_BODY = 4;
+        int CODE_MESSAGE_ERROR = 5;
 
-        int CODE_PRESENCE_ERROR = 5;
+        int CODE_PRESENCE_ERROR = 6;
 
-        int CODE_UNSUPPORTED = 6;
         int CODE_EMPTY = 7;
 
         int code();
@@ -359,12 +360,12 @@ public final class XmppStanza implements XmppUnit {
         @Nullable
         private String version;
         @Nullable
-        private List<Item> items;
+        private List<? extends TopElement> topElements;
 
-        public IqQuery(@NotNull final ContentNamespace namespace, @Nullable final String version, @Nullable final List<Item> items) {
+        public IqQuery(@NotNull final ContentNamespace namespace, @Nullable final String version, @Nullable final List<? extends TopElement> topElements) {
             this.namespace = namespace;
             this.version = version;
-            this.items = items;
+            this.topElements = topElements;
         }
 
         @NotNull
@@ -378,8 +379,8 @@ public final class XmppStanza implements XmppUnit {
         }
 
         @Nullable
-        public List<Item> items() {
-            return items;
+        public List<? extends TopElement> topElements() {
+            return topElements;
         }
 
         @Override
@@ -394,29 +395,31 @@ public final class XmppStanza implements XmppUnit {
 
             final IqQuery iqQuery = (IqQuery) o;
 
-            if (namespace != iqQuery.namespace) return false;
+            if (!namespace.equals(iqQuery.namespace)) return false;
             if (!Objects.equals(version, iqQuery.version)) { return false;}
 
-            return Objects.equals(items, iqQuery.items);
+            return Objects.equals(topElements, iqQuery.topElements);
         }
 
         @Override
         public int hashCode() {
             int result = namespace.hashCode();
             result = 31 * result + (version != null ? version.hashCode() : 0);
-            result = 31 * result + (items != null ? items.hashCode() : 0);
+            result = 31 * result + (topElements != null ? topElements.hashCode() : 0);
 
             return result;
         }
 
-        public enum ContentNamespace {
+        public interface ContentNamespace {}
+
+        public enum SupportedContentNamespace implements ContentNamespace {
             ROSTER("jabber:iq:roster"),
             ;
 
             @NotNull
             private final String string;
 
-            ContentNamespace(@NotNull final String string) {
+            SupportedContentNamespace(@NotNull final String string) {
                 this.string = string;
             }
 
@@ -426,7 +429,49 @@ public final class XmppStanza implements XmppUnit {
             }
         }
 
-        public static final class Item {
+        public static final class UnsupportedContentNamespace implements ContentNamespace {
+            @NotNull
+            private final String string;
+
+            public UnsupportedContentNamespace(final @NotNull String string) {
+                this.string = string;
+            }
+
+            @Override
+            public boolean equals(final Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+
+                final var that = (UnsupportedContentNamespace) o;
+
+                return string.equals(that.string);
+            }
+
+            @Override
+            public int hashCode() {
+                return string.hashCode();
+            }
+
+            @Override
+            public String toString() {
+                return string;
+            }
+        }
+
+        //TODO: inner namespace interface
+        public interface TopElement {
+            int CODE_ITEM = 0;
+            int CODE_UNSUPPORTED_ELEMENT = 1;
+
+            int code();
+
+            @Nullable
+            Namespace namespace();
+
+            interface Namespace {}
+        }
+
+        public static final class Item implements TopElement {
             @Nullable
             private Ask ask;
             @NotNull
@@ -512,6 +557,16 @@ public final class XmppStanza implements XmppUnit {
                 return result;
             }
 
+            @Override
+            public int code() {
+                return CODE_ITEM;
+            }
+
+            @Override
+            public @Nullable Namespace namespace() {
+                return null;
+            }
+
             public enum Subscription {
                 NONE("none"),
                 FROM("from"),
@@ -576,19 +631,98 @@ public final class XmppStanza implements XmppUnit {
                 }
             }
         }
+
+        public static final class UnsupportedElement implements TopElement {
+            @NotNull
+            public final String name;
+            @Nullable
+            private final UnsupportedNamespace namespace;
+
+            public UnsupportedElement(@NotNull final String name, @Nullable final String namespace) {
+                this.name = name;
+                if (namespace != null) {
+                    this.namespace = new UnsupportedNamespace(namespace);
+                } else {
+                    this.namespace = null;
+                }
+            }
+
+            @Override
+            public int code() {
+                return CODE_UNSUPPORTED_ELEMENT;
+            }
+
+            @Override
+            @Nullable
+            public Namespace namespace() {
+                return namespace;
+            }
+
+            @Override
+            public boolean equals(final Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+
+                final UnsupportedElement that = (UnsupportedElement) o;
+
+                if (!name.equals(that.name)) return false;
+                return Objects.equals(namespace, that.namespace);
+            }
+
+            @Override
+            public int hashCode() {
+                int result = name.hashCode();
+                result = 31 * result + (namespace != null ? namespace.hashCode() : 0);
+                return result;
+            }
+
+            public static final class UnsupportedNamespace implements Namespace {
+                @NotNull
+                private final String string;
+
+                public UnsupportedNamespace(@NotNull final String string) {
+                    this.string = string;
+                }
+
+                @Override
+                public boolean equals(final Object o) {
+                    if (this == o) return true;
+                    if (o == null || getClass() != o.getClass()) return false;
+
+                    final UnsupportedNamespace that = (UnsupportedNamespace) o;
+
+                    return string.equals(that.string);
+                }
+
+                @Override
+                public int hashCode() {
+                    return string.hashCode();
+                }
+
+                @Override
+                public String toString() {
+                    return string;
+                }
+            }
+        }
     }
 
     public static final class UnsupportedElement implements TopElement {
         @NotNull
         public final String name;
+        @Nullable
+        public final String namespace;
+        final int code;
 
-        public UnsupportedElement(@NotNull final String name) {
+        public UnsupportedElement(@NotNull final String name, @Nullable final String namespace, final int code) {
             this.name = name;
+            this.namespace = namespace;
+            this.code = code;
         }
 
         @Override
         public int code() {
-            return CODE_UNSUPPORTED;
+            return code;
         }
 
         @Override
@@ -598,12 +732,17 @@ public final class XmppStanza implements XmppUnit {
 
             final UnsupportedElement that = (UnsupportedElement) o;
 
-            return name.equals(that.name);
+            if (code != that.code) return false;
+            if (!name.equals(that.name)) return false;
+            return Objects.equals(namespace, that.namespace);
         }
 
         @Override
         public int hashCode() {
-            return name.hashCode();
+            int result = name.hashCode();
+            result = 31 * result + (namespace != null ? namespace.hashCode() : 0);
+            result = 31 * result + code;
+            return result;
         }
     }
 

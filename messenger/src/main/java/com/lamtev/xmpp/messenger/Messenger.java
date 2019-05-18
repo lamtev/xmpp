@@ -15,13 +15,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.ITEM_NOT_FOUND;
-import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
 import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.BOTH;
 import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.TO;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
-import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
 import static com.lamtev.xmpp.core.util.XmppStanzas.rosterResultOf;
 import static com.lamtev.xmpp.messenger.utils.StringGenerator.Mode.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -183,18 +180,39 @@ public class Messenger implements XmppServer.Handler {
 
                         final var query = (XmppStanza.IqQuery) stanza.topElement();
 
-                        if (query.namespace() == XmppStanza.IqQuery.ContentNamespace.ROSTER) {
+                        if (query.namespace() == XmppStanza.IqQuery.SupportedContentNamespace.ROSTER) {
                             responseStream.sendUnit(rosterResultOf(stanza, List.of(
                                     new Item("admin@lamtev.com", "Admin", BOTH),
                                     new Item("root@lamtev.com", "Root", TO)
                             )));
+                        } else {
+                            responseStream.sendUnit(new XmppStanza(
+                                    IQ,
+                                    stanza.from(),
+                                    stanza.to(),
+                                    stanza.id(),
+                                    XmppStanza.TypeAttribute.of(IQ, "result"),
+                                    stanza.lang(),
+                                    query
+                            ));
                         }
                     } else if (stanza.topElement() instanceof UnsupportedElement) {
                         final var unsupported = (UnsupportedElement) stanza.topElement();
-                        System.out.println("Usupported: " + unsupported.name);
-                        final var error = errorOf(stanza, CANCEL, ITEM_NOT_FOUND);
 
-                        responseStream.sendUnit(error);
+                        final var response = new XmppStanza(
+                                stanza.kind(),
+                                stanza.from(),
+                                stanza.to(),
+                                stanza.id(),
+                                XmppStanza.TypeAttribute.of(stanza.kind(), "result"),
+                                stanza.lang(),
+                                unsupported
+                        );
+
+                        System.out.println("Usupported: " + unsupported.name + " " + unsupported.namespace);
+//                        final var error = errorOf(stanza, CANCEL, ITEM_NOT_FOUND);
+
+                        responseStream.sendUnit(response);
                     }
                 }
                 break;

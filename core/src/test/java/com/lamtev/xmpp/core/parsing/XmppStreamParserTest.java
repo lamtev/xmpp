@@ -205,7 +205,7 @@ final class XmppStreamParserTest {
                 XmppStanza.TypeAttribute.of(IQ, "get"),
                 null,
                 new XmppStanza.IqQuery(
-                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        XmppStanza.IqQuery.SupportedContentNamespace.ROSTER,
                         null,
                         null
                 )
@@ -238,7 +238,7 @@ final class XmppStreamParserTest {
                 "b11881b6-e336-4592-9539-d14b7c01caef",
                 XmppStanza.TypeAttribute.of(IQ, "get"),
                 new XmppStanza.IqQuery(
-                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        XmppStanza.IqQuery.SupportedContentNamespace.ROSTER,
                         null,
                         null
                 )
@@ -280,7 +280,7 @@ final class XmppStreamParserTest {
                 "rs1",
                 XmppStanza.TypeAttribute.of(IQ, "set"),
                 null,
-                new XmppStanza.IqQuery(XmppStanza.IqQuery.ContentNamespace.ROSTER, null, List.of(new XmppStanza.IqQuery.Item("nurse@example.com")))
+                new XmppStanza.IqQuery(XmppStanza.IqQuery.SupportedContentNamespace.ROSTER, null, List.of(new XmppStanza.IqQuery.Item("nurse@example.com")))
         );
 
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
@@ -324,7 +324,7 @@ final class XmppStreamParserTest {
                 XmppStanza.TypeAttribute.of(IQ, "set"),
                 null,
                 new XmppStanza.IqQuery(
-                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        XmppStanza.IqQuery.SupportedContentNamespace.ROSTER,
                         "ver11",
                         singletonList(new XmppStanza.IqQuery.Item(
                                 "romeo@example.net",
@@ -373,7 +373,7 @@ final class XmppStreamParserTest {
                 XmppStanza.TypeAttribute.of(IQ, "set"),
                 null,
                 new XmppStanza.IqQuery(
-                        XmppStanza.IqQuery.ContentNamespace.ROSTER,
+                        XmppStanza.IqQuery.SupportedContentNamespace.ROSTER,
                         null,
                         singletonList(new XmppStanza.IqQuery.Item(
                                 "romeo@example.net",
@@ -427,6 +427,70 @@ final class XmppStreamParserTest {
                     final var presence = (XmppStanza) unit;
 
                     assertEquals(expected, presence);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testIqStanzaUnsupportedParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<iq id=\"553f51bc-58c6-4425-942c-bd4365734e19\" type=\"get\"><vCard xmlns=\"vcard-temp\"/></iq>";
+
+        final var expected = new XmppStanza(
+                IQ,
+                "553f51bc-58c6-4425-942c-bd4365734e19",
+                XmppStanza.TypeAttribute.of(IQ, "get"),
+                new XmppStanza.UnsupportedElement("vCard", "vcard-temp", XmppStanza.TopElement.CODE_IQ_UNSUPPORTED)
+        );
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_8))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-8");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var iqUnsupported = (XmppStanza) unit;
+
+                    assertEquals(expected, iqUnsupported);
+                }
+
+                @Override
+                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
+            });
+
+            parser.startParsing();
+        }
+    }
+
+    @Test
+    void testIqStanzaBindUnsupportedElementParsing() throws IOException, XmppStreamParserException {
+        final var xml = "<iq id=\"8467485a\" type=\"get\"><query xmlns=\"jabber:iq:private\"><storage xmlns=\"storage:bookmarks\"/></query></iq>";
+
+        final var expected = new XmppStanza(
+                IQ,
+                "8467485a",
+                XmppStanza.TypeAttribute.of(IQ, "get"),
+                new XmppStanza.IqQuery(
+                        new XmppStanza.IqQuery.UnsupportedContentNamespace("jabber:iq:private"),
+                        null,
+                        List.of(new XmppStanza.IqQuery.UnsupportedElement("storage", "storage:bookmarks"))
+                )
+        );
+
+        try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_8))) {
+            final var parser = new XmppStreamParser(inputStream, "UTF-8");
+
+            parser.setDelegate(new XmppStreamParser.Delegate() {
+                @Override
+                public void parserDidParseUnit(@NotNull XmppUnit unit) {
+                    final var iqQueryUnsupported = (XmppStanza) unit;
+
+                    assertEquals(expected, iqQueryUnsupported);
                 }
 
                 @Override

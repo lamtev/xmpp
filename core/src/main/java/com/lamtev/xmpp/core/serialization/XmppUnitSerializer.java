@@ -27,12 +27,21 @@ public final class XmppUnitSerializer {
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeaturesResourceBinding,
     };
     @SuppressWarnings("unchecked")
+    @NotNull
     private final Consumer<? super XmppStanza.TopElement>[] iqStanzaSerializers = new Consumer[]{
             (Consumer<XmppStanza.IqBind>) this::serializeIqStanzaBind,
             (Consumer<XmppStanza.IqQuery>) this::serializeIqStanzaQuery,
             (Consumer<XmppStanza.Error>) this::serializeStanzaError,
+            (Consumer<XmppStanza.UnsupportedElement>) this::serializeStanzaUnsupportedElement,
     };
     @SuppressWarnings("unchecked")
+    @NotNull
+    private final Consumer<? super XmppStanza.IqQuery.TopElement>[] iqStanzaQueryTopElementSerializers = new Consumer[]{
+            (Consumer<XmppStanza.IqQuery.Item>) this::serializeIqStanzaQueryItem,
+            (Consumer<XmppStanza.IqQuery.UnsupportedElement>) this::serializeIqStanzaQueryUnsupportedElement,
+    };
+    @SuppressWarnings("unchecked")
+    @NotNull
     private final Consumer<? super XmppStanza.TopElement>[] messageStanzaSerializers = new Consumer[]{
             (Consumer<XmppStanza.MessageBody>) this::serializeMessageStanzaBody,
             (Consumer<XmppStanza.Error>) this::serializeStanzaError,
@@ -252,35 +261,54 @@ public final class XmppUnitSerializer {
             if (ver != null) {
                 writer.writeAttribute("ver", ver);
             }
-            final var items = iqQuery.items();
+            final var items = iqQuery.topElements();
             if (items != null) {
-                for (final var it : items) {
-                    final var groups = it.groups();
-                    if (groups != null) {
-                        writer.writeStartElement("item");
-                    } else {
-                        writer.writeEmptyElement("item");
-                    }
-                    writer.writeAttribute("jid", it.jid());
-                    final var name = it.name();
-                    if (name != null) {
-                        writer.writeAttribute("name", name);
-                    }
-                    final var subscription = it.subscription();
-                    if (subscription != null) {
-                        writer.writeAttribute("subscription", subscription.toString());
-                    }
-                    if (groups != null) {
-                        for (final var group : groups) {
-                            writer.writeStartElement("group");
-                            writer.writeCharacters(group);
-                            writer.writeEndElement();
-                        }
-                        writer.writeEndElement();
-                    }
-                }
+                items.forEach(item -> iqStanzaQueryTopElementSerializers[item.code()].accept(item));
             }
             writer.writeEndElement();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeIqStanzaQueryItem(@NotNull final XmppStanza.IqQuery.Item item) {
+        final var groups = item.groups();
+        try {
+            if (groups != null) {
+                writer.writeStartElement("item");
+            } else {
+                writer.writeEmptyElement("item");
+            }
+            writer.writeAttribute("jid", item.jid());
+            final var name = item.name();
+            if (name != null) {
+                writer.writeAttribute("name", name);
+            }
+            final var subscription = item.subscription();
+            if (subscription != null) {
+                writer.writeAttribute("subscription", subscription.toString());
+
+            }
+            if (groups != null) {
+                for (final var group : groups) {
+                    writer.writeStartElement("group");
+                    writer.writeCharacters(group);
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeIqStanzaQueryUnsupportedElement(@NotNull final XmppStanza.IqQuery.UnsupportedElement unsupportedElement) {
+        try {
+            writer.writeEmptyElement(unsupportedElement.name);
+            final var namespace = unsupportedElement.namespace();
+            if (namespace != null) {
+                writer.writeDefaultNamespace(namespace.toString());
+            }
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
@@ -294,6 +322,15 @@ public final class XmppUnitSerializer {
             writer.writeDefaultNamespace(error.definedCondition.namespace());
             writer.writeEndElement();
             writer.writeEndElement();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeStanzaUnsupportedElement(@NotNull final XmppStanza.UnsupportedElement unsupportedElement) {
+        try {
+            writer.writeEmptyElement(unsupportedElement.name);
+            writer.writeDefaultNamespace(unsupportedElement.namespace);
         } catch (XMLStreamException e) {
             e.printStackTrace();
         }
