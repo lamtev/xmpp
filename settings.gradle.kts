@@ -1,3 +1,3 @@
 rootProject.name = "xmpp"
 
-include("core", "server", "messenger", "client")
+include("core", "server", "messenger", "db", "client")
