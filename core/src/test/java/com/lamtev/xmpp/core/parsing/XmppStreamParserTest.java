@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static com.lamtev.xmpp.core.XmppStanza.Kind.*;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
@@ -68,21 +69,12 @@ final class XmppStreamParserTest {
         final var xml = "<auth xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"\n" +
                 "mechanism=\"PLAIN\">AGFudG9uADEyMzQ1</auth>";
 
+        final var expected = new XmppSaslAuth(PLAIN, "AGFudG9uADEyMzQ1");
+
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var auth = (XmppSaslAuth) unit;
-                    final var expected = new XmppSaslAuth(PLAIN, "AGFudG9uADEyMzQ1");
-
-                    assertEquals(expected, auth);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(auth -> assertEquals(expected, auth)));
 
             parser.startParsing();
         }
@@ -96,26 +88,17 @@ final class XmppStreamParserTest {
                 "</bind>" +
                 "</iq>";
 
+        final var expected = new XmppStanza(
+                IQ,
+                "yhc13a95",
+                XmppStanza.TypeAttribute.of(IQ, "set"),
+                new XmppStanza.IqBind("balcony", null)
+        );
+
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var resBindingStanza = (XmppStanza) unit;
-                    final var expected = new XmppStanza(
-                            IQ,
-                            "yhc13a95",
-                            XmppStanza.TypeAttribute.of(IQ, "set"),
-                            new XmppStanza.IqBind("balcony", null)
-                    );
-
-                    assertEquals(expected, resBindingStanza);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(resBindingStanza -> assertEquals(expected, resBindingStanza)));
 
             parser.startParsing();
         }
@@ -129,26 +112,17 @@ final class XmppStreamParserTest {
                 "</bind>" +
                 "</iq>";
 
+        final var expected = new XmppStanza(
+                IQ,
+                "yhc13a95",
+                XmppStanza.TypeAttribute.of(IQ, "set"),
+                new XmppStanza.IqBind(null, "juliet@im.example.com/balcony")
+        );
+
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var resBindingStanza = (XmppStanza) unit;
-                    final var expected = new XmppStanza(
-                            IQ,
-                            "yhc13a95",
-                            XmppStanza.TypeAttribute.of(IQ, "set"),
-                            new XmppStanza.IqBind(null, "juliet@im.example.com/balcony")
-                    );
-
-                    assertEquals(expected, resBindingStanza);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(resourceBindingStanza -> assertEquals(expected, resourceBindingStanza)));
 
             parser.startParsing();
         }
@@ -167,23 +141,14 @@ final class XmppStreamParserTest {
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var messageStanza = (XmppStanza) unit;
-                    final var expected = new XmppStanza(
-                            MESSAGE,
-                            "romeo@example.net", "juliet@im.example.com/balcony", "ju2ba41c",
-                            XmppStanza.TypeAttribute.of(MESSAGE, "chat"),
-                            "en", new XmppStanza.MessageBody("Art thou not Romeo, and a Montague?")
-                    );
+            final var expected = new XmppStanza(
+                    MESSAGE,
+                    "romeo@example.net", "juliet@im.example.com/balcony", "ju2ba41c",
+                    XmppStanza.TypeAttribute.of(MESSAGE, "chat"),
+                    "en", new XmppStanza.MessageBody("Art thou not Romeo, and a Montague?")
+            );
 
-                    assertEquals(expected, messageStanza);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(messageStanza -> assertEquals(expected, messageStanza)));
 
             parser.startParsing();
         }
@@ -214,17 +179,7 @@ final class XmppStreamParserTest {
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var rosterGet = (XmppStanza) unit;
-
-                    assertEquals(expected, rosterGet);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(rosterGet -> assertEquals(expected, rosterGet)));
 
             parser.startParsing();
         }
@@ -247,17 +202,7 @@ final class XmppStreamParserTest {
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var rosterGet = (XmppStanza) unit;
-
-                    assertEquals(expected, rosterGet);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(rosterGet -> assertEquals(expected, rosterGet)));
 
             parser.startParsing();
         }
@@ -286,17 +231,7 @@ final class XmppStreamParserTest {
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var rosterSet = (XmppStanza) unit;
-
-                    assertEquals(expected, rosterSet);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(rosterSet -> assertEquals(expected, rosterSet)));
 
             parser.startParsing();
         }
@@ -337,17 +272,7 @@ final class XmppStreamParserTest {
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var rosterSet = (XmppStanza) unit;
-
-                    assertEquals(expected, rosterSet);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(rosterSet -> assertEquals(expected, rosterSet)));
 
             parser.startParsing();
         }
@@ -386,17 +311,7 @@ final class XmppStreamParserTest {
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_16))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-16");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var rosterSet = (XmppStanza) unit;
-
-                    assertEquals(expected, rosterSet);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(rosterSet -> assertEquals(expected, rosterSet)));
 
             parser.startParsing();
         }
@@ -421,17 +336,7 @@ final class XmppStreamParserTest {
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_8))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-8");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var presence = (XmppStanza) unit;
-
-                    assertEquals(expected, presence);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(presenceStanza -> assertEquals(expected, presenceStanza)));
 
             parser.startParsing();
         }
@@ -451,17 +356,7 @@ final class XmppStreamParserTest {
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_8))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-8");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var iqUnsupported = (XmppStanza) unit;
-
-                    assertEquals(expected, iqUnsupported);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(iqStanzaUnsupported -> assertEquals(expected, iqStanzaUnsupported)));
 
             parser.startParsing();
         }
@@ -485,19 +380,28 @@ final class XmppStreamParserTest {
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_8))) {
             final var parser = new XmppStreamParser(inputStream, "UTF-8");
 
-            parser.setDelegate(new XmppStreamParser.Delegate() {
-                @Override
-                public void parserDidParseUnit(@NotNull XmppUnit unit) {
-                    final var iqQueryUnsupported = (XmppStanza) unit;
-
-                    assertEquals(expected, iqQueryUnsupported);
-                }
-
-                @Override
-                public void parserDidFailWithError(XmppStreamParser.@NotNull Error error) { fail("Unexpected error: " + error); }
-            });
+            parser.setDelegate(new ParserDelegateImpl(iqStanzaBindUnsupportedElement -> assertEquals(expected, iqStanzaBindUnsupportedElement)));
 
             parser.startParsing();
+        }
+    }
+
+    private static final class ParserDelegateImpl implements XmppStreamParser.Delegate {
+        @NotNull
+        private final Consumer<? super XmppUnit> c;
+
+        private ParserDelegateImpl(@NotNull final Consumer<? super XmppUnit> c) {
+            this.c = c;
+        }
+
+        @Override
+        public void parserDidParseUnit(final @NotNull XmppUnit unit) {
+            c.accept(unit);
+        }
+
+        @Override
+        public void parserDidFailWithError(final XmppStreamParser.@NotNull Error error) {
+            fail("Unexpected error: " + error);
         }
     }
 }
