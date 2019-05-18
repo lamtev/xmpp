@@ -34,12 +34,12 @@ public final class UserStorage {
     }
 
     @Nullable
-    public User userForJidLocalPart(@NotNull final String jidLocalPart) {
+    public User userForJidLocalPart(@NotNull final String jidLocalPart, @NotNull final String password) {
         try (final var statement = connection.createStatement()) {
             final var query = String.format(
                     "SELECT first_name, last_name " +
                     "FROM \"user\" " +
-                    "WHERE jid_local_part = '%s'", jidLocalPart);
+                    "WHERE jid_local_part = '%s' AND password = '%s'", jidLocalPart, password);
             statement.execute(query);
 
             final var result = statement.getResultSet();

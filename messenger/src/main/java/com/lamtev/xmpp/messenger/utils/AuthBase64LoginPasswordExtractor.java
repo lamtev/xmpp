@@ -19,7 +19,7 @@ public class AuthBase64LoginPasswordExtractor {
 
         final var result = new String[2];
         System.arraycopy(separatedBy0, 1, result, 0, 2);
-
+        System.out.println(result[0] + " " + result[1]);
         return result;
     }
 }

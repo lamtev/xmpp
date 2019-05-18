@@ -49,10 +49,12 @@ public final class XmppUnitSerializer {
     private final Consumer<? super XmppUnit>[] unitSerializers = new Consumer[]{
             (Consumer<XmppStreamHeader>) this::serializeStreamHeader,
             (Consumer<XmppStreamFeatures>) this::serializeStreamFeatures,
+            (Consumer<XmppStreamCloseTag>) this::serializeStreamCloseTag,
             (Consumer<XmppStanza>) this::serializeStanza,
             (Consumer<XmppError>) this::serializeError,
             (Consumer<XmppSaslAuth>) (any) -> {},
             (Consumer<XmppSaslAuthSuccess>) this::serializeSaslAuthSuccess,
+            (Consumer<XmppSaslAuthFailure>) this::serializeSaslAuthFailure,
     };
 
     public XmppUnitSerializer(@NotNull final String encoding) {
@@ -109,6 +111,10 @@ public final class XmppUnitSerializer {
         streamFeatureSerializers[streamFeatures.type().ordinal()].accept(streamFeatures);
     }
 
+    private void serializeStreamCloseTag(final XmppStreamCloseTag streamCloseTag) {
+        out.writeBytes("</stream>".getBytes(UTF_8));
+    }
+
     private void serializeStreamFeaturesSASL(@NotNull final XmppStreamFeatures sasl) {
         try {
             writer.writeStartElement("stream", "features", XmppStreamHeader.STREAM_NAMESPACE);
@@ -151,6 +157,18 @@ public final class XmppUnitSerializer {
         try {
             writer.writeStartElement("success");
             writer.writeDefaultNamespace(XmppSaslAuthSuccess.NAMESPACE);
+            writer.writeEndElement();
+            writer.flush();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void serializeSaslAuthFailure(@NotNull final XmppSaslAuthFailure saslAuthFailure) {
+        try {
+            writer.writeStartElement("failure");
+            writer.writeDefaultNamespace(XmppSaslAuthFailure.NAMESPACE);
+            writer.writeEmptyElement("not-authorized");
             writer.writeEndElement();
             writer.flush();
         } catch (XMLStreamException e) {

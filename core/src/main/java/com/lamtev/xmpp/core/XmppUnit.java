@@ -3,10 +3,12 @@ package com.lamtev.xmpp.core;
 public interface XmppUnit {
     int CODE_STREAM_HEADER = 0;
     int CODE_STREAM_FEATURES = 1;
-    int CODE_STANZA = 2;
-    int CODE_ERROR = 3;
-    int CODE_SASL_AUTH = 4;
-    int CODE_SASL_AUTH_SUCCESS = 5;
+    int CODE_STREAM_CLOSE = 2;
+    int CODE_STANZA = 3;
+    int CODE_ERROR = 4;
+    int CODE_SASL_AUTH = 5;
+    int CODE_SASL_AUTH_SUCCESS = 6;
+    int CODE_SASL_AUTH_FAILURE = 7;
 
     /**
      * Unique sequential code associated with concrete XmppUnit implementation.

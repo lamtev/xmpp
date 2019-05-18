@@ -26,6 +26,7 @@ public final class XmppInputStream implements AutoCloseable, XmppStreamParser.De
     private final Consumer<? super XmppUnit>[] unitHandlers = new Consumer[]{
             (Consumer<XmppStreamHeader>) this::streamHeaderReceived,
             (Consumer<XmppStreamFeatures>) this::streamFeaturesReceived,
+            (Consumer<XmppStreamCloseTag>) this::streamFeaturesCloseTagReceived,
             (Consumer<XmppStanza>) this::stanzaReceived,
             (Consumer<XmppError>) this::errorReceived,
             (Consumer<XmppSaslAuth>) this::saslAuthReceived,
@@ -116,6 +117,10 @@ public final class XmppInputStream implements AutoCloseable, XmppStreamParser.De
     }
 
     private void streamFeaturesReceived(@NotNull final XmppStreamFeatures xmppStreamFeatures) {
+
+    }
+
+    private void streamFeaturesCloseTagReceived(final XmppStreamCloseTag xmppStreamCloseTag) {
 
     }
 

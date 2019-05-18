@@ -1,6 +1,7 @@
 package com.lamtev.xmpp.messenger;
 
 import com.lamtev.xmpp.core.io.XmppExchange;
+import com.lamtev.xmpp.db.model.User;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,25 +11,15 @@ import java.util.List;
 
 import static com.lamtev.xmpp.core.io.XmppExchange.State.*;
 
-public class User {
-    @NotNull
-    private final String id;
-    @Nullable
-    private String jid;
+//TODO
+public class UserHandler {
     //TODO: construct in accordance with config
     @NotNull
     public final Deque<XmppExchange.State> stateQueue = new ArrayDeque<>(List.of(SASL_NEGOTIATION, RESOURCE_BINDING, EXCHANGE));
-
-    public User(@NotNull final String id) {
-        this.id = id;
-    }
-
     @Nullable
-    public String jid() {
-        return jid;
-    }
+    private User user;
 
-    public void setJid(@NotNull final String jid) {
-        this.jid = jid;
+    public void setUser(@NotNull final User user) {
+        this.user = user;
     }
 }

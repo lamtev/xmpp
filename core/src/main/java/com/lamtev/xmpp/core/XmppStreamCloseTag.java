@@ -3,13 +3,19 @@ package com.lamtev.xmpp.core;
 import org.jetbrains.annotations.NotNull;
 
 public final class XmppStreamCloseTag implements XmppUnit {
-    @NotNull
-    public static final XmppStreamCloseTag INSTANCE = new XmppStreamCloseTag();
-
     private XmppStreamCloseTag() {}
+
+    @NotNull
+    public static XmppStreamCloseTag instance() {
+        return Holder.OUTER_INSTANCE;
+    }
 
     @Override
     public int code() {
-        return 3;
+        return CODE_STREAM_CLOSE;
+    }
+
+    private static final class Holder {
+        private static final XmppStreamCloseTag OUTER_INSTANCE = new XmppStreamCloseTag();
     }
 }

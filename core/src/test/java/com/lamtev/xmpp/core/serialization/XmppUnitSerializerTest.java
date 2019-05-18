@@ -1,10 +1,7 @@
 package com.lamtev.xmpp.core.serialization;
 
-import com.lamtev.xmpp.core.XmppSaslAuthSuccess;
-import com.lamtev.xmpp.core.XmppStanza;
+import com.lamtev.xmpp.core.*;
 import com.lamtev.xmpp.core.XmppStanza.IqQuery.Item;
-import com.lamtev.xmpp.core.XmppStreamFeatures;
-import com.lamtev.xmpp.core.XmppStreamHeader;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -39,6 +36,17 @@ final class XmppUnitSerializerTest {
             baos.writeBytes(serializer.serialize(streamHeader));
 
             assertEquals(expectedStreamHeader, baos.toString(UTF_8));
+        }
+    }
+
+    @Test
+    void testStreamCloseTagSerialization() throws IOException {
+        final var expectedStreamCloseTag = "</stream>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(XmppStreamCloseTag.instance()));
+
+            assertEquals(expectedStreamCloseTag, baos.toString(UTF_8));
         }
     }
 
@@ -79,9 +87,20 @@ final class XmppUnitSerializerTest {
         final var expectedSuccess = "<success xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"></success>";
 
         try (final var baos = new ByteArrayOutputStream()) {
-            baos.writeBytes(serializer.serialize(new XmppSaslAuthSuccess()));
+            baos.writeBytes(serializer.serialize(XmppSaslAuthSuccess.instance()));
 
             assertEquals(expectedSuccess, baos.toString(UTF_8));
+        }
+    }
+
+    @Test
+    void testSaslAuthFailureSerialization() throws IOException {
+        final var expectedFailure = "<failure xmlns=\"urn:ietf:params:xml:ns:xmpp-sasl\"><not-authorized/></failure>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(XmppSaslAuthFailure.instance()));
+
+            assertEquals(expectedFailure, baos.toString(UTF_8));
         }
     }
 

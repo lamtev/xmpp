@@ -22,9 +22,9 @@ public final class DBStorage implements Closeable {
             e.printStackTrace();
         }
 
-        final var url = config.getString("endpoint.url");
-        final var user = config.getString("endpoint.user");
-        final var password = config.getString("endpoint.password");
+        final var url = config.getString("url");
+        final var user = config.getString("user");
+        final var password = config.getString("password");
 
         try {
             connection = DriverManager.getConnection(url, user, password);
@@ -35,8 +35,6 @@ public final class DBStorage implements Closeable {
             throw new DBStorageConnectionException(e);
         }
     }
-
-    //        final var config = ConfigFactory.load("endpoint.conf");
 
     @NotNull
     public UserStorage users() {
