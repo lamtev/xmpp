@@ -11,10 +11,13 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.FEATURE_NOT_IMPLEMENTED;
 import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
+import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.BOTH;
+import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.TO;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.PRESENCE;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
@@ -182,10 +185,11 @@ public class Messenger implements XmppServer.Handler {
                         final var query = (XmppStanza.IqQuery) stanza.topElement();
 
                         if (query.namespace() == XmppStanza.IqQuery.SupportedContentNamespace.ROSTER) {
-                            responseStream.sendUnit(rosterResultOf(stanza, /*List.of(
-                                    new Item("admin@lamtev.com", "Admin", BOTH),
-                                    new Item("root@lamtev.com", "Root", TO)
-                            )*/null));
+                            final var items = List.of(
+                                    new XmppStanza.IqQuery.Item("admin@lamtev.com", "Admin", BOTH),
+                                    new XmppStanza.IqQuery.Item("root@lamtev.com", "Root", TO)
+                            );
+                            responseStream.sendUnit(rosterResultOf(stanza, null));
                         } else {
 //                            responseStream.sendUnit(new XmppStanza(
 //                                    IQ,
@@ -217,7 +221,7 @@ public class Messenger implements XmppServer.Handler {
                         System.out.println("Usupported: " + unsupported.name + " " + unsupported.namespace);
                         final var error = errorOf(stanza, CANCEL, FEATURE_NOT_IMPLEMENTED);
 
-                        responseStream.sendUnit(error);
+//                        responseStream.sendUnit(error);
                     } else if (stanza.kind() == PRESENCE) {
                         final var fullJid =  userHandler.user().jidLocalPart() + "@lamtev.com/" + userHandler.resource();
                         responseStream.sendUnit(new XmppStanza(
@@ -229,6 +233,10 @@ public class Messenger implements XmppServer.Handler {
                                 null,
                                 XmppStanza.PresenceEmpty.instance()
                         ));
+                        responseStream.sendUnit("<message from='lamtev.com' to='anton@lamtev.com' type='normal'>\n" +
+                                "                    <subject>Welcome! Добро пожаловать!</subject>\n" +
+                                "                    <body>Добро пожаловать на сервер lamtev.com!</body>\n" +
+                                "                </message>");
                     }
                 }
                 break;
