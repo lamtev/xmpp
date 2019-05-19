@@ -15,10 +15,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.FEATURE_NOT_IMPLEMENTED;
+import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
 import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.BOTH;
 import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.TO;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
+import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
 import static com.lamtev.xmpp.core.util.XmppStanzas.rosterResultOf;
 import static com.lamtev.xmpp.messenger.utils.StringGenerator.Mode.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -186,15 +189,19 @@ public class Messenger implements XmppServer.Handler {
                                     new Item("root@lamtev.com", "Root", TO)
                             )));
                         } else {
-                            responseStream.sendUnit(new XmppStanza(
-                                    IQ,
-                                    stanza.from(),
-                                    stanza.to(),
-                                    stanza.id(),
-                                    XmppStanza.TypeAttribute.of(IQ, "result"),
-                                    stanza.lang(),
-                                    query
-                            ));
+//                            responseStream.sendUnit(new XmppStanza(
+//                                    IQ,
+//                                    stanza.from(),
+//                                    stanza.to(),
+//                                    stanza.id(),
+//                                    XmppStanza.TypeAttribute.of(IQ, "result"),
+//                                    stanza.lang(),
+//                                    query
+//                            ));
+
+                            final var error = errorOf(stanza, CANCEL, FEATURE_NOT_IMPLEMENTED);
+
+                            responseStream.sendUnit(error);
                         }
                     } else if (stanza.topElement() instanceof UnsupportedElement) {
                         final var unsupported = (UnsupportedElement) stanza.topElement();
@@ -210,9 +217,9 @@ public class Messenger implements XmppServer.Handler {
                         );
 
                         System.out.println("Usupported: " + unsupported.name + " " + unsupported.namespace);
-//                        final var error = errorOf(stanza, CANCEL, ITEM_NOT_FOUND);
+                        final var error = errorOf(stanza, CANCEL, FEATURE_NOT_IMPLEMENTED);
 
-                        responseStream.sendUnit(response);
+                        responseStream.sendUnit(error);
                     }
                 }
                 break;
