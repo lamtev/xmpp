@@ -18,7 +18,6 @@ interface XmppStreamParserStrategy {
         return "auth".equals(element);
     }
 
-    //TODO: replace with set
     static boolean isPotentialStanzaIq(@NotNull final String element) {
         return "iq".equals(element);
     }

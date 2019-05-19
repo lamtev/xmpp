@@ -106,7 +106,7 @@ public final class XmppOutputStream implements AutoCloseable {
 
     @Override
     public void close() {
-
+        System.out.println("XmppOutputStream closed");
     }
 
     void setExchange(@NotNull final XmppExchange exchange) {

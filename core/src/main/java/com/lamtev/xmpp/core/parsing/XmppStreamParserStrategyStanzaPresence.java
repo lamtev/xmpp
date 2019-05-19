@@ -2,10 +2,14 @@ package com.lamtev.xmpp.core.parsing;
 
 import com.lamtev.xmpp.core.XmppStanza;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.stream.XMLStreamReader;
 
 final class XmppStreamParserStrategyStanzaPresence extends XmppStreamParserStrategyStanza {
+    @Nullable
+    private XmppStanza st;
+
     XmppStreamParserStrategyStanzaPresence(@NotNull final XMLStreamReader reader) {
         super(reader);
     }
@@ -15,18 +19,27 @@ final class XmppStreamParserStrategyStanzaPresence extends XmppStreamParserStrat
         super.startElementReached(name);
 
         if (openingTagCount == 1) {
-            stanza = new XmppStanza(kind, to, from, id, type, lang, new XmppStanza.Empty());
+            st = new XmppStanza(kind, to, from, id, type, lang, XmppStanza.PresenceEmpty.instance());
         }
     }
 
     @Override
     public void endElementReached() {
         super.endElementReached();
+
+        if (tagCountsAreSame() && st != null) {
+            stanza = st;
+        }
     }
 
     @Override
-    public void charactersReached() {}
+    void resetState() {
+        super.resetState();
+        st = null;
+    }
 
     @Override
-    void resetState() {}
+    public void charactersReached() {
+
+    }
 }

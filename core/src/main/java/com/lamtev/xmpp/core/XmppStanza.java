@@ -17,20 +17,20 @@ public final class XmppStanza implements XmppUnit {
     private final String to;
     @Nullable
     private final String from;
-    @NotNull
+    @Nullable
     private final String id;
-    @NotNull
+    @Nullable
     private final TypeAttribute type;
     @Nullable
     private final String lang;
     @NotNull
-    private final XmppStanza.TopElement topElement;
+    private final TopElement topElement;
 
-    public XmppStanza(@NotNull final Kind kind, @NotNull final String id, @NotNull final TypeAttribute type, @NotNull final XmppStanza.TopElement topElement) {
+    public XmppStanza(@NotNull final Kind kind, @Nullable final String id, @Nullable final TypeAttribute type, @NotNull final TopElement topElement) {
         this(kind, null, null, id, type, null, topElement);
     }
 
-    public XmppStanza(@NotNull final Kind kind, @Nullable final String to, @Nullable final String from, @NotNull final String id, @NotNull final TypeAttribute type, @Nullable final String lang, @NotNull final XmppStanza.TopElement topElement) {
+    public XmppStanza(@NotNull final Kind kind, @Nullable final String to, @Nullable final String from, @Nullable final String id, @Nullable final TypeAttribute type, @Nullable final String lang, @NotNull final TopElement topElement) {
         this.kind = kind;
         this.to = to;
         this.from = from;
@@ -45,12 +45,12 @@ public final class XmppStanza implements XmppUnit {
         return kind;
     }
 
-    @NotNull
+    @Nullable
     public String id() {
         return id;
     }
 
-    @NotNull
+    @Nullable
     public TypeAttribute type() {
         return type;
     }
@@ -81,32 +81,30 @@ public final class XmppStanza implements XmppUnit {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        XmppStanza that = (XmppStanza) o;
+        final XmppStanza that = (XmppStanza) o;
 
         if (kind != that.kind) return false;
-        if (!id.equals(that.id)) return false;
-        if (!type.equals(that.type)) return false;
-        if (!topElement.equals(that.topElement)) return false;
-        if (!Objects.equals(from, that.from)) return false;
         if (!Objects.equals(to, that.to)) return false;
-
-        return Objects.equals(lang, that.lang);
+        if (!Objects.equals(from, that.from)) return false;
+        if (!Objects.equals(id, that.id)) return false;
+        if (!Objects.equals(type, that.type)) return false;
+        if (!Objects.equals(lang, that.lang)) return false;
+        return topElement.equals(that.topElement);
     }
 
     @Override
     public int hashCode() {
         int result = kind.hashCode();
-        result = 31 * result + id.hashCode();
-        result = 31 * result + type.hashCode();
-        result = 31 * result + topElement.hashCode();
-        result = 31 * result + (from != null ? from.hashCode() : 0);
         result = 31 * result + (to != null ? to.hashCode() : 0);
+        result = 31 * result + (from != null ? from.hashCode() : 0);
+        result = 31 * result + (id != null ? id.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (lang != null ? lang.hashCode() : 0);
-
+        result = 31 * result + topElement.hashCode();
         return result;
     }
 
@@ -251,9 +249,8 @@ public final class XmppStanza implements XmppUnit {
         int CODE_MESSAGE_BODY = 4;
         int CODE_MESSAGE_ERROR = 5;
 
-        int CODE_PRESENCE_ERROR = 6;
-
-        int CODE_EMPTY = 7;
+        int CODE_PRESENCE_EMPTY = 6;
+        int CODE_PRESENCE_ERROR = 7;
 
         int code();
     }
@@ -856,20 +853,30 @@ public final class XmppStanza implements XmppUnit {
         }
     }
 
-    public static final class Empty implements TopElement {
+    public static final class PresenceEmpty implements TopElement {
+        private PresenceEmpty() {}
+
+        public static PresenceEmpty instance() {
+            return Holder.OUTER_INSTANCE;
+        }
+
         @Override
         public int code() {
-            return CODE_EMPTY;
+            return CODE_PRESENCE_EMPTY;
         }
 
         @Override
         public boolean equals(final Object o) {
-            return o instanceof Empty;
+            return o instanceof PresenceEmpty;
         }
 
         @Override
         public int hashCode() {
-            return Empty.class.getName().hashCode();
+            return PresenceEmpty.class.getName().hashCode();
+        }
+
+        private static final class Holder {
+            private static final PresenceEmpty OUTER_INSTANCE = new PresenceEmpty();
         }
     }
 }

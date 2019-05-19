@@ -106,6 +106,7 @@ public final class XmppStreamParser {
                         }
                         break;
                     case END_DOCUMENT:
+                        System.out.println("End document");
                         if (delegate != null) {
 //                            delegate.parserDidParseUnit(XmppStreamCloseTag.INSTANCE);
                         }

@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.function.Consumer;
 
 import static com.lamtev.xmpp.core.XmppStanza.TopElement.CODE_MESSAGE_BODY;
+import static com.lamtev.xmpp.core.XmppStanza.TopElement.CODE_PRESENCE_EMPTY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class XmppUnitSerializer {
@@ -64,6 +65,12 @@ public final class XmppUnitSerializer {
             (Consumer<XmppSaslAuth>) (any) -> {},
             (Consumer<XmppSaslAuthSuccess>) this::serializeSaslAuthSuccess,
             (Consumer<XmppSaslAuthFailure>) this::serializeSaslAuthFailure,
+    };
+    @SuppressWarnings("unchecked")
+    @NotNull
+    private final Consumer<? super XmppStanza.TopElement>[] presenceStanzaSerializers = new Consumer[]{
+            (Consumer<XmppStanza.PresenceEmpty>) this::serializePresenceStanzaEmpty,
+            (Consumer<XmppStanza.Error>) this::serializeStanzaError,
     };
 
     public XmppUnitSerializer(@NotNull final String encoding) {
@@ -200,8 +207,18 @@ public final class XmppUnitSerializer {
     }
 
     private void serializePresenceStanza(@NotNull final XmppStanza stanza) {
-        //TODO
+        try {
+            writer.writeStartElement("presence");
+            serializeCommonAttributes(stanza);
+            presenceStanzaSerializers[stanza.topElement().code() - CODE_PRESENCE_EMPTY].accept(stanza.topElement());
+            writer.writeEndElement();
+            writer.flush();
+        } catch (XMLStreamException e) {
+            e.printStackTrace();
+        }
     }
+
+    private void serializePresenceStanzaEmpty(final XmppStanza.PresenceEmpty presenceEmpty) {}
 
     private void serializeIqStanza(@NotNull final XmppStanza stanza) {
         try {
@@ -221,12 +238,18 @@ public final class XmppUnitSerializer {
         if (from != null) {
             writer.writeAttribute("from", from);
         }
-        writer.writeAttribute("id", stanza.id());
+        final var id = stanza.id();
+        if (id != null) {
+            writer.writeAttribute("id", stanza.id());
+        }
         final var to = stanza.to();
         if (to != null) {
             writer.writeAttribute("to", to);
         }
-        writer.writeAttribute("type", stanza.type().toString());
+        final var type = stanza.type();
+        if (type != null) {
+            writer.writeAttribute("type", type.toString());
+        }
         final var lang = stanza.lang();
         if (lang != null) {
             writer.writeAttribute("xml:lang", lang);

@@ -67,6 +67,7 @@ public final class XmppInputStream implements AutoCloseable, XmppStreamParser.De
     public void close() throws IOException {
         parser.stopParsing();
         in.close();
+        System.out.println("XmppInputStream closed");
     }
 
     public boolean hasError() {

@@ -12,6 +12,7 @@ import java.util.List;
 
 import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.*;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
+import static com.lamtev.xmpp.core.XmppStanza.Kind.PRESENCE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -299,6 +300,25 @@ final class XmppUnitSerializerTest {
             )));
 
             assertEquals(expectedIqQueryStanza, baos.toString(UTF_8));
+        }
+    }
+
+    @Test
+    void testPresenceStanzaEmptySerialization() throws IOException {
+        final var expectedPresence = "<presence from=\"juliet@example.com/balcony\" to=\"juliet@example.com/balcony\"></presence>";
+
+        try (final var baos = new ByteArrayOutputStream()) {
+            baos.writeBytes(serializer.serialize(new XmppStanza(
+                    PRESENCE,
+                    "juliet@example.com/balcony",
+                    "juliet@example.com/balcony",
+                    null,
+                    null,
+                    null,
+                    XmppStanza.PresenceEmpty.instance()
+            )));
+
+            assertEquals(expectedPresence, baos.toString(UTF_8));
         }
     }
 }

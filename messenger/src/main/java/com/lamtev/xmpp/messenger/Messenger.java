@@ -1,7 +1,6 @@
 package com.lamtev.xmpp.messenger;
 
 import com.lamtev.xmpp.core.*;
-import com.lamtev.xmpp.core.XmppStanza.IqQuery.Item;
 import com.lamtev.xmpp.core.XmppStanza.UnsupportedElement;
 import com.lamtev.xmpp.core.io.XmppExchange;
 import com.lamtev.xmpp.db.DBStorage;
@@ -12,14 +11,12 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.FEATURE_NOT_IMPLEMENTED;
 import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
-import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.BOTH;
-import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.TO;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
+import static com.lamtev.xmpp.core.XmppStanza.Kind.PRESENCE;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
 import static com.lamtev.xmpp.core.util.XmppStanzas.rosterResultOf;
@@ -161,12 +158,13 @@ public class Messenger implements XmppServer.Handler {
 
                     if (st.topElement() instanceof XmppStanza.IqBind) {
                         final var iqBind = (XmppStanza.IqBind) st.topElement();
-                        final var resource = iqBind.resource();
+                        final var resource = iqBind.resource() != null ? iqBind.resource() : resourceGenerator.nextString();
+                        userHandler.setResource(resource);
                         responseStream.sendUnit(new XmppStanza(
                                 IQ,
                                 st.id(),
                                 XmppStanza.TypeAttribute.of(IQ, "result"),
-                                new XmppStanza.IqBind(null, "anton@lamtev.com/" + (resource != null ? resource : resourceGenerator.nextString()))
+                                new XmppStanza.IqBind(null, "anton@lamtev.com/" + resource)
                         ));
                         System.out.println("iq bind result sent");
                     }
@@ -184,10 +182,10 @@ public class Messenger implements XmppServer.Handler {
                         final var query = (XmppStanza.IqQuery) stanza.topElement();
 
                         if (query.namespace() == XmppStanza.IqQuery.SupportedContentNamespace.ROSTER) {
-                            responseStream.sendUnit(rosterResultOf(stanza, List.of(
+                            responseStream.sendUnit(rosterResultOf(stanza, /*List.of(
                                     new Item("admin@lamtev.com", "Admin", BOTH),
                                     new Item("root@lamtev.com", "Root", TO)
-                            )));
+                            )*/null));
                         } else {
 //                            responseStream.sendUnit(new XmppStanza(
 //                                    IQ,
@@ -220,6 +218,17 @@ public class Messenger implements XmppServer.Handler {
                         final var error = errorOf(stanza, CANCEL, FEATURE_NOT_IMPLEMENTED);
 
                         responseStream.sendUnit(error);
+                    } else if (stanza.kind() == PRESENCE) {
+                        final var fullJid =  userHandler.user().jidLocalPart() + "@lamtev.com/" + userHandler.resource();
+                        responseStream.sendUnit(new XmppStanza(
+                                PRESENCE,
+                                fullJid,
+                                fullJid,
+                                null,
+                                null,
+                                null,
+                                XmppStanza.PresenceEmpty.instance()
+                        ));
                     }
                 }
                 break;

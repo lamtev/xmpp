@@ -330,7 +330,7 @@ final class XmppStreamParserTest {
                 "xk3h1v69",
                 XmppStanza.TypeAttribute.of(PRESENCE, "subscribe"),
                 null,
-                new XmppStanza.Empty()
+                XmppStanza.PresenceEmpty.instance()
         );
 
         try (final var inputStream = new ByteArrayInputStream(xml.getBytes(UTF_8))) {

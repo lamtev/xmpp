@@ -54,10 +54,17 @@ final class BlockingXmppServer implements XmppServer {
                         });
 
                         initialStream.open();
-                    } catch (final XmppIOException e) {
+
+                        System.out.println("Processing is over!");
+                        System.out.println();
+                    } catch (XmppIOException e) {
                         e.printStackTrace();
-                    } catch (final IOException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                        System.out.println(throwable.getMessage());
+                        System.out.println();
                     }
                 });
             }
