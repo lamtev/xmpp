@@ -70,8 +70,18 @@ public final class XmppOutputStream implements AutoCloseable {
         if (unit instanceof XmppStanza) {
             final var stanza = (XmppStanza) unit;
             if (stanza.kind() == XmppStanza.Kind.IQ && stanza.topElement() instanceof XmppStanza.IqBind) {
+                final var bind = (XmppStanza.IqBind) stanza.topElement();
                 if (exchange != null) {
                     exchange.changeState(EXCHANGE);
+                    final var fullJid = bind.jid();
+                    if (fullJid != null) {
+                        final var bareJidAndResource = fullJid.split("/");
+                        final var delimiterIdx = fullJid.indexOf('@');
+                        final var jidLocalPart = bareJidAndResource[0].substring(0, delimiterIdx);
+                        exchange.setJidLocalPart(jidLocalPart);
+                        final var resource = bareJidAndResource[1];
+                        exchange.setResource(resource);
+                    }
                 }
             }
         } else if (unit instanceof XmppSaslAuthSuccess) {

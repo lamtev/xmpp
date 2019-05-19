@@ -10,12 +10,15 @@ public final class XmppExchange {
     @NotNull
     private final XmppOutputStream responseStream;
     @NotNull
-    private State state;
+    private State state = WAITING_FOR_STREAM_HEADER;
+    @NotNull
+    private String jidLocalPart = "";
+    @NotNull
+    private String resource = "";
 
     public XmppExchange(@NotNull final XmppInputStream initialStream, @NotNull final XmppOutputStream responseStream) {
         this.initialStream = initialStream;
         this.responseStream = responseStream;
-        this.state = WAITING_FOR_STREAM_HEADER;
 
         this.initialStream.setExchange(this);
         this.responseStream.setExchange(this);
@@ -45,6 +48,25 @@ public final class XmppExchange {
         }
     }
 
+    @NotNull
+    public String jidLocalPart() {
+        return jidLocalPart;
+    }
+
+    public void setJidLocalPart(@NotNull final String jidLocalPart) {
+        this.jidLocalPart = jidLocalPart;
+    }
+
+
+    @NotNull
+    public String resource() {
+        return resource;
+    }
+
+    public void setResource(final @NotNull String resource) {
+        this.resource = resource;
+    }
+
     public enum State {
         WAITING_FOR_STREAM_HEADER,
         TLS_NEGOTIATION,
@@ -52,4 +74,6 @@ public final class XmppExchange {
         RESOURCE_BINDING,
         EXCHANGE
     }
+
+
 }

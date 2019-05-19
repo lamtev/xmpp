@@ -4,6 +4,8 @@ import com.lamtev.xmpp.core.*;
 import com.lamtev.xmpp.core.XmppStanza.UnsupportedElement;
 import com.lamtev.xmpp.core.io.XmppExchange;
 import com.lamtev.xmpp.db.DBStorage;
+import com.lamtev.xmpp.db.model.Contact;
+import com.lamtev.xmpp.db.model.User;
 import com.lamtev.xmpp.messenger.utils.AuthBase64LoginPasswordExtractor;
 import com.lamtev.xmpp.messenger.utils.StringGenerator;
 import com.lamtev.xmpp.server.api.XmppServer;
@@ -11,13 +13,11 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.FEATURE_NOT_IMPLEMENTED;
 import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
-import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.BOTH;
-import static com.lamtev.xmpp.core.XmppStanza.IqQuery.Item.Subscription.TO;
+import static com.lamtev.xmpp.core.XmppStanza.IqQuery.SupportedContentNamespace.ROSTER;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
 import static com.lamtev.xmpp.core.XmppStanza.Kind.PRESENCE;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
@@ -25,6 +25,7 @@ import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
 import static com.lamtev.xmpp.core.util.XmppStanzas.rosterResultOf;
 import static com.lamtev.xmpp.messenger.utils.StringGenerator.Mode.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toList;
 
 public class Messenger implements XmppServer.Handler {
     private final int port;
@@ -55,6 +56,11 @@ public class Messenger implements XmppServer.Handler {
 
     private void run() {
         System.out.println(db.users().isPresent("anton", "Secret_Pass"));
+        db.roster().contactsForUserWithJidLocalPart("admin").forEach(it -> {
+            System.out.println(it.jidLocalPart);
+            System.out.println(it.name);
+            System.out.println(it.subscription);
+        });
 
         final var server = XmppServer.of(XmppServer.Mode.BLOCKING, port, Runtime.getRuntime().availableProcessors());
         server.setHandler(this);
@@ -167,7 +173,7 @@ public class Messenger implements XmppServer.Handler {
                                 IQ,
                                 st.id(),
                                 XmppStanza.TypeAttribute.of(IQ, "result"),
-                                new XmppStanza.IqBind(null, "anton@lamtev.com/" + resource)
+                                new XmppStanza.IqBind(null, userHandler.user().jidLocalPart() + "@lamtev.com/" + resource)
                         ));
                         System.out.println("iq bind result sent");
                     }
@@ -179,28 +185,48 @@ public class Messenger implements XmppServer.Handler {
                     System.out.println("Handling " + unit);
                     final var stanza = (XmppStanza) unit;
 
-                    if (stanza.type() == XmppStanza.IqTypeAttribute.GET && stanza.topElement() instanceof XmppStanza.IqQuery) {
+                    if (stanza.topElement() instanceof XmppStanza.IqQuery) {
+                        final var query = (XmppStanza.IqQuery) stanza.topElement();
                         System.out.println("query!!!");
 
-                        final var query = (XmppStanza.IqQuery) stanza.topElement();
+                        if (query.namespace() == ROSTER) {
+                            if (stanza.type() == XmppStanza.IqTypeAttribute.GET) {
+                                final var items = db.roster().contactsForUserWithJidLocalPart(userHandler.user().jidLocalPart())
+                                        .stream()
+                                        .map(it -> new XmppStanza.IqQuery.Item(it.jidLocalPart + "@lamtev.com", it.name, XmppStanza.IqQuery.Item.Subscription.of(it.subscription)))
+                                        .collect(toList());
+                                responseStream.sendUnit(rosterResultOf(stanza, items));
+                            } else if (stanza.type() == XmppStanza.IqTypeAttribute.SET) {
+                                System.out.println("Roster set received!");
+                                final var elements = query.topElements();
+                                if (elements != null && elements.size() == 1) {
+                                    final var first = elements.get(0);
+                                    if (first instanceof XmppStanza.IqQuery.Item) {
+                                        final var item = (XmppStanza.IqQuery.Item) first;
+                                        final var success = db.roster().addContactToUserWithJidLocalPart(
+                                                userHandler.user().jidLocalPart(),
+                                                new Contact(item.jid().replace("@lamtev.com", ""), item.name(), item.subscription() != null ? item.subscription().toString() : null)
+                                        );
 
-                        if (query.namespace() == XmppStanza.IqQuery.SupportedContentNamespace.ROSTER) {
-                            final var items = List.of(
-                                    new XmppStanza.IqQuery.Item("admin@lamtev.com", "Admin", BOTH),
-                                    new XmppStanza.IqQuery.Item("root@lamtev.com", "Root", TO)
-                            );
-                            responseStream.sendUnit(rosterResultOf(stanza, null));
+                                        if (success) {
+                                            responseStream.sendUnit(new XmppStanza(
+                                                    IQ,
+                                                    stanza.from(),
+                                                    stanza.to(),
+                                                    stanza.id(),
+                                                    XmppStanza.TypeAttribute.of(IQ, "result"),
+                                                    stanza.lang(),
+                                                    new XmppStanza.IqQuery(ROSTER)
+                                            ));
+
+                                            sendRosterPushToAllUserResources(userHandler.user(), query);
+                                        } else {
+                                            System.out.println("Unable to add contact");
+                                        }
+                                    }
+                                }
+                            }
                         } else {
-//                            responseStream.sendUnit(new XmppStanza(
-//                                    IQ,
-//                                    stanza.from(),
-//                                    stanza.to(),
-//                                    stanza.id(),
-//                                    XmppStanza.TypeAttribute.of(IQ, "result"),
-//                                    stanza.lang(),
-//                                    query
-//                            ));
-
                             final var error = errorOf(stanza, CANCEL, FEATURE_NOT_IMPLEMENTED);
 
                             responseStream.sendUnit(error);
@@ -221,7 +247,7 @@ public class Messenger implements XmppServer.Handler {
                         System.out.println("Usupported: " + unsupported.name + " " + unsupported.namespace);
                         final var error = errorOf(stanza, CANCEL, FEATURE_NOT_IMPLEMENTED);
 
-//                        responseStream.sendUnit(error);
+                        responseStream.sendUnit(error);
                     } else if (stanza.kind() == PRESENCE) {
                         final var fullJid =  userHandler.user().jidLocalPart() + "@lamtev.com/" + userHandler.resource();
                         responseStream.sendUnit(new XmppStanza(
@@ -233,7 +259,7 @@ public class Messenger implements XmppServer.Handler {
                                 null,
                                 XmppStanza.PresenceEmpty.instance()
                         ));
-                        responseStream.sendUnit("<message from='lamtev.com' to='anton@lamtev.com' type='normal'>\n" +
+                        responseStream.sendUnit("<message from='lamtev.com' to='anton@lamtev.com' type='chat'>\n" +
                                 "                    <subject>Welcome! Добро пожаловать!</subject>\n" +
                                 "                    <body>Добро пожаловать на сервер lamtev.com!</body>\n" +
                                 "                </message>");
@@ -241,5 +267,22 @@ public class Messenger implements XmppServer.Handler {
                 }
                 break;
         }
+    }
+
+    private void sendRosterPushToAllUserResources(@NotNull final User user, @NotNull final XmppStanza.IqQuery query) {
+        for (XmppExchange e : userHandlers.keySet()) {
+            if (e.jidLocalPart().equals(user.jidLocalPart())) {
+                e.responseStream().sendUnit(new XmppStanza(
+                        IQ,
+                        e.jidLocalPart() + "@lamtev.com/" + e.resource(),
+                        null,
+                        idGenerator.nextString(),
+                        XmppStanza.IqTypeAttribute.SET,
+                        null,
+                        query
+                ));
+            }
+        }
+        System.out.println("Roster push sent to all user resources!");
     }
 }

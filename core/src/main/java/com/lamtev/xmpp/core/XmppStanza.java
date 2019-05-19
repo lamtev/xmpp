@@ -365,6 +365,10 @@ public final class XmppStanza implements XmppUnit {
             this.topElements = topElements;
         }
 
+        public IqQuery(@NotNull final ContentNamespace namespace) {
+            this(namespace, null, null);
+        }
+
         @NotNull
         public ContentNamespace namespace() {
             return namespace;
