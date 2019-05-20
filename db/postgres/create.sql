@@ -19,36 +19,6 @@ CREATE TABLE IF NOT EXISTS roster_contact
     FOREIGN KEY (contact_id) REFERENCES "user" (id)
 );
 
-INSERT INTO roster_contact
-VALUES (1, 2, 'Anton', 'both'),
-       (1, 3, 'Steve', 'from');
-
-INSERT INTO roster_contact
-VALUES ((SELECT id FROM "user" WHERE jid_local_part = 'admin' LIMIT 1),
-        (SELECT id FROM "user" WHERE jid_local_part = 'steve.jobs' LIMIT 1),
-        'Adm',
-        'both')
-ON CONFLICT ON CONSTRAINT roster_contact_pk
-    DO UPDATE
-    SET name         = 'Adm',
-        subscription = 'to';
-
-DELETE
-FROM roster_contact
-WHERE user_id = (SELECT id FROM "user" WHERE jid_local_part = 'admin' LIMIT 1)
-  AND contact_id = (SELECT id FROM "user" WHERE jid_local_part = 'root' LIMIT 1);
-
-DELETE
-FROM roster_contact
-WHERE contact_id = 4;
-
-SELECT *
-FROM roster_contact;
-
-SELECT *
-FROM "user";
-
-
 CREATE TABLE IF NOT EXISTS message
 (
     id                       SERIAL PRIMARY KEY,
@@ -61,28 +31,3 @@ CREATE TABLE IF NOT EXISTS message
     FOREIGN KEY (sender_id) REFERENCES "user" (id),
     FOREIGN KEY (recipient_id) REFERENCES "user" (id)
 );
-
-INSERT INTO message (sender_id, recipient_id, text, time_interval_since_1970, is_delivered)
-VALUES ((SELECT id FROM "user" WHERE jid_local_part = 'anton' LIMIT 1),
-        (SELECT id FROM "user" WHERE jid_local_part = 'root' LIMIT 1),
-        '',
-        1.0,
-        FALSE);
-
-SELECT *
-FROM message;
-
-SELECT (SELECT jid_local_part FROM "user" WHERE "user".id = message.sender_id) AS sender_id,
-       'admin'                                                                 AS recipient_id,
-       text,
-       time_interval_since_1970,
-       is_delivered
-FROM message
-WHERE recipient_id = (SELECT id FROM "user" WHERE jid_local_part = 'admin')
-  AND is_delivered = FALSE
-ORDER BY time_interval_since_1970;
-
-UPDATE message
-SET is_delivered = TRUE
-WHERE recipient_id = (SELECT id FROM "user" WHERE jid_local_part = 'admin' LIMIT 1)
-  AND is_delivered = FALSE;

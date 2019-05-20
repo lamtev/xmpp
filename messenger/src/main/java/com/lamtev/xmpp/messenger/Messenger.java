@@ -287,8 +287,8 @@ public class Messenger implements XmppServer.Handler {
                         db.messages().markIncomingMessagesAsDeliveredForUserWithJidLocalPart(userHandler.user().jidLocalPart());
 
                         responseStream.sendUnit("<message from='lamtev.com' to='anton@lamtev.com' type='chat'>\n" +
-                                "                    <subject>Welcome! Добро пожаловать!</subject>\n" +
-                                "                    <body>Добро пожаловать на сервер lamtev.com!</body>\n" +
+                                "                    <subject>Welcome!!</subject>\n" +
+                                "                    <body>Welcome to lamtev.com server!</body>\n" +
                                 "                </message>");
                     } else if (stanza.kind() == MESSAGE && stanza.topElement() instanceof XmppStanza.MessageBody) {
                         final var messageBody = (XmppStanza.MessageBody) stanza.topElement();

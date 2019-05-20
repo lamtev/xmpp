@@ -1,7 +1,6 @@
 package com.lamtev.xmpp.server.api;
 
 import com.lamtev.xmpp.core.io.XmppExchange;
-import com.lamtev.xmpp.core.io.XmppIOException;
 import com.lamtev.xmpp.core.io.XmppInputStream;
 import com.lamtev.xmpp.core.io.XmppOutputStream;
 import org.jetbrains.annotations.NotNull;
@@ -54,17 +53,8 @@ final class BlockingXmppServer implements XmppServer {
                         });
 
                         initialStream.open();
-
-                        System.out.println("Processing is over!");
-                        System.out.println();
-                    } catch (XmppIOException e) {
+                    } catch (Throwable e) {
                         e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (Throwable throwable) {
-                        throwable.printStackTrace();
-                        System.out.println(throwable.getMessage());
-                        System.out.println();
                     }
                 });
             }
