@@ -389,6 +389,7 @@ final class XmppStreamParserTest {
     private static final class ParserDelegateImpl implements XmppStreamParser.Delegate {
         @NotNull
         private final Consumer<? super XmppUnit> c;
+        private int attempts = 0;
 
         private ParserDelegateImpl(@NotNull final Consumer<? super XmppUnit> c) {
             this.c = c;
@@ -396,7 +397,9 @@ final class XmppStreamParserTest {
 
         @Override
         public void parserDidParseUnit(final @NotNull XmppUnit unit) {
-            c.accept(unit);
+            if (++attempts == 1) {
+                c.accept(unit);
+            }
         }
 
         @Override

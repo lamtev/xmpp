@@ -60,4 +60,20 @@ public final class MessageStorage {
 
         return messages;
     }
+
+    public boolean markIncomingMessagesAsDeliveredForUserWithJidLocalPart(@NotNull final String jidLocalPart) {
+        try (final var statement = connection.createStatement()) {
+            final var query = String.format(
+                    "UPDATE message\n" +
+                            "SET is_delivered = TRUE\n" +
+                            "WHERE recipient_id = (SELECT id FROM \"user\" WHERE jid_local_part = '%s' LIMIT 1)\n" +
+                            "  AND is_delivered = FALSE", jidLocalPart
+            );
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
 }

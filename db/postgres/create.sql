@@ -73,11 +73,16 @@ SELECT *
 FROM message;
 
 SELECT (SELECT jid_local_part FROM "user" WHERE "user".id = message.sender_id) AS sender_id,
-       'steve.jobs'                                                            AS recipient_id,
+       'admin'                                                                 AS recipient_id,
        text,
        time_interval_since_1970,
        is_delivered
 FROM message
-WHERE recipient_id = (SELECT id FROM "user" WHERE jid_local_part = 'steve.jobs')
+WHERE recipient_id = (SELECT id FROM "user" WHERE jid_local_part = 'admin')
   AND is_delivered = FALSE
-ORDER BY time_interval_since_1970
+ORDER BY time_interval_since_1970;
+
+UPDATE message
+SET is_delivered = TRUE
+WHERE recipient_id = (SELECT id FROM "user" WHERE jid_local_part = 'admin' LIMIT 1)
+  AND is_delivered = FALSE;

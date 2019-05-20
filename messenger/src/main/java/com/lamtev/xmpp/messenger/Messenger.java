@@ -76,6 +76,14 @@ public class Messenger implements XmppServer.Handler {
 
         final var unit = initialStream.unit();
 
+        if (unit == XmppStreamCloseTag.instance()) {
+
+            responseStream.sendUnit(XmppStreamCloseTag.instance());
+
+            userHandlers.remove(exchange);
+            return;
+        }
+
         switch (exchange.state()) {
             case WAITING_FOR_STREAM_HEADER:
                 if (unit instanceof XmppStreamHeader) {
@@ -276,6 +284,7 @@ public class Messenger implements XmppServer.Handler {
                                 ));
                             }
                         }
+                        db.messages().markIncomingMessagesAsDeliveredForUserWithJidLocalPart(userHandler.user().jidLocalPart());
 
                         responseStream.sendUnit("<message from='lamtev.com' to='anton@lamtev.com' type='chat'>\n" +
                                 "                    <subject>Welcome! Добро пожаловать!</subject>\n" +

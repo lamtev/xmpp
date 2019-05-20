@@ -1,6 +1,7 @@
 package com.lamtev.xmpp.core.parsing;
 
 
+import com.lamtev.xmpp.core.XmppStreamCloseTag;
 import com.lamtev.xmpp.core.XmppUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -89,6 +90,9 @@ public final class XmppStreamParser {
                     case END_ELEMENT: {
                         if (strategy == null) {
                             //TODO handle error
+                            if (delegate != null) {
+                                delegate.parserDidParseUnit(XmppStreamCloseTag.instance());
+                            }
                         } else {
                             strategy.endElementReached();
 
@@ -109,7 +113,7 @@ public final class XmppStreamParser {
                     case END_DOCUMENT:
                         System.out.println("End document");
                         if (delegate != null) {
-//                            delegate.parserDidParseUnit(XmppStreamCloseTag.INSTANCE);
+                            delegate.parserDidParseUnit(XmppStreamCloseTag.instance());
                         }
                 }
             }
