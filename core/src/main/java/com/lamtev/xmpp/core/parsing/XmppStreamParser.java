@@ -70,9 +70,10 @@ public final class XmppStreamParser {
                                 strategy = strategyCache.get(ERROR);
                             } else {
                                 if (delegate != null) {
+                                    System.out.println(elementName);
                                     delegate.parserDidFailWithError(Error.UNRECOGNIZED_ELEMENT);
                                 }
-                                return;
+                                continue;
                             }
                             System.out.println(strategy + " set");
                         }

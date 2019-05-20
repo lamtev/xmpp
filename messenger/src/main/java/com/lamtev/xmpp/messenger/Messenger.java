@@ -55,13 +55,6 @@ public class Messenger implements XmppServer.Handler {
     }
 
     private void run() {
-        System.out.println(db.users().isPresent("anton", "Secret_Pass"));
-        db.roster().contactsForUserWithJidLocalPart("admin").forEach(it -> {
-            System.out.println(it.jidLocalPart);
-            System.out.println(it.name);
-            System.out.println(it.subscription);
-        });
-
         final var server = XmppServer.of(XmppServer.Mode.BLOCKING, port, Runtime.getRuntime().availableProcessors());
         server.setHandler(this);
         server.start();
@@ -203,10 +196,19 @@ public class Messenger implements XmppServer.Handler {
                                     final var first = elements.get(0);
                                     if (first instanceof XmppStanza.IqQuery.Item) {
                                         final var item = (XmppStanza.IqQuery.Item) first;
-                                        final var success = db.roster().addContactToUserWithJidLocalPart(
-                                                userHandler.user().jidLocalPart(),
-                                                new Contact(item.jid().replace("@lamtev.com", ""), item.name(), item.subscription() != null ? item.subscription().toString() : null)
-                                        );
+                                        boolean success = false;
+
+                                        if (item.subscription() != null && item.subscription() != XmppStanza.IqQuery.Item.Subscription.REMOVE) {
+                                            success = db.roster().addOrUpdateContactToUserWithJidLocalPart(
+                                                    userHandler.user().jidLocalPart(),
+                                                    new Contact(item.jid().replace("@lamtev.com", ""), item.name(), item.subscription() != null ? item.subscription().toString() : null)
+                                            );
+                                        } else {
+                                            success = db.roster().removeContactFromUserWithJidLocalPart(
+                                                    userHandler.user().jidLocalPart(),
+                                                    item.jid().replace("@lamtev.com", "")
+                                            );
+                                        }
 
                                         if (success) {
                                             responseStream.sendUnit(new XmppStanza(

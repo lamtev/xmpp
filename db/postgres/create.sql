@@ -25,12 +25,22 @@ VALUES (1, 2, 'Anton', 'both'),
 
 INSERT INTO roster_contact
 VALUES ((SELECT id FROM "user" WHERE jid_local_part = 'admin' LIMIT 1),
-        (SELECT id FROM "user" WHERE jid_local_part = 'd' LIMIT 1),
+        (SELECT id FROM "user" WHERE jid_local_part = 'steve.jobs' LIMIT 1),
         'Adm',
-        'both');
+        'both')
+ON CONFLICT ON CONSTRAINT roster_contact_pk
+    DO UPDATE
+    SET name         = 'Adm',
+        subscription = 'to';
 
-DELETE FROM roster_contact
-WHERE user_id = 1;
+DELETE
+FROM roster_contact
+WHERE user_id = (SELECT id FROM "user" WHERE jid_local_part = 'admin' LIMIT 1)
+  AND contact_id = (SELECT id FROM "user" WHERE jid_local_part = 'root' LIMIT 1);
+
+DELETE
+FROM roster_contact
+WHERE contact_id = 4;
 
 SELECT *
 FROM roster_contact;
@@ -38,7 +48,10 @@ FROM roster_contact;
 SELECT *
 FROM "user";
 
-SELECT u.jid_local_part, rc.name, rc.subscription
+UPDATE roster_contact
+SET SELECT u.jid_local_part,
+    rc.name,
+    rc.subscription
 FROM roster_contact rc
          JOIN "user" u
               ON rc.contact_id = u.id

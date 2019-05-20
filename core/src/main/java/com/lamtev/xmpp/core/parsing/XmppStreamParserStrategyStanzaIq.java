@@ -16,6 +16,8 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
     private Bind bind;
     @Nullable
     private Query query;
+    @Nullable
+    private XmppStanza.UnsupportedElement unsupportedElement;
 
     XmppStreamParserStrategyStanzaIq(@NotNull final XMLStreamReader reader) {
         super(reader);
@@ -51,7 +53,7 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
                     //TODO error
                     return;
                 }
-                stanza = new XmppStanza(kind, id, type, new XmppStanza.UnsupportedElement(reader.getLocalName(), reader.getNamespaceURI(), XmppStanza.TopElement.CODE_IQ_UNSUPPORTED));
+                unsupportedElement = new XmppStanza.UnsupportedElement(reader.getLocalName(), reader.getNamespaceURI(), XmppStanza.TopElement.CODE_IQ_UNSUPPORTED);
             }
         } else if (openingTagCount >= 3 && openingTagCount - closingTagCount == 3) {
             if (bind != null) {
@@ -128,6 +130,8 @@ final class XmppStreamParserStrategyStanzaIq extends XmppStreamParserStrategySta
                 }
                 stanza = new XmppStanza(kind, to, from, id, type, lang, new XmppStanza.IqQuery(query.namespace, query.version, query.topElements));
                 query = null;
+            } else if (unsupportedElement != null) {
+                stanza = new XmppStanza(kind, id, type, unsupportedElement);
             }
         }
     }

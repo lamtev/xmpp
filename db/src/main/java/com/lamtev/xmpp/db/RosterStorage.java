@@ -44,19 +44,38 @@ public final class RosterStorage {
         return contacts;
     }
 
-    public boolean addContactToUserWithJidLocalPart(@NotNull final String jidLocalPart, @NotNull final Contact contact) {
+    public boolean addOrUpdateContactToUserWithJidLocalPart(@NotNull final String jidLocalPart, @NotNull final Contact contact) {
         try (final var statement = connection.createStatement()) {
             final var query = String.format(
-                    "INSERT INTO roster_contact " +
+                    "INSERT INTO roster_contact\n" +
                             "VALUES ((SELECT id FROM \"user\" WHERE jid_local_part = '%s' LIMIT 1), " +
                             "        (SELECT id FROM \"user\" WHERE jid_local_part = '%s' LIMIT 1), " +
                             "        '%s', " +
-                            "        '%s')", jidLocalPart, contact.jidLocalPart, contact.name, contact.subscription
+                            "        '%s') " +
+                            "ON CONFLICT ON CONSTRAINT roster_contact_pk " +
+                            "    DO UPDATE " +
+                            "    SET name = '%s', subscription = '%s'", jidLocalPart, contact.jidLocalPart, contact.name, contact.subscription, contact.name, contact.subscription
             );
             statement.execute(query);
         } catch (SQLException e) {
             e.printStackTrace();
 
+            return false;
+        }
+        return true;
+    }
+
+    public boolean removeContactFromUserWithJidLocalPart(@NotNull final String jidLocalPart, @NotNull final String contactJidLocalPart) {
+        try (final var statement = connection.createStatement()) {
+            final var query = String.format(
+                    "DELETE " +
+                            "FROM roster_contact " +
+                            "WHERE user_id = (SELECT id FROM \"user\" WHERE jid_local_part = '%s' LIMIT 1) " +
+                            "  AND contact_id = (SELECT id FROM \"user\" WHERE jid_local_part = '%s' LIMIT 1)", jidLocalPart, contactJidLocalPart
+            );
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
             return false;
         }
         return true;
