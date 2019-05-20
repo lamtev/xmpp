@@ -48,15 +48,36 @@ FROM roster_contact;
 SELECT *
 FROM "user";
 
-UPDATE roster_contact
-SET SELECT u.jid_local_part,
-    rc.name,
-    rc.subscription
-FROM roster_contact rc
-         JOIN "user" u
-              ON rc.contact_id = u.id
-WHERE user_id = (SELECT id
-                 FROM "user"
-                 WHERE jid_local_part = 'admin'
-                 LIMIT 1)
 
+CREATE TABLE IF NOT EXISTS message
+(
+    id                       SERIAL PRIMARY KEY,
+    sender_id                INTEGER NOT NULL,
+    recipient_id             INTEGER NOT NULL,
+    text                     VARCHAR NOT NULL,
+    time_interval_since_1970 DOUBLE PRECISION,
+    is_delivered             BOOLEAN NOT NULL,
+
+    FOREIGN KEY (sender_id) REFERENCES "user" (id),
+    FOREIGN KEY (recipient_id) REFERENCES "user" (id)
+);
+
+INSERT INTO message (sender_id, recipient_id, text, time_interval_since_1970, is_delivered)
+VALUES ((SELECT id FROM "user" WHERE jid_local_part = 'anton' LIMIT 1),
+        (SELECT id FROM "user" WHERE jid_local_part = 'root' LIMIT 1),
+        '',
+        1.0,
+        FALSE);
+
+SELECT *
+FROM message;
+
+SELECT (SELECT jid_local_part FROM "user" WHERE "user".id = message.sender_id) AS sender_id,
+       'steve.jobs'                                                            AS recipient_id,
+       text,
+       time_interval_since_1970,
+       is_delivered
+FROM message
+WHERE recipient_id = (SELECT id FROM "user" WHERE jid_local_part = 'steve.jobs')
+  AND is_delivered = FALSE
+ORDER BY time_interval_since_1970

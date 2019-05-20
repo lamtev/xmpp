@@ -5,6 +5,7 @@ import com.lamtev.xmpp.core.XmppStanza.UnsupportedElement;
 import com.lamtev.xmpp.core.io.XmppExchange;
 import com.lamtev.xmpp.db.DBStorage;
 import com.lamtev.xmpp.db.model.Contact;
+import com.lamtev.xmpp.db.model.Message;
 import com.lamtev.xmpp.db.model.User;
 import com.lamtev.xmpp.messenger.utils.AuthBase64LoginPasswordExtractor;
 import com.lamtev.xmpp.messenger.utils.StringGenerator;
@@ -18,8 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.lamtev.xmpp.core.XmppStanza.Error.DefinedCondition.FEATURE_NOT_IMPLEMENTED;
 import static com.lamtev.xmpp.core.XmppStanza.Error.Type.CANCEL;
 import static com.lamtev.xmpp.core.XmppStanza.IqQuery.SupportedContentNamespace.ROSTER;
-import static com.lamtev.xmpp.core.XmppStanza.Kind.IQ;
-import static com.lamtev.xmpp.core.XmppStanza.Kind.PRESENCE;
+import static com.lamtev.xmpp.core.XmppStanza.Kind.*;
 import static com.lamtev.xmpp.core.XmppStreamFeatures.Type.SASLMechanism.PLAIN;
 import static com.lamtev.xmpp.core.util.XmppStanzas.errorOf;
 import static com.lamtev.xmpp.core.util.XmppStanzas.rosterResultOf;
@@ -261,10 +261,57 @@ public class Messenger implements XmppServer.Handler {
                                 null,
                                 XmppStanza.PresenceEmpty.instance()
                         ));
+
+                        final var incomingNotYetDeliveredMessages = db.messages().incomingNotDeliveredMessagesForUserWithJidLocalPart(userHandler.user().jidLocalPart());
+                        if (incomingNotYetDeliveredMessages != null) {
+                            for (final var message : incomingNotYetDeliveredMessages) {
+                                responseStream.sendUnit(new XmppStanza(
+                                        MESSAGE,
+                                        message.recipientJidLocalPart + "@lamtev.com",
+                                        message.senderJidLocalPart + "@lamtev.com",
+                                        idGenerator.nextString(),
+                                        XmppStanza.MessageTypeAttribute.CHAT,
+                                        null,
+                                        new XmppStanza.MessageBody(message.text)
+                                ));
+                            }
+                        }
+
                         responseStream.sendUnit("<message from='lamtev.com' to='anton@lamtev.com' type='chat'>\n" +
                                 "                    <subject>Welcome! Добро пожаловать!</subject>\n" +
                                 "                    <body>Добро пожаловать на сервер lamtev.com!</body>\n" +
                                 "                </message>");
+                    } else if (stanza.kind() == MESSAGE && stanza.topElement() instanceof XmppStanza.MessageBody) {
+                        final var messageBody = (XmppStanza.MessageBody) stanza.topElement();
+
+                        System.out.println(messageBody.body());
+
+                        final var to = stanza.to();
+
+                        if (to != null) {
+                            boolean messageIsDelivered = false;
+                            final var toJidLocalPart = to.substring(0, to.indexOf('@'));
+                            final var fromJidLocalPart = userHandler.user().jidLocalPart();
+                            final var xmppExchanges = userHandlers.keySet();
+                            for (XmppExchange e : xmppExchanges) {
+                                if (e.jidLocalPart().equals(toJidLocalPart)) {
+                                    e.responseStream().sendUnit(new XmppStanza(
+                                            MESSAGE,
+                                            toJidLocalPart+ "@lamtev.com/" + e.resource(),
+                                            fromJidLocalPart + "@lamtev.com",
+                                            idGenerator.nextString(),
+                                            XmppStanza.MessageTypeAttribute.CHAT,
+                                            stanza.lang(),
+                                            messageBody
+                                    ));
+                                    messageIsDelivered = true;
+                                    break;
+                                }
+                            }
+                            final var msg = new Message(fromJidLocalPart, toJidLocalPart, messageBody.body(), (double) System.currentTimeMillis());
+                            msg.isDelivered = messageIsDelivered;
+                            db.messages().add(msg);
+                        }
                     }
                 }
                 break;

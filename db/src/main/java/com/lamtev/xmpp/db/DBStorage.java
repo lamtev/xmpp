@@ -16,6 +16,8 @@ public final class DBStorage implements Closeable {
     private final UserStorage users;
     @NotNull
     private final RosterStorage roster;
+    @NotNull
+    private final MessageStorage messages;
 
     public DBStorage(@NotNull final Config config) throws DBStorageConnectionException {
         try {
@@ -33,6 +35,7 @@ public final class DBStorage implements Closeable {
 
             users = new UserStorage(connection);
             roster = new RosterStorage(connection);
+            messages = new MessageStorage(connection);
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DBStorageConnectionException(e);
@@ -47,6 +50,11 @@ public final class DBStorage implements Closeable {
     @NotNull
     public RosterStorage roster() {
         return roster;
+    }
+
+    @NotNull
+    public MessageStorage messages() {
+        return messages;
     }
 
     @Override

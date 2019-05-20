@@ -46,7 +46,7 @@ final class XmppStreamParserStrategyStanzaMessage extends XmppStreamParserStrate
                 }
                 if (from == null) {
                     //TODO error
-                    return;
+//                    return;
                 }
                 if (to == null) {
                     //TODO error
@@ -55,7 +55,7 @@ final class XmppStreamParserStrategyStanzaMessage extends XmppStreamParserStrate
 
                 if (lang == null) {
                     //TODO error
-                    return;
+//                    return;
                 }
 
                 stanza = new XmppStanza(kind, to, from, id, type, lang, body);
